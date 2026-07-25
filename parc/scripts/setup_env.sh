@@ -20,19 +20,25 @@ elif [[ -L "$ASSETS_DST" || -d "$ASSETS_DST" ]]; then
 else
   echo "[parc] assets missing. Download assets.zip from HF and extract to:"
   echo "       $ASSETS_DST"
-  echo "  huggingface-cli download Sylvest/LIBERO-plus assets.zip --local-dir $PARC/data"
+  echo "  hf download --repo-type dataset Sylvest/LIBERO-plus assets.zip --local-dir $PARC/data"
 fi
 
-# 2) ~/.libero/config.yaml をこのリポジトリに向ける
-python3 "$PARC/scripts/configure_libero_paths.py"
-
-# 3) parc パッケージ install
+# 2) parc パッケージ install（PyYAML 等が必要なので、パス設定より先に）
 cd "$PARC"
 if command -v uv >/dev/null 2>&1; then
   uv sync
   echo "[parc] uv sync done. Activate with: source $PARC/.venv/bin/activate"
 else
   python3 -m pip install -e "$PARC"
+fi
+
+# 3) ~/.libero/config.yaml をこのリポジトリに向ける（venv / uv 優先）
+if [[ -x "$PARC/.venv/bin/python" ]]; then
+  "$PARC/.venv/bin/python" "$PARC/scripts/configure_libero_paths.py"
+elif command -v uv >/dev/null 2>&1; then
+  (cd "$PARC" && uv run python scripts/configure_libero_paths.py)
+else
+  python3 "$PARC/scripts/configure_libero_paths.py"
 fi
 
 # 4) 親 LIBERO-plus を editable で入れる（parc venv がある場合）

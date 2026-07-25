@@ -24,7 +24,15 @@ cd LIBERO-plus/parc
 
 # 推奨: マシンごとの保存先は .env.local
 cp .env.example .env.local
-# 編集例:
+# 編集例（パスはその PC に実在するものにすること。/data が無いマシンでは使わない）:
+#   PARC_MACHINE_ID=nuc
+#   PARC_EXPERIMENTS_DIR=/home/kevin/Matsuo/LIBERO-plus/parc/experiments
+#   PARC_DATA_DIR=/home/kevin/Matsuo/LIBERO-plus/parc/data
+#   HF_HOME=/home/kevin/.cache/huggingface
+#   PARC_SYNC_ENABLED=1
+#   PARC_RCLONE_REMOTE=gdrive
+#
+# PC2 など /data がある場合の例:
 #   PARC_MACHINE_ID=pc2
 #   PARC_EXPERIMENTS_DIR=/data/parc_experiments
 #   PARC_DATA_DIR=/data/parc_data
@@ -33,8 +41,7 @@ cp .env.example .env.local
 # 任意: paths.yaml も使える（.env.local の方が優先される）
 # cp configs/paths.example.yaml configs/paths.yaml
 
-# 依存（robot venv + parc）は docs/01_setup.md に従う
-uv sync
+# 依存は docs/01_setup.md に従う（setup_env.sh が uv sync → パス設定の順）
 bash scripts/setup_env.sh
 ```
 
@@ -86,13 +93,61 @@ uv run parc-worker --loop --poll-sec 30
 
 **A. Google Drive（rclone）— 推奨**
 
-```bash
-# 各 PC（初回）— rclone 導入済みなら setup スクリプト
-# 手元 PC: ssh -L 53682:127.0.0.1:53682 kevin@thor
-bash scripts/setup_gdrive_rclone.sh
+同じ Google アカウントを **複数 PC で共有して問題ない**。各 PC で remote `gdrive` を用意する。
 
-# paths.yaml（この Thor では sync.enabled: true / machine_id: thor 済み）
-# 手動確認
+#### 方式 1: 設定ファイルをコピー（最も簡単）
+
+既に動いている PC から `rclone.conf` をコピーする（中身が 0 バイトでないこと・`[gdrive]` があること）。
+
+```bash
+# 動作確認済み PC で
+rclone listremotes          # gdrive: が出ること
+rclone config file          # パス確認
+
+# 新しい PC で（ホスト名/IP は実機に置換。パスに rclone/ を忘れない）
+scp user@working-host:~/.config/rclone/rclone.conf ~/.config/rclone/rclone.conf
+chmod 600 ~/.config/rclone/rclone.conf
+rclone lsd gdrive:
+```
+
+#### 方式 2: 新規 OAuth（WSL / ヘッドレス）
+
+WSL では Windows ブラウザの `127.0.0.1` が WSL の rclone に届かず失敗しやすい。  
+**Windows に rclone を入れ `authorize` → トークンを WSL に貼る**のが確実。
+
+```powershell
+# Windows PowerShell（先に 53682 を占有している rclone を止める）
+Get-Process rclone -ErrorAction SilentlyContinue | Stop-Process -Force
+winget install Rclone.Rclone   # 未導入時
+rclone authorize "drive"       # 表示された JSON をコピー
+```
+
+```bash
+# WSL
+rclone config
+# n → name=gdrive → drive → client 空 → scope 選択
+# Use auto config? → n
+# config_token に Windows の JSON を貼る
+rclone lsd gdrive:
+```
+
+ブラウザ無しの遠隔機（Thor など）向け:
+
+```bash
+# 手元: ssh -L 53682:127.0.0.1:53682 user@thor
+bash scripts/setup_gdrive_rclone.sh
+```
+
+他マシン用に `53682` トンネルを張ったままだと、ローカル認証でポート衝突する。認証時はトンネルを切る。
+
+#### parc-sync の有効化
+
+```bash
+# .env.local 例
+# PARC_SYNC_ENABLED=1
+# PARC_RCLONE_REMOTE=gdrive
+# PARC_MACHINE_ID=nuc
+
 uv run parc-sync status
 uv run parc-sync upload <run_id> --dry-run
 uv run parc-sync upload <run_id> --force
@@ -100,6 +155,8 @@ uv run parc-sync upload <run_id> --force
 
 配置: `gdrive:PARC/ckpts/<machine>/<run_id>/<step>/pretrained_model/`  
 ジョブ `done` 後にワーカーが自動アップロードを試行します（失敗しても学習は継続）。
+
+rclone 共有 client_id 廃止の NOTICE は警告（2026 年中）。長期運用なら [独自 client_id](https://rclone.org/drive/#making-your-own-client-id) を推奨。
 
 **B. rsync / USB**
 
