@@ -21,38 +21,52 @@ bash scripts/fix_assets.sh
 
 ```bash
 mkdir -p data
-huggingface-cli download Sylvest/LIBERO-plus assets.zip --local-dir data
+# ※ Sylvest/LIBERO-plus は dataset リポジトリ。--repo-type dataset が必須
+hf download --repo-type dataset Sylvest/LIBERO-plus assets.zip --local-dir data
 unzip data/assets.zip -d ../libero/libero/
-# 中身が assets/ になるよう配置を確認
+# 深いパスに展開された場合は setup_env.sh / fix_assets.sh が正規位置へ移す
 ```
 
-必要なサブディレクトリ例: `textures/`, `scenes/`, `new_objects/` など。
+必要なサブディレクトリ例: `textures/`, `scenes/`, `new_objects/` など。  
+最終的に `LIBERO-plus/libero/libero/assets/` があれば OK。
 
-## 2. libero のパス設定
+## 2. libero のパス設定 + parc パッケージ
 
 `~/.libero/config.yaml` が **site-packages の別 LIBERO** を向いていると、plus の BDDL / assets が使えません。
 
+推奨（依存インストール → パス設定の順）:
+
 ```bash
-python3 scripts/configure_libero_paths.py
-# または
+cd parc
 bash scripts/setup_env.sh
+# 内部で uv sync のあと .venv の Python で configure_libero_paths.py を実行する
 ```
+
+手動で分ける場合:
+
+```bash
+uv sync
+uv run python scripts/configure_libero_paths.py
+# または
+.venv/bin/python scripts/configure_libero_paths.py
+```
+
+システムの `python3` で `configure_libero_paths.py` を直接叩くと `No module named 'yaml'` になり得ます（PyYAML は parc venv 側）。
 
 確認:
 
 ```bash
-python3 -c "from libero.libero import get_libero_path; print(get_libero_path('assets'))"
+uv run python -c "from libero.libero import get_libero_path; print(get_libero_path('assets'))"
 ```
 
 `.../LIBERO-plus/libero/libero/assets` になっていれば OK。
 
-## 3. parc パッケージ
+## 3. 追加の依存（任意）
 
 ```bash
 cd parc
-uv sync
 source .venv/bin/activate   # 任意
-uv pip install -e ..        # 親 LIBERO-plus を editable で
+uv pip install -e ..        # 親 LIBERO-plus を editable で（setup_env.sh でも試行）
 ```
 
 親の `Matsuo/robot` で既に torch / lerobot がある場合、**学習は親 venv**、  
@@ -96,7 +110,10 @@ uv run parc-smoke --skip-env   # import / パス
 
 | 症状 | 対処 |
 |------|------|
-| `No module named 'libero'` | `python3 scripts/configure_libero_paths.py` と `libero/__init__.py` があること、`PYTHONPATH=LIBERO-plus` |
+| `No module named 'yaml'` | `uv sync` 後に `uv run python scripts/configure_libero_paths.py`（または `bash scripts/setup_env.sh`） |
+| HF `404` / Repository Not Found（assets） | `--repo-type dataset` を付ける（model 扱いだと 404） |
+| `PermissionError: /data` | `.env.local` の `PARC_EXPERIMENTS_DIR` 等を、その PC に存在するパスへ変更 |
+| `No module named 'libero'` | `configure_libero_paths.py` と `libero/__init__.py` があること、`PYTHONPATH=LIBERO-plus` |
 | `torch.load` / `weights_only` | `parc-eval` 内でローカル init は `weights_only=False` 済み |
 | `mj_fullM(): incompatible` | robosuite 1.4 と MuJoCo 3.x の API 差。`parc.env.mujoco_compat` が自動パッチ（旧: `mujoco==3.1.1` ピン） |
 | NumPy が突然 2.x に | 親 `.venv` へ `pip install -e parc` するとき必ず `--no-deps` |

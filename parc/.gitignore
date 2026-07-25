@@ -4,6 +4,8 @@ experiments/**
 data/datasets/
 data/checkpoints/
 data/hf_cache/
+data/assets.zip
+data/.cache/
 # マシン固有の絶対パス（例は paths.example.yaml）
 configs/paths.yaml
 # SSH ホスト一覧（例は hosts.example.yaml）

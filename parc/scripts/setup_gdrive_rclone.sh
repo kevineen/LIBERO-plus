@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
 # Google Drive 用 rclone remote「gdrive」をヘッドレスで作る。
 #
-# Thor などブラウザ無しマシンでは、手元 PC からポート転送して認証する:
+# 用途: Thor など「ブラウザ無し Linux」向け。
+# WSL や手元 PC では docs/11_multi_machine.md の「authorize → トークン貼付」
+# または「rclone.conf コピー」の方が確実（WSL の 127.0.0.1 は Windows と別）。
 #
-#   # 手元 PC
+# Thor 例:
+#   # 手元 PC（他用途の 53682 トンネルが無い状態で）
 #   ssh -L 53682:127.0.0.1:53682 kevin@<thor-host>
 #
 #   # Thor（このスクリプト）
 #   bash scripts/setup_gdrive_rclone.sh
 #   → 表示された http://127.0.0.1:53682/auth?... を手元ブラウザで開く
+#
+# 複数 PC: 同じ Drive を共有してよい。動いているマシンの rclone.conf を
+# コピーするか、各マシンで個別に authorize する。
 #
 set -euo pipefail
 
