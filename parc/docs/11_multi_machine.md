@@ -9,28 +9,37 @@
 |-------------|------------------------|
 | `parc/src/`, `scripts/`, `docs/`, `web/` ソース | `experiments/**`, ckpt, videos |
 | `configs/experiments/*.yaml`, `configs/sweeps/*.yaml` | `HF_HOME` / datasets / hub |
-| `configs/paths.example.yaml` | **`configs/paths.yaml`** |
+| `configs/paths.example.yaml` / `.env.example` | **`configs/paths.yaml`**, **`.env.local`** |
 | `configs/claims/*.claim.yaml`（任意） | `.venv/`, `node_modules/` |
 
 ```text
-git clone → paths.yaml をローカル作成 → HF データ取得 → enqueue → worker
+git clone → cp .env.example .env.local（保存先を編集）→ HF データ取得 → enqueue → worker
 ```
 
 ## 1. 初回セットアップ（他 PC）
 
 ```bash
-git clone <LIBERO-plus-remote>
+git clone https://github.com/kevineen/LIBERO-plus.git
 cd LIBERO-plus/parc
-cp configs/paths.example.yaml configs/paths.yaml
-# experiments_dir / data_dir / hf_home をこの PC のパスに編集
 
-export PARC_MACHINE_ID=pc2   # 例: thor / laptop / pc2
-# または paths.yaml に machine_id: pc2
+# 推奨: マシンごとの保存先は .env.local
+cp .env.example .env.local
+# 編集例:
+#   PARC_MACHINE_ID=pc2
+#   PARC_EXPERIMENTS_DIR=/data/parc_experiments
+#   PARC_DATA_DIR=/data/parc_data
+#   HF_HOME=/data/huggingface
+
+# 任意: paths.yaml も使える（.env.local の方が優先される）
+# cp configs/paths.example.yaml configs/paths.yaml
 
 # 依存（robot venv + parc）は docs/01_setup.md に従う
 uv sync
 bash scripts/setup_env.sh
 ```
+
+優先順位: **シェル export > `.env.local` > `.env` > `paths.yaml` > デフォルト**。  
+`.env.local` は git 外（共有するのは `.env.example` のみ）。
 
 Web:
 
