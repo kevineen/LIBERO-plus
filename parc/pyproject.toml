@@ -1,0 +1,51 @@
+[project]
+name = "parc"
+version = "0.1.0"
+description = "PARC2026 / LIBERO-plus local training & evaluation workspace"
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "numpy>=1.22,<2",
+    "pyyaml>=6.0",
+    "rich>=13.0",
+    "tqdm>=4.66",
+    "pillow>=9.0",
+    "imageio>=2.34",
+    "imageio-ffmpeg>=0.5",
+    "libero",
+]
+
+[project.optional-dependencies]
+# 追加の学習用（親 Matsuo/robot の lerobot 環境でも可）
+train = [
+    "huggingface-hub>=0.24",
+]
+
+[project.scripts]
+parc-new = "parc.cli:new_experiment"
+parc-eval = "parc.cli:eval_main"
+parc-train = "parc.cli:train_main"
+parc-list = "parc.cli:list_runs"
+parc-smoke = "parc.cli:smoke_main"
+parc-enqueue = "parc.cli:enqueue_main"
+parc-worker = "parc.cli:worker_main"
+parc-prune = "parc.cli:prune_main"
+parc-queue = "parc.cli:queue_main"
+parc-sync = "parc.cli:sync_main"
+parc-remote = "parc.cli:remote_main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/parc"]
+
+[tool.hatch.build.targets.wheel.sources]
+parc = "src/parc"
+
+[tool.uv]
+package = true
+
+[tool.uv.sources]
+libero = { path = "../", editable = true }

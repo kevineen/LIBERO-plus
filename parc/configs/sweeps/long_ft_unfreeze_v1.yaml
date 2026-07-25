@@ -1,0 +1,14 @@
+# long_ft で Gate2 未達のときの vision-unfreeze 対照（1 本）
+name: long_ft_unfreeze_v1
+base: configs/experiments/smolvla_ft_long_unfreeze.yaml
+eval_template: configs/experiments/smolvla_subset_eval_gates.yaml
+mode: grid
+max_jobs: 1
+seed: 42
+force_dry_run: false
+search:
+  train.steps: [50000]
+disk:
+  max_bytes_gb: 120
+  keep_best: 5
+  keep_last: 3

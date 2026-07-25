@@ -1,0 +1,14 @@
+# GRPO 一晩スモークスイープ（updates 軸のみ）
+name: overnight_grpo_smoke
+base: configs/experiments/grpo_smoke.yaml
+eval_template: configs/experiments/grpo_smoke.yaml
+mode: grid
+max_jobs: 2
+seed: 0
+force_dry_run: false
+search:
+  train.updates: [2, 3]
+disk:
+  max_bytes_gb: 80
+  keep_best: 5
+  keep_last: 3

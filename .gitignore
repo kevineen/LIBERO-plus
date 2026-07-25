@@ -6,7 +6,8 @@ results/
 outputs/*
 MUJOCO_LOG.TXT
 wandb/
-experiments/
+# ルートの実験出力のみ（parc/configs/experiments は追跡する）
+/experiments/
 experiments_saved/
 clip/
 gpt/
@@ -16,3 +17,12 @@ custom_pddl/
 libero.egg-info/
 .vscode/
 libero/libero/assets/
+# PARC workspace run artifacts (keep parc/configs & docs tracked)
+parc/experiments/**
+!parc/experiments/.gitkeep
+parc/data/datasets/
+parc/data/checkpoints/
+parc/.venv/
+# Machine-local absolute paths (use parc/configs/paths.example.yaml)
+parc/configs/paths.yaml
+parc/configs/hosts.yaml

@@ -13,6 +13,16 @@ LIBERO-Plus: In-depth Robustness Analysis of Vision-Language-Action Models
 
 ![libero-plus](./static/images/libero-plus.jpg)
 
+## 🧪 PARC / local experiment workspace
+
+コンペ準備・ローカル学習/評価の手順とコードは **[`parc/`](./parc/)** にまとめています。
+
+```bash
+cd parc && bash scripts/setup_env.sh && uv run parc-smoke --skip-env
+```
+
+詳細は [`parc/README.md`](./parc/README.md) と [`parc/docs/`](./parc/docs/) を参照してください。
+
 ## 🔥 Overview
 This repository contains the official implementation and benchmark for our paper "In-depth Robustness Analysis for Vision-Language-Action Models". We systematically expose the hidden vulnerabilities of contemporary VLA models through comprehensive robustness evaluation across seven perturbation dimensions. You can simply replace the original `libero` with a `pip install -e .` without modifying your code.
 

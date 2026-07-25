@@ -1,0 +1,25 @@
+# ローカル評価サブセット（摂動カテゴリをまんべんなく少量）
+name: subset_eval
+seed: 0
+tags: [eval, subset]
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 1
+  # null なら classification から各カテゴリ先頭 N 件を自動選択
+  task_ids: null
+  tasks_per_category: 2
+  max_steps: 280
+  camera_height: 128
+  camera_width: 128
+  save_video: false
+  use_classification: true
+
+policy:
+  type: random
+  action_dim: 7
+  # 学習済みを載せる場合:
+  # type: checkpoint
+  # path: experiments/<run_id>/train_output/checkpoints/000200/pretrained_model
+  # device: cuda
+  # 実行は bash scripts/eval_ckpt.sh <このYAML>

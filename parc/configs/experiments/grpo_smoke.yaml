@@ -1,0 +1,37 @@
+# GRPO スモーク（短い online RL）
+name: grpo_smoke
+seed: 0
+tags: [train, grpo, smoke, rl]
+
+train:
+  backend: grpo
+  importance_sampling_level: token
+  group_size: 2
+  updates: 3
+  lr: 1.0e-4
+  clip_eps: 0.2
+  kl_coef: 0.01
+  hidden: 64
+  state_dim: 8
+  action_dim: 7
+  save_rollouts: false
+  eval_every: 2
+  ref_update_every: 2
+  dry_run: false
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 1
+  task_ids: [0]
+  max_steps: 30
+  camera_height: 128
+  camera_width: 128
+  save_video: false
+  use_classification: true
+
+policy:
+  type: grpo_gaussian
+  action_dim: 7
+  state_dim: 8
+  hidden: 64
+  deterministic: true

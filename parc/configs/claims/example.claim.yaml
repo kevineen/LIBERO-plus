@@ -1,0 +1,7 @@
+# 例: cp example.claim.yaml long_ft_unfreeze_v1__thor.claim.yaml
+sweep: long_ft_unfreeze_v1
+machine: thor
+owner: kevin
+status: planned  # planned | running | done | abandoned
+notes: "Gate2 fail 後の vision unfreeze 50k"
+started_at: null
