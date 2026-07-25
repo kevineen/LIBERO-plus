@@ -1,0 +1,18 @@
+# 一晩スモーク用スイープ（短い FT × 2 軸まで）
+# 投入: uv run parc-enqueue --sweep configs/sweeps/overnight_ft_smoke.yaml
+# 実行: uv run parc-worker --loop --poll-sec 30
+# eval はカテゴリ別 subset（by_category 比較用）
+name: overnight_ft_smoke
+base: configs/experiments/smolvla_ft_smoke.yaml
+eval_template: configs/experiments/smolvla_subset_eval.yaml
+mode: grid
+max_jobs: 4
+seed: 42
+force_dry_run: false
+search:
+  train.steps: [100, 200]
+  train.batch_size: [1]
+disk:
+  max_bytes_gb: 80
+  keep_best: 5
+  keep_last: 3

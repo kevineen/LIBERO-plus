@@ -1,0 +1,14 @@
+# long_ft_v1: 50k / 100k steps（t003@10k resume, lr=5e-5 固定）
+name: long_ft_v1
+base: configs/experiments/smolvla_ft_long.yaml
+eval_template: configs/experiments/smolvla_subset_eval_gates.yaml
+mode: grid
+max_jobs: 2
+seed: 42
+force_dry_run: false
+search:
+  train.steps: [50000, 100000]
+disk:
+  max_bytes_gb: 120
+  keep_best: 5
+  keep_last: 3

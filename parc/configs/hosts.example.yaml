@@ -1,0 +1,24 @@
+# 他 PC への SSH 操作一覧。コピーして編集（git 外）:
+#   cp configs/hosts.example.yaml configs/hosts.yaml
+#
+# 使い方:
+#   uv run parc-remote --list-hosts
+#   uv run parc-remote thor queue status
+#   uv run parc-remote thor enqueue -c configs/experiments/smoke_random.yaml
+#   uv run parc-remote thor queue cancel <job_id>
+#   uv run parc-remote thor queue resume <run_id> --mode train
+#   uv run parc-remote thor --tunnel    # Web UI トンネルコマンド表示
+#
+# 前提: 公開鍵 SSH（BatchMode）と、リモートに uv / parc が入っていること。
+
+hosts:
+  thor:
+    ssh: kevin@192.168.11.5
+    parc_dir: /home/kevin/Matsuo/robot/LIBERO-plus/parc
+    web_port: 3030
+    local_web_port: 3030
+  # pc2:
+  #   ssh: kevin@192.168.11.20
+  #   parc_dir: /home/kevin/Matsuo/robot/LIBERO-plus/parc
+  #   web_port: 3030
+  #   local_web_port: 3031   # 手元で両 UI を同時に開くときポートをずらす

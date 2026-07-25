@@ -1,0 +1,31 @@
+# 超小規模 SmolVLA FT（パイプライン通し用）
+name: smolvla_ft_smoke
+seed: 42
+tags: [train, smolvla, smoke]
+
+train:
+  backend: lerobot
+  policy_type: smolvla
+  dataset_repo_id: lerobot/libero_plus
+  policy_repo_id: null
+  load_vlm_weights: true
+  # 通し確認用。本番は steps を大きくする
+  steps: 200
+  batch_size: 1
+  eval_freq: 0
+  eval_n_episodes: 1
+  env_task: libero_spatial
+  dry_run: false
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 1
+  task_ids: [0]
+  max_steps: 50
+  camera_height: 128
+  camera_width: 128
+  save_video: false
+  use_classification: true
+
+policy:
+  type: lerobot_cmd

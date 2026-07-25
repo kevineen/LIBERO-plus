@@ -1,0 +1,25 @@
+# Gate 監視用 subset eval（比較タスクは subset_eval と同じ、動画あり）
+# Gate1: 動画でボウル近傍・グリッパ閉を確認
+# Gate2: metrics.json の success_rate > 0
+name: smolvla_subset_eval_gates
+seed: 0
+tags: [eval, smolvla, subset, gates]
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 1
+  task_ids: null
+  tasks_per_category: 2
+  max_steps: 280
+  camera_height: 256
+  camera_width: 256
+  save_video: true
+  save_frames: false
+  use_classification: true
+
+policy:
+  type: checkpoint
+  action_dim: 7
+  device: cuda
+  flip_images: true
+  path: ""

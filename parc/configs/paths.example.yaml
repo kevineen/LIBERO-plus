@@ -1,0 +1,44 @@
+# パス設定の例。各 PC でコピーしてローカル編集する（git には載せない）:
+#   cp configs/paths.example.yaml configs/paths.yaml
+#
+# 優先順位:
+#   1. 環境変数 PARC_* / HF_HOME / MUJOCO_GL / PARC_MACHINE_ID
+#   2. configs/paths.yaml（このファイルをコピー）
+#   3. デフォルト（parc/ 相対）
+#
+# 複数 PC:
+#   - experiments_dir / data_dir / hf_home は PC ごとに別ディレクトリにする
+#   - 同じ NFS を複数 parc-worker で共有書き込みしない
+#   - マシン識別: export PARC_MACHINE_ID=thor   # 未設定時は hostname 短縮形
+#   - 詳細: docs/11_multi_machine.md
+
+libero_plus_root: ..
+# 大きいデータ・実験は外付け / 大容量ディスク側推奨:
+experiments_dir: /mnt/sda/parc_libero_plus/experiments
+data_dir: /mnt/sda/parc_libero_plus/data
+hf_home: /mnt/sda/huggingface
+mujoco_gl: egl  # headless: egl / 画面あり: glfw
+# 任意（環境変数 PARC_MACHINE_ID が優先）:
+# machine_id: thor
+
+disk:
+  max_bytes_gb: 80
+  keep_best: 5
+  keep_last: 3
+  protected_tags:
+    - protected
+    - baseline
+
+# Google Drive へのベスト ckpt 同期（rclone 必須）
+#   rclone config   # remote 名 gdrive を作成
+#   sync.enabled: true にしたあと job 完了時に自動 upload（only_if_best 時）
+#   手動: uv run parc-sync upload <run_id> [--force]
+sync:
+  enabled: false
+  backend: rclone
+  rclone_remote: gdrive
+  remote_root: PARC/ckpts
+  upload_on_done: true
+  only_if_best: true
+  min_success_rate: 0.0
+  include_training_state: false

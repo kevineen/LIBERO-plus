@@ -1,0 +1,37 @@
+# SmolVLA を LIBERO-plus データで FT するレシピ（LeRobot）
+# 実行: uv run parc-train --config configs/experiments/smolvla_ft.yaml
+# 前提: 親 Matsuo/robot の lerobot 環境、または本選配布の学習コード
+name: smolvla_ft
+seed: 42
+tags: [train, smolvla, libero_plus]
+
+train:
+  backend: lerobot
+  # 実際のコマンドは scripts / parc.train が組み立てる
+  policy_type: smolvla
+  dataset_repo_id: lerobot/libero_plus
+  # または Sylvest/libero_plus_lerobot
+  # dataset_repo_id: Sylvest/libero_plus_lerobot
+  policy_repo_id: null  # HF push する場合は your-user/smolvla_libero_plus
+  load_vlm_weights: true
+  steps: 10000
+  batch_size: 4
+  eval_freq: 1000
+  eval_n_episodes: 1
+  env_task: libero_spatial
+  # dry_run: true ならコマンド表示のみ
+  dry_run: true
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 1
+  task_ids: [0]
+  max_steps: 280
+  camera_height: 128
+  camera_width: 128
+  save_video: false
+  use_classification: true
+
+policy:
+  type: lerobot_cmd
+  # 学習後に checkpoint パスへ差し替え

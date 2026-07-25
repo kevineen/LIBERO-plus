@@ -1,0 +1,27 @@
+# 実験成果物（run ディレクトリ・registry・queue）
+experiments/**
+!experiments/.gitkeep
+data/datasets/
+data/checkpoints/
+data/hf_cache/
+# マシン固有の絶対パス（例は paths.example.yaml）
+configs/paths.yaml
+# SSH ホスト一覧（例は hosts.example.yaml）
+configs/hosts.yaml
+*.pt
+*.safetensors
+*.ckpt
+__pycache__/
+*.pyc
+.venv/
+.ruff_cache/
+.pytest_cache/
+MUJOCO_LOG.TXT
+wandb/
+outputs/
+web/.parc-jobs/
+web/.next/
+web/node_modules/
+*.mp4
+*.png
+!docs/**

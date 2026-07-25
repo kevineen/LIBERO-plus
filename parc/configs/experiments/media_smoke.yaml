@@ -1,0 +1,18 @@
+name: media_smoke
+seed: 0
+tags: [smoke, media]
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 1
+  task_ids: [0]
+  max_steps: 20
+  camera_height: 128
+  camera_width: 128
+  save_frames: true
+  save_video: false
+  frame_stride: 4
+  max_save_frames: 8
+  use_classification: true
+policy:
+  type: random
+  action_dim: 7

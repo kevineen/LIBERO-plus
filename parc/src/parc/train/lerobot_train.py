@@ -1,0 +1,120 @@
+"""学習バックエンド呼び出し（まず LeRobot コマンド生成）。"""
+
+from __future__ import annotations
+
+import os
+import shlex
+import subprocess
+from pathlib import Path
+from typing import Any
+
+
+def build_lerobot_train_cmd(
+    train_cfg: dict[str, Any],
+    *,
+    output_dir: Path,
+    seed: int = 0,
+) -> list[str]:
+    """lerobot-train の引数リストを組み立てる。"""
+    from parc.paths import PARC_ROOT
+
+    policy_type = train_cfg.get("policy_type", "smolvla")
+    dataset = train_cfg.get("dataset_repo_id", "lerobot/libero_plus")
+    steps = int(train_cfg.get("steps", 10000))
+    batch_size = int(train_cfg.get("batch_size", 4))
+    env_task = train_cfg.get("env_task", "libero_spatial")
+    eval_freq = int(train_cfg.get("eval_freq", 1000))
+    eval_n = int(train_cfg.get("eval_n_episodes", 1))
+    load_vlm = bool(train_cfg.get("load_vlm_weights", True))
+    repo_id = train_cfg.get("policy_repo_id")
+    dataset_root = train_cfg.get("dataset_root")
+
+    cmd = [
+        "lerobot-train",
+        f"--policy.type={policy_type}",
+        f"--dataset.repo_id={dataset}",
+        # LeRobot 0.5.x: libero_plus env type は未収録。plus fork を import して評価する想定。
+        f"--env.type=libero",
+        f"--env.task={env_task}",
+        f"--output_dir={output_dir}",
+        f"--steps={steps}",
+        f"--batch_size={batch_size}",
+        f"--seed={seed}",
+        f"--eval.batch_size=1",
+        f"--eval.n_episodes={eval_n}",
+        f"--eval_freq={eval_freq}",
+        f"--policy.load_vlm_weights={'true' if load_vlm else 'false'}",
+        # Hub への自動 push はオフ（ローカル実験用）
+        "--policy.push_to_hub=false",
+    ]
+    if dataset_root:
+        root = Path(str(dataset_root)).expanduser()
+        if not root.is_absolute():
+            root = (PARC_ROOT / root).resolve()
+        cmd.append(f"--dataset.root={root}")
+    if repo_id:
+        cmd.append(f"--policy.repo_id={repo_id}")
+    # 任意の追加 CLI（アルゴリズム実験用）
+    extra = train_cfg.get("extra_args") or []
+    if isinstance(extra, str):
+        extra = [extra]
+    cmd.extend(str(x) for x in extra)
+    return cmd
+
+
+def run_training(config: dict[str, Any], run_dir: Path) -> dict[str, Any]:
+    """設定に従い学習を起動（または dry-run）。"""
+    train_cfg = config.get("train") or {}
+    backend = train_cfg.get("backend", "lerobot")
+    seed = int(config.get("seed", 0))
+    # lerobot は output_dir が既存だと落ちるので、未作成のサブディレクトリを渡す
+    ckpt_dir = run_dir / "train_output"
+
+    if backend == "lerobot":
+        cmd = build_lerobot_train_cmd(train_cfg, output_dir=ckpt_dir, seed=seed)
+        cmd_str = " ".join(shlex.quote(c) for c in cmd)
+        (run_dir / "logs" / "train_cmd.txt").write_text(cmd_str + "\n")
+
+        if train_cfg.get("dry_run", True):
+            return {
+                "status": "dry_run",
+                "backend": backend,
+                "command": cmd_str,
+                "hint": (
+                    "dry_run=true のため未実行。"
+                    " configs で dry_run: false にし、"
+                    "親の Matsuo/robot で source scripts/thor_cuda_env.sh 後に再実行。"
+                ),
+            }
+
+        env = os.environ.copy()
+        proc = subprocess.run(cmd, cwd=str(run_dir), env=env, check=False)
+        return {
+            "status": "finished" if proc.returncode == 0 else "failed",
+            "backend": backend,
+            "command": cmd_str,
+            "returncode": proc.returncode,
+        }
+
+    if backend in {"grpo", "gspo"}:
+        if train_cfg.get("dry_run", False):
+            return {
+                "status": "dry_run",
+                "backend": backend,
+                "hint": "dry_run=true — GRPO/GSPO は未実行",
+            }
+        from parc.train.grpo_gspo import run_grpo_gspo_training
+
+        return run_grpo_gspo_training(config, run_dir)
+
+    if backend in {"openpi", "openvla", "gr00t"}:
+        return {
+            "status": "not_implemented",
+            "backend": backend,
+            "hint": (
+                "本選で配布される Pi0/Gr00t/OpenVLA 学習コードを "
+                "parc.train に接続してください。"
+            ),
+        }
+
+    raise ValueError(f"Unknown train.backend: {backend}")

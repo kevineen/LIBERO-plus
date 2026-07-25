@@ -1,0 +1,18 @@
+# 本番寄り一晩スイープ（steps / lr）。軸は 2 つまで。
+# base は eval_freq=0（学習中 sim eval なし）。終了後に subset eval。
+name: overnight_ft_v1
+base: configs/experiments/smolvla_ft_overnight.yaml
+eval_template: configs/experiments/smolvla_subset_eval.yaml
+mode: grid
+max_jobs: 8
+seed: 42
+force_dry_run: false
+search:
+  train.steps: [5000, 10000]
+  train.extra_args:
+    - ["--policy.optimizer_lr=1e-4", "--save_freq=2000", "--log_freq=100"]
+    - ["--policy.optimizer_lr=5e-5", "--save_freq=2000", "--log_freq=100"]
+disk:
+  max_bytes_gb: 80
+  keep_best: 5
+  keep_last: 3

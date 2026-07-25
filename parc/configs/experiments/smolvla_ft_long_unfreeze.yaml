@@ -1,0 +1,39 @@
+# Gate2 未達時の対照: vision encoder を解凍して続き学習
+# t003@10k または long_ft_v1 の最終 ckpt を pretrained_path に差し替えて使う
+name: smolvla_ft_long_unfreeze
+seed: 42
+tags: [train, smolvla, libero_plus, long_ft, unfreeze_vision]
+
+train:
+  backend: lerobot
+  policy_type: smolvla
+  dataset_repo_id: lerobot/libero_plus
+  policy_repo_id: null
+  load_vlm_weights: true
+  steps: 50000
+  batch_size: 4
+  eval_freq: 0
+  eval_n_episodes: 1
+  env_task: libero_spatial
+  dry_run: false
+  extra_args:
+    - --policy.pretrained_path=/mnt/sda/parc_libero_plus/experiments/20260725T011626Z_overnight_ft_v1_t003/train_output/checkpoints/010000/pretrained_model
+    - --policy.optimizer_lr=5e-5
+    - --policy.freeze_vision_encoder=false
+    - --policy.train_expert_only=false
+    - --save_freq=10000
+    - --log_freq=100
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 1
+  task_ids: null
+  tasks_per_category: 2
+  max_steps: 280
+  camera_height: 256
+  camera_width: 256
+  save_video: true
+  use_classification: true
+
+policy:
+  type: lerobot_cmd
