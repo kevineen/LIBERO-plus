@@ -13,7 +13,35 @@ if [[ ! -d "$WEB/node_modules" ]]; then
 fi
 
 export PARC_ROOT="$PARC"
-# paths.yaml の experiments_dir を優先（無ければローカル）
+
+# .env / .env.local を読み込む（未設定キーのみ）
+_load_env_file() {
+  local f="$1"
+  [[ -f "$f" ]] || return 0
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line#"${line%%[![:space:]]*}"}"
+    [[ -z "$line" || "$line" == \#* ]] && continue
+    [[ "$line" == export\ * ]] && line="${line#export }"
+    [[ "$line" != *=* ]] && continue
+    local key="${line%%=*}"
+    local val="${line#*=}"
+    key="${key%"${key##*[![:space:]]}"}"
+    val="${val#"${val%%[![:space:]]*}"}"
+    val="${val%"${val##*[![:space:]]}"}"
+    if [[ "${val}" == \"*\" && "${val}" == *\" ]]; then
+      val="${val:1:${#val}-2}"
+    elif [[ "${val}" == \'*\' && "${val}" == *\' ]]; then
+      val="${val:1:${#val}-2}"
+    fi
+    if [[ -z "${!key+x}" || -z "${!key}" ]]; then
+      export "$key=$val"
+    fi
+  done < "$f"
+}
+_load_env_file "$PARC/.env"
+_load_env_file "$PARC/.env.local"
+
+# experiments_dir: env → paths.yaml → デフォルト
 if [[ -z "${PARC_EXPERIMENTS_DIR:-}" ]]; then
   PARC_EXPERIMENTS_DIR=""
   if command -v python3 >/dev/null 2>&1; then

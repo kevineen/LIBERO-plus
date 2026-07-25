@@ -26,3 +26,6 @@ parc/.venv/
 # Machine-local absolute paths (use parc/configs/paths.example.yaml)
 parc/configs/paths.yaml
 parc/configs/hosts.yaml
+parc/.env
+parc/.env.local
+parc/.env.*.local

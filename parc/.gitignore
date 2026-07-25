@@ -8,6 +8,10 @@ data/hf_cache/
 configs/paths.yaml
 # SSH ホスト一覧（例は hosts.example.yaml）
 configs/hosts.yaml
+# ローカル環境変数（例は .env.example）
+.env
+.env.local
+.env.*.local
 *.pt
 *.safetensors
 *.ckpt

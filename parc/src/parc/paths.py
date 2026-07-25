@@ -14,13 +14,61 @@ import yaml
 PARC_ROOT = Path(__file__).resolve().parents[2]
 LIBERO_PLUS_ROOT = PARC_ROOT.parent
 
+_DOTENV_LOADED = False
+
+
+def load_dotenv_files(*, override: bool = False) -> list[Path]:
+    """``.env`` / ``.env.local`` を読み環境変数へ載せる。
+
+    既定は「未設定のキーだけ埋める」（シェルで export した値が勝つ）。
+    ``.env.local`` が ``.env`` より後に読まれるのでローカル上書き向き。
+    """
+    global _DOTENV_LOADED
+    loaded: list[Path] = []
+    for name in (".env", ".env.local"):
+        path = PARC_ROOT / name
+        if not path.is_file():
+            continue
+        _apply_dotenv_file(path, override=override)
+        loaded.append(path)
+    _DOTENV_LOADED = True
+    return loaded
+
+
+def _apply_dotenv_file(path: Path, *, override: bool) -> None:
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line[len("export ") :].strip()
+        if "=" not in line:
+            continue
+        key, _, val = line.partition("=")
+        key = key.strip()
+        if not key:
+            continue
+        val = val.strip()
+        if len(val) >= 2 and val[0] == val[-1] and val[0] in {'"', "'"}:
+            val = val[1:-1]
+        if not override and key in os.environ and os.environ[key] != "":
+            continue
+        os.environ[key] = val
+
+
+def ensure_dotenv_loaded() -> None:
+    """初回だけ dotenv を読む。"""
+    if not _DOTENV_LOADED:
+        load_dotenv_files(override=False)
+
 
 def _load_paths_yaml() -> dict[str, Any]:
     """configs/paths.yaml があれば読む（無ければ空）。
 
     注意: paths.yaml が無いとき example を読むのは初回セットアップ用。
-    本番では必ずローカル paths.yaml を置く（git 外）。
+    本番では必ずローカル paths.yaml を置くか、``.env.local`` で上書きする。
     """
+    ensure_dotenv_loaded()
     path = PARC_ROOT / "configs" / "paths.yaml"
     if not path.is_file():
         example = PARC_ROOT / "configs" / "paths.example.yaml"
@@ -34,6 +82,7 @@ def _load_paths_yaml() -> dict[str, Any]:
 
 def get_machine_id() -> str:
     """複数 PC 識別子。PARC_MACHINE_ID → paths.yaml machine_id → hostname 短縮。"""
+    ensure_dotenv_loaded()
     env = (os.environ.get("PARC_MACHINE_ID") or "").strip()
     if env:
         return _sanitize_machine_id(env)
@@ -53,6 +102,7 @@ def _sanitize_machine_id(raw: str) -> str:
 
 def get_paths() -> dict[str, Path]:
     """実験・データ・リポジトリ根のパス辞書を返す。"""
+    ensure_dotenv_loaded()
     cfg = _load_paths_yaml()
 
     def resolve(key: str, default: Path, env: str | None = None) -> Path:
@@ -93,6 +143,7 @@ def apply_runtime_env() -> None:
     """MuJoCo / HF / PYTHONPATH などランタイム環境変数をセットする。"""
     import sys
 
+    ensure_dotenv_loaded()
     cfg = _load_paths_yaml()
     mujoco_gl = os.environ.get("MUJOCO_GL") or cfg.get("mujoco_gl") or "egl"
     os.environ.setdefault("MUJOCO_GL", str(mujoco_gl))

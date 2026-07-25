@@ -73,11 +73,14 @@ export MUJOCO_GL=egl
 ```
 
 `configs/paths.example.yaml` を `configs/paths.yaml` にコピーしても設定できます。  
-`paths.yaml` はマシン固有のため git 管理外です。複数 PC で分ける手順は [11_multi_machine.md](11_multi_machine.md)。
+または **`cp .env.example .env.local`** で保存先だけ上書き（推奨・PC ごと）。  
+
+優先順位: シェル export > `.env.local` > `.env` > `paths.yaml`。  
+詳細は [11_multi_machine.md](11_multi_machine.md)。
 
 ```bash
-cp configs/paths.example.yaml configs/paths.yaml
-export PARC_MACHINE_ID=thor   # 任意（未設定時は hostname）
+cp .env.example .env.local
+# PARC_MACHINE_ID / PARC_EXPERIMENTS_DIR / HF_HOME を編集
 ```
 
 ## 5. スモーク

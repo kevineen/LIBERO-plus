@@ -29,11 +29,12 @@ from typing import Any
 
 import yaml
 
-from parc.paths import PARC_ROOT, get_machine_id, get_paths
+from parc.paths import PARC_ROOT, ensure_dotenv_loaded, get_machine_id, get_paths
 from parc.tracking.run import list_registry
 
 
 def _load_paths_yaml() -> dict[str, Any]:
+    ensure_dotenv_loaded()
     path = PARC_ROOT / "configs" / "paths.yaml"
     if not path.is_file():
         example = PARC_ROOT / "configs" / "paths.example.yaml"
