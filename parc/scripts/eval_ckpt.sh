@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
-# 親 Matsuo/robot の venv で checkpoint 評価を実行する（SmolVLA + LIBERO-plus）。
-# 通常の parc.sh は LIBERO-plus .venv（lerobot なし）向け。こちらは学習と同じ環境。
+# 親ディレクトリの学習用 venv で checkpoint 評価を実行する。
 set -euo pipefail
 PARC="$(cd "$(dirname "$0")/.." && pwd)"
-ROBOT="$(cd "$PARC/../.." && pwd)"   # .../Matsuo/robot
 LIBERO_PLUS="$(cd "$PARC/.." && pwd)"
+if [[ -n "${PARC_ROBOT_ROOT:-}" ]]; then
+  ROBOT="$(cd "$PARC_ROBOT_ROOT" && pwd)"
+else
+  ROBOT="$(cd "$PARC/../.." && pwd)"
+fi
 
 if [[ ! -x "$ROBOT/.venv/bin/python" ]]; then
   echo "robot venv not found: $ROBOT/.venv" >&2
@@ -13,23 +16,51 @@ fi
 
 # shellcheck disable=SC1091
 source "$ROBOT/.venv/bin/activate"
-# shellcheck disable=SC1091
-source "$ROBOT/scripts/thor_cuda_env.sh"
+if [[ -f "$ROBOT/scripts/thor_cuda_env.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$ROBOT/scripts/thor_cuda_env.sh"
+fi
 
 for d in \
+  /usr/lib/wsl/lib \
   /usr/local/lib/ollama/cuda_v12 \
   /usr/local/cuda-12.6/targets/sbsa-linux/lib \
-  /usr/local/cuda-12.9/targets/sbsa-linux/lib
+  /usr/local/cuda-12.9/targets/sbsa-linux/lib \
+  /usr/local/cuda-12.9/targets/x86_64-linux/lib
 do
   if [[ -d "$d" ]]; then
     export LD_LIBRARY_PATH="$d${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
   fi
 done
 
+# Nuc 等: sudo なしで展開した ImageMagick（Wand / Sensor Noise 用）
+# MAGICK_HOME だけでは PNG coder を見つけられず MissingDelegateError になるため
+# CODER / CONFIGURE パスも明示する。
+_IM_ROOT="${HOME}/opt/imagemagick"
+_IM_USER_LIB="${_IM_ROOT}/usr/lib/x86_64-linux-gnu"
+_IM_CODERS="${_IM_USER_LIB}/ImageMagick-6.9.11/modules-Q16/coders"
+_IM_CONFIG="${_IM_ROOT}/etc/ImageMagick-6"
+if [[ -e "${_IM_USER_LIB}/libMagickWand-6.Q16.so" ]]; then
+  export MAGICK_HOME="${_IM_ROOT}/usr"
+  export LD_LIBRARY_PATH="${_IM_USER_LIB}${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+  if [[ -d "${_IM_CODERS}" ]]; then
+    export MAGICK_CODER_MODULE_PATH="${_IM_CODERS}"
+  fi
+  if [[ -d "${_IM_CONFIG}" ]]; then
+    export MAGICK_CONFIGURE_PATH="${_IM_CONFIG}"
+  fi
+fi
+unset _IM_ROOT _IM_USER_LIB _IM_CODERS _IM_CONFIG
+
 export MUJOCO_GL="${MUJOCO_GL:-egl}"
-export HF_HOME="${HF_HOME:-/mnt/sda/huggingface}"
+if [[ -z "${HF_HOME:-}" ]]; then
+  if [[ -d /mnt/sda/huggingface ]]; then
+    export HF_HOME=/mnt/sda/huggingface
+  else
+    export HF_HOME="${HOME}/.cache/huggingface"
+  fi
+fi
 export HF_HUB_CACHE="${HF_HUB_CACHE:-$HF_HOME/hub}"
-# LIBERO-plus のベンチマーク定義を優先
 export PYTHONPATH="$PARC/src:$LIBERO_PLUS${PYTHONPATH:+:$PYTHONPATH}"
 
 cd "$PARC"

@@ -11,7 +11,7 @@ from rich.console import Console
 from rich.table import Table
 
 from parc.config import load_yaml
-from parc.paths import PARC_ROOT, apply_runtime_env, get_paths
+from parc.paths import PARC_ROOT, apply_runtime_env, get_machine_id, get_paths
 from parc.tracking.run import create_run, list_registry, update_run_meta
 
 console = Console()
@@ -127,15 +127,31 @@ def train_main(argv: list[str] | None = None) -> None:
 
 
 def list_runs(argv: list[str] | None = None) -> None:
-    """実験一覧。"""
+    """実験一覧 / 削除。
+
+    例:
+      parc-list --json
+      parc-list delete --failed
+      parc-list delete <run_id>
+    """
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] == "delete":
+        _list_delete_runs(argv[1:])
+        return
+
     parser = argparse.ArgumentParser(prog="parc-list")
     parser.add_argument("--limit", type=int, default=20)
     parser.add_argument("--sweep-id", default=None, help="スイープ ID でフィルタ")
-    parser.add_argument("--json", action="store_true", help="機械可読 JSON を出力")
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="機械可読 JSON 配列（Fleet / Web 用）",
+    )
     args = parser.parse_args(argv)
     apply_runtime_env()
     rows = list_registry(limit=args.limit, sweep_id=args.sweep_id)
     if args.json:
+        # Fleet aggregate は JSON 配列を期待する（object ラッパにしない）
         payload = []
         for r in rows:
             sr = None
@@ -151,10 +167,11 @@ def list_runs(argv: list[str] | None = None) -> None:
                     "name": r.name,
                     "status": r.status,
                     "success_rate": sr,
-                    "tags": list(r.tags),
+                    "tags": list(r.tags or []),
                     "sweep_id": r.sweep_id or "",
                     "created_at": r.created_at,
                     "notes": r.notes or "",
+                    "metrics": r.metrics or {},
                 }
             )
         console.print_json(json.dumps(payload, ensure_ascii=False))
@@ -184,6 +201,42 @@ def list_runs(argv: list[str] | None = None) -> None:
             ",".join(r.tags),
         )
     console.print(table)
+
+
+def _list_delete_runs(argv: list[str]) -> None:
+    """failed などの実験ディレクトリを削除する。"""
+    parser = argparse.ArgumentParser(prog="parc-list delete")
+    parser.add_argument("run_ids", nargs="*", help="削除する run_id（プレフィックス可）")
+    parser.add_argument("--failed", action="store_true", help="status=failed をすべて削除")
+    parser.add_argument(
+        "--created",
+        action="store_true",
+        help="status=created をすべて削除",
+    )
+    parser.add_argument("--dry-run", action="store_true")
+    args = parser.parse_args(argv)
+    apply_runtime_env()
+
+    from parc.tracking.run import delete_runs
+
+    statuses: list[str] = []
+    if args.failed:
+        statuses.append("failed")
+    if args.created:
+        statuses.append("created")
+    if not args.run_ids and not statuses:
+        console.print("[red]run_id か --failed / --created を指定してください[/red]")
+        raise SystemExit(2)
+    try:
+        result = delete_runs(
+            run_ids=list(args.run_ids) or None,
+            statuses=statuses or None,
+            dry_run=args.dry_run,
+        )
+    except (KeyError, ValueError) as e:
+        console.print(f"[red]{e}[/red]")
+        raise SystemExit(1) from e
+    console.print_json(json.dumps(result, ensure_ascii=False))
 
 
 def smoke_main(argv: list[str] | None = None) -> None:
@@ -318,7 +371,7 @@ def worker_main(argv: list[str] | None = None) -> None:
 
 
 def queue_main(argv: list[str] | None = None) -> None:
-    """キュー運用（status / requeue / recover-stale / resume）。"""
+    """キュー運用（status / requeue / recover-stale / resume / cancel / delete）。"""
     parser = argparse.ArgumentParser(prog="parc-queue")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
@@ -350,6 +403,36 @@ def queue_main(argv: list[str] | None = None) -> None:
 
     p_cancel = sub.add_parser("cancel", help="queued / running ジョブを cancelled にする")
     p_cancel.add_argument("job_id")
+
+    p_delete = sub.add_parser(
+        "delete",
+        help="failed / cancelled / done ジョブをキューから削除（run ディレクトリは残す）",
+    )
+    p_delete.add_argument(
+        "job_ids",
+        nargs="*",
+        help="削除する job_id（プレフィックス可）。--failed 等と併用可",
+    )
+    p_delete.add_argument(
+        "--failed",
+        action="store_true",
+        help="status=failed をすべて削除",
+    )
+    p_delete.add_argument(
+        "--cancelled",
+        action="store_true",
+        help="status=cancelled をすべて削除",
+    )
+    p_delete.add_argument(
+        "--done",
+        action="store_true",
+        help="status=done / succeeded をすべて削除",
+    )
+    p_delete.add_argument(
+        "--keep-sidecars",
+        action="store_true",
+        help="queue 配下の .log / .json / progress を残す",
+    )
 
     p_notify = sub.add_parser("notify-on", help="既存ジョブ完了時に webhook 通知を有効化")
     p_notify.add_argument("job_id", nargs="?", default=None)
@@ -458,6 +541,33 @@ def queue_main(argv: list[str] | None = None) -> None:
                 ensure_ascii=False,
             )
         )
+        return
+
+    if args.cmd == "delete":
+        from parc.queue.ops import delete_jobs
+
+        statuses: list[str] = []
+        if args.failed:
+            statuses.append("failed")
+        if args.cancelled:
+            statuses.append("cancelled")
+        if args.done:
+            statuses.extend(["done", "succeeded"])
+        if not args.job_ids and not statuses:
+            console.print(
+                "[red]job_id か --failed / --cancelled / --done を指定してください[/red]"
+            )
+            raise SystemExit(2)
+        try:
+            result = delete_jobs(
+                job_ids=list(args.job_ids) or None,
+                statuses=statuses or None,
+                remove_sidecars=not args.keep_sidecars,
+            )
+        except (KeyError, ValueError) as e:
+            console.print(f"[red]{e}[/red]")
+            raise SystemExit(1) from e
+        console.print_json(json.dumps(result, ensure_ascii=False))
         return
 
     if args.cmd == "notify-on":
