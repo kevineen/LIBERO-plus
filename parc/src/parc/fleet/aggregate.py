@@ -120,6 +120,91 @@ def fleet_hosts() -> dict[str, Any]:
     return {"local_alias": _local_alias(), "hosts": rows}
 
 
+def _run_progress_from_queue_job(job: dict[str, Any], run_status: str = "") -> dict[str, Any]:
+    """queue enrich_job の progress を Runs 一覧用の view に変換する。"""
+    prog = job.get("progress") if isinstance(job.get("progress"), dict) else {}
+    phase = str(prog.get("phase") or job.get("status") or run_status or "unknown")
+    job_status = job.get("status")
+    try:
+        step = int(prog["step"]) if prog.get("step") is not None else None
+    except (TypeError, ValueError):
+        step = None
+    try:
+        total = int(prog["total_steps"]) if prog.get("total_steps") is not None else None
+    except (TypeError, ValueError):
+        total = None
+    try:
+        percent = int(prog["percent"]) if prog.get("percent") is not None else None
+    except (TypeError, ValueError):
+        percent = None
+    if percent is not None:
+        percent = max(0, min(100, percent))
+    elif total and step is not None and total > 0:
+        percent = max(0, min(100, round(100.0 * step / total)))
+    elif phase in ("train", "running") or run_status == "running":
+        if total:
+            percent = 0
+
+    label = "—"
+    if phase in ("done",) or run_status == "finished":
+        label = "done"
+        if percent is None:
+            percent = 100
+    elif phase in ("eval", "eval_failed"):
+        label = "eval failed" if phase == "eval_failed" else "eval"
+        if percent is None:
+            percent = 95
+    elif phase in ("train", "train_done", "running"):
+        if step is not None and total is not None:
+            label = f"train {step}/{total}"
+        elif total is not None and (phase == "train" or run_status == "running"):
+            label = f"train 0/{total}"
+        elif phase == "train_done":
+            label = "train done"
+        else:
+            label = "train"
+    elif phase in ("train_failed", "ckpt_missing", "paused"):
+        label = phase.replace("_", " ")
+    elif job_status == "queued":
+        label = "queued"
+    elif phase and phase != run_status:
+        label = phase
+    elif run_status == "running":
+        label = "running"
+
+    return {
+        "phase": phase,
+        "label": label,
+        "percent": percent,
+        "step": step,
+        "total_steps": total,
+        "job_id": job.get("job_id"),
+        "job_status": job_status,
+    }
+
+
+def _attach_queue_progress(runs: list[dict[str, Any]], queue_jobs: list[dict[str, Any]]) -> None:
+    """同一ホストの queue jobs を run_id で突き合わせて progress を付与する。"""
+    by_run: dict[str, dict[str, Any]] = {}
+    for j in queue_jobs:
+        if not isinstance(j, dict):
+            continue
+        prog = j.get("progress") if isinstance(j.get("progress"), dict) else {}
+        rid = (j.get("run_id") or prog.get("run_id") or "").strip()
+        if not rid:
+            continue
+        prev = by_run.get(rid)
+        # より新しい updated_at を優先
+        if prev is None or str(j.get("updated_at") or "") >= str(prev.get("updated_at") or ""):
+            by_run[rid] = j
+    for row in runs:
+        rid = str(row.get("run_id") or "").strip()
+        job = by_run.get(rid)
+        if not job:
+            continue
+        row["progress"] = _run_progress_from_queue_job(job, str(row.get("status") or ""))
+
+
 def _local_runs(limit: int) -> list[dict[str, Any]]:
     apply_runtime_env()
     host = _local_alias()
@@ -176,16 +261,25 @@ def _remote_runs(alias: str, limit: int) -> tuple[list[dict[str, Any]], str | No
 
 
 def fleet_runs(*, limit: int = 50) -> dict[str, Any]:
-    """全ホストの runs を merge（新しい created_at 優先）。"""
+    """全ホストの runs を merge（新しい created_at 優先）。queue progress も付与。"""
     targets = fleet_targets()
     errors: dict[str, str] = {}
     merged: list[dict[str, Any]] = []
 
     def _fetch(t: dict[str, Any]) -> tuple[str, list[dict[str, Any]], str | None]:
         if t["kind"] == "local":
-            return t["alias"], _local_runs(limit), None
+            rows = _local_runs(limit)
+            q = _local_queue(limit)
+            _attach_queue_progress(rows, list(q.get("jobs") or []))
+            return t["alias"], rows, None
         rows, err = _remote_runs(t["alias"], limit)
-        return t["alias"], rows, err
+        if err:
+            return t["alias"], rows, err
+        # リモート queue から progress を合流（失敗しても runs 自体は返す）
+        q = _remote_queue(t["alias"], limit)
+        if not q.get("error"):
+            _attach_queue_progress(rows, list(q.get("jobs") or []))
+        return t["alias"], rows, None
 
     with ThreadPoolExecutor(max_workers=max(4, len(targets))) as pool:
         futs = [pool.submit(_fetch, t) for t in targets]

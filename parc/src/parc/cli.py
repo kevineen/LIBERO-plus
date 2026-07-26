@@ -209,6 +209,11 @@ def _list_delete_runs(argv: list[str]) -> None:
     parser.add_argument("run_ids", nargs="*", help="削除する run_id（プレフィックス可）")
     parser.add_argument("--failed", action="store_true", help="status=failed をすべて削除")
     parser.add_argument(
+        "--paused",
+        action="store_true",
+        help="status=paused をすべて削除（Pause 後に Resume 済みの残骸向け）",
+    )
+    parser.add_argument(
         "--created",
         action="store_true",
         help="status=created をすべて削除",
@@ -222,10 +227,14 @@ def _list_delete_runs(argv: list[str]) -> None:
     statuses: list[str] = []
     if args.failed:
         statuses.append("failed")
+    if args.paused:
+        statuses.append("paused")
     if args.created:
         statuses.append("created")
     if not args.run_ids and not statuses:
-        console.print("[red]run_id か --failed / --created を指定してください[/red]")
+        console.print(
+            "[red]run_id か --failed / --paused / --created を指定してください[/red]"
+        )
         raise SystemExit(2)
     try:
         result = delete_runs(
@@ -401,7 +410,10 @@ def queue_main(argv: list[str] | None = None) -> None:
     )
     p_resume.add_argument("--notes", default="")
 
-    p_cancel = sub.add_parser("cancel", help="queued / running ジョブを cancelled にする")
+    p_cancel = sub.add_parser(
+        "cancel",
+        help="queued を取消 / running を Pause（プロセス kill・ckpt は残し Resume 可）",
+    )
     p_cancel.add_argument("job_id")
 
     p_delete = sub.add_parser(

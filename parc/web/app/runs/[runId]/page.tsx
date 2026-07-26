@@ -59,7 +59,7 @@ export default async function RunPage({ params }: Props) {
 
       {run.notes ? <p className="notes">{run.notes}</p> : null}
 
-      <ResumeActions runId={run.runId} />
+      <ResumeActions runId={run.runId} runStatus={run.status} />
 
       <section className="panel">
         <header className="panel-head">

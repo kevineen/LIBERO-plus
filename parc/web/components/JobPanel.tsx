@@ -176,12 +176,17 @@ export function JobPanel() {
     setError(null);
     try {
       if (host && host !== localAlias) {
-        setError(`Cancel on remote host via: uv run parc-remote ${host} queue cancel ${jobId}`);
+        setError(`Pause/Cancel on remote: uv run parc-remote ${host} queue cancel ${jobId}`);
         return;
       }
-      const res = await fetch(`/api/v1/jobs/${encodeURIComponent(jobId)}`, { method: "DELETE" });
+      const res = await fetch("/api/v1/queue", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "pause", jobId }),
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? res.statusText);
+      setMsg(`Paused ${jobId.slice(0, 18)}… (Resume from run when ready)`);
       await refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -291,6 +296,22 @@ export function JobPanel() {
         >
           Recover stale (local)
         </button>
+        <button
+          className="btn btn-ghost"
+          type="button"
+          disabled={
+            busy ||
+            !system?.jobsAllowed ||
+            !(queue?.counts?.failed || rows.some((r) => r.status === "failed" && (r.local === true || r.host === localAlias)))
+          }
+          onClick={() => {
+            if (!window.confirm("Delete all local failed jobs from the queue? (run dirs kept)")) return;
+            void queueAction({ action: "delete", failed: true });
+          }}
+          title="Remove failed jobs from local queue (run directories are kept)"
+        >
+          Delete failed (local)
+        </button>
       </div>
       {error ? <p className="error">{error}</p> : null}
       {msg ? <p className="muted mono small">{msg}</p> : null}
@@ -378,14 +399,26 @@ export function JobPanel() {
                     )}
                   </td>
                   <td className="row-actions">
-                    {(j.status === "queued" || j.status === "running") && isLocal && (
+                    {j.status === "queued" && isLocal && (
                       <button
                         type="button"
                         className="btn btn-tiny"
                         disabled={busy || !system?.jobsAllowed}
                         onClick={() => void cancelJob(j.job_id, host)}
+                        title="Remove from queue"
                       >
                         Cancel
+                      </button>
+                    )}
+                    {j.status === "running" && isLocal && (
+                      <button
+                        type="button"
+                        className="btn btn-tiny"
+                        disabled={busy || !system?.jobsAllowed}
+                        onClick={() => void cancelJob(j.job_id, host)}
+                        title="Stop process and free GPU; Resume later from checkpoint"
+                      >
+                        Pause
                       </button>
                     )}
                     {["failed", "cancelled", "done", "succeeded"].includes(j.status) && isLocal && (
@@ -398,7 +431,23 @@ export function JobPanel() {
                         Requeue
                       </button>
                     )}
-                    {j.run_id && isLocal ? (
+                    {["failed", "cancelled", "done", "succeeded"].includes(j.status) && isLocal && (
+                      <button
+                        type="button"
+                        className="btn btn-tiny"
+                        disabled={busy || !system?.jobsAllowed}
+                        onClick={() => {
+                          if (!window.confirm(`Delete job ${j.job_id.slice(0, 18)}… from queue? (run dir kept)`)) {
+                            return;
+                          }
+                          void queueAction({ action: "delete", jobId: j.job_id });
+                        }}
+                        title="Remove from local queue (run directory is kept)"
+                      >
+                        Delete
+                      </button>
+                    )}
+                    {j.run_id && isLocal && j.status !== "running" && j.status !== "queued" ? (
                       <button
                         type="button"
                         className="btn btn-tiny"
@@ -406,6 +455,7 @@ export function JobPanel() {
                         onClick={() =>
                           void queueAction({ action: "resume", runId: j.run_id, mode: "auto" })
                         }
+                        title="Continue from latest checkpoint"
                       >
                         Resume
                       </button>
