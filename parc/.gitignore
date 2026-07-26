@@ -6,6 +6,8 @@ data/checkpoints/
 data/hf_cache/
 data/assets.zip
 data/.cache/
+# ローカルに置いた学習済み ckpt（Drive / 他マシンからコピー）
+ckpts/
 # マシン固有の絶対パス（例は paths.example.yaml）
 configs/paths.yaml
 # SSH ホスト一覧（例は hosts.example.yaml）
