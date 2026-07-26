@@ -1,9 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { RunSummary } from "@/lib/types";
+
+type FleetRunProgress = {
+  phase?: string;
+  label?: string;
+  percent?: number | null;
+  step?: number | null;
+  total_steps?: number | null;
+  totalSteps?: number | null;
+  job_id?: string | null;
+  jobId?: string | null;
+  job_status?: string | null;
+  jobStatus?: string | null;
+};
 
 type FleetRunRow = {
   run_id?: string;
@@ -17,6 +30,7 @@ type FleetRunRow = {
   local?: boolean;
   success_rate?: number | null;
   sweep_id?: string;
+  progress?: FleetRunProgress | null;
 };
 
 type FleetHostsResponse = {
@@ -24,10 +38,19 @@ type FleetHostsResponse = {
   hosts?: { alias: string; reachable?: boolean; tunnel_hint?: string | null }[];
 };
 
+/** Pause 残骸・失敗など、一覧から消してよい終端ステータス */
+const DELETABLE_STATUSES = new Set(["failed", "paused", "created", "cancelled"]);
+
+function isPausedLike(status: string): boolean {
+  const s = status.toLowerCase();
+  return s === "paused" || s === "stop" || s === "stopped" || s === "cancelled";
+}
+
 function statusClass(status: string): string {
   if (status === "finished") return "badge badge-ok";
   if (status === "failed") return "badge badge-bad";
   if (status === "running") return "badge badge-run";
+  if (isPausedLike(status)) return "badge";
   return "badge";
 }
 
@@ -54,17 +77,42 @@ function ProgressCell({ run }: { run: RunSummary }) {
   );
 }
 
+function mapFleetProgress(p: FleetRunProgress | null | undefined, status: string) {
+  if (!p) return null;
+  const phase = String(p.phase || status || "unknown");
+  const label = String(p.label || "—");
+  if (label === "—") return null;
+  const percent =
+    p.percent == null || Number.isNaN(Number(p.percent))
+      ? null
+      : Math.max(0, Math.min(100, Math.round(Number(p.percent))));
+  const step = p.step == null || Number.isNaN(Number(p.step)) ? null : Number(p.step);
+  const totalRaw = p.total_steps ?? p.totalSteps;
+  const totalSteps =
+    totalRaw == null || Number.isNaN(Number(totalRaw)) ? null : Number(totalRaw);
+  return {
+    phase,
+    label,
+    percent,
+    step,
+    totalSteps,
+    jobId: p.job_id ?? p.jobId ?? null,
+    jobStatus: p.job_status ?? p.jobStatus ?? null,
+  };
+}
+
 function mapFleetRun(row: FleetRunRow): RunSummary {
   const metrics = (row as { metrics?: { success_rate?: number } }).metrics;
   const rawSr = row.success_rate ?? metrics?.success_rate;
   const sr =
     rawSr == null || Number.isNaN(Number(rawSr)) ? null : Number(rawSr);
   const tags = Array.isArray(row.tags) ? row.tags : [];
+  const status = String(row.status ?? "created");
   return {
     runId: String(row.run_id ?? ""),
     name: String(row.name ?? ""),
     createdAt: String(row.created_at ?? ""),
-    status: String(row.status ?? "created"),
+    status,
     tags,
     notes: String(row.notes ?? ""),
     machineId: row.machine_id ? String(row.machine_id) : null,
@@ -75,7 +123,7 @@ function mapFleetRun(row: FleetRunRow): RunSummary {
     hasMetrics: sr != null,
     hasVideos: false,
     hasCheckpoints: false,
-    progress: null,
+    progress: mapFleetProgress(row.progress, status),
   };
 }
 
@@ -89,6 +137,67 @@ export function RunTable({ runs: initialRuns }: { runs: RunSummary[] }) {
   const [fleetErrors, setFleetErrors] = useState<Record<string, string>>({});
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [fleetMode, setFleetMode] = useState(true);
+  /** Pause 残骸はデフォルト非表示（Resume 済みの stop/paused） */
+  const [hidePaused, setHidePaused] = useState(true);
+  const [jobsAllowed, setJobsAllowed] = useState(false);
+  const [localAlias, setLocalAlias] = useState("local");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const refresh = useCallback(async () => {
+    try {
+      if (fleetMode) {
+        const [runsRes, hostsRes, sysRes] = await Promise.all([
+          fetch("/api/v1/fleet/runs?limit=100"),
+          fetch("/api/v1/fleet/hosts"),
+          fetch("/api/v1/system"),
+        ]);
+        if (runsRes.ok) {
+          const data = (await runsRes.json()) as {
+            runs?: FleetRunRow[];
+            errors?: Record<string, string>;
+            local_alias?: string;
+          };
+          if (data.runs) setRuns(data.runs.map(mapFleetRun));
+          setFleetErrors(data.errors ?? {});
+          if (data.local_alias) setLocalAlias(String(data.local_alias));
+        }
+        if (hostsRes.ok) {
+          const h = (await hostsRes.json()) as FleetHostsResponse & { local_alias?: string };
+          const aliases = (h.hosts ?? []).map((x) => x.alias);
+          setHostAliases(aliases);
+          if (h.local_alias) setLocalAlias(String(h.local_alias));
+          const hints: Record<string, string> = {};
+          for (const row of h.hosts ?? []) {
+            if (row.tunnel_hint) hints[row.alias] = row.tunnel_hint;
+          }
+          setTunnelHints(hints);
+        }
+        if (sysRes.ok) {
+          const s = (await sysRes.json()) as { jobsAllowed?: boolean };
+          setJobsAllowed(!!s.jobsAllowed);
+        }
+        setUpdatedAt(new Date().toLocaleTimeString());
+        return;
+      }
+      const [res, sysRes] = await Promise.all([
+        fetch("/api/v1/runs?limit=100"),
+        fetch("/api/v1/system"),
+      ]);
+      if (res.ok) {
+        const data = (await res.json()) as { runs?: RunSummary[] };
+        if (data.runs) setRuns(data.runs);
+      }
+      if (sysRes.ok) {
+        const s = (await sysRes.json()) as { jobsAllowed?: boolean };
+        setJobsAllowed(!!s.jobsAllowed);
+      }
+      setUpdatedAt(new Date().toLocaleTimeString());
+    } catch {
+      /* ignore */
+    }
+  }, [fleetMode]);
 
   useEffect(() => {
     setRuns(initialRuns);
@@ -97,45 +206,8 @@ export function RunTable({ runs: initialRuns }: { runs: RunSummary[] }) {
   useEffect(() => {
     let alive = true;
     const tick = async () => {
-      try {
-        if (fleetMode) {
-          const [runsRes, hostsRes] = await Promise.all([
-            fetch("/api/v1/fleet/runs?limit=100"),
-            fetch("/api/v1/fleet/hosts"),
-          ]);
-          if (!alive) return;
-          if (runsRes.ok) {
-            const data = (await runsRes.json()) as {
-              runs?: FleetRunRow[];
-              errors?: Record<string, string>;
-            };
-            if (data.runs) {
-              setRuns(data.runs.map(mapFleetRun));
-            }
-            setFleetErrors(data.errors ?? {});
-          }
-          if (hostsRes.ok) {
-            const h = (await hostsRes.json()) as FleetHostsResponse;
-            const aliases = (h.hosts ?? []).map((x) => x.alias);
-            setHostAliases(aliases);
-            const hints: Record<string, string> = {};
-            for (const row of h.hosts ?? []) {
-              if (row.tunnel_hint) hints[row.alias] = row.tunnel_hint;
-            }
-            setTunnelHints(hints);
-          }
-          setUpdatedAt(new Date().toLocaleTimeString());
-          return;
-        }
-        const res = await fetch("/api/v1/runs?limit=100");
-        if (!res.ok) return;
-        const data = (await res.json()) as { runs?: RunSummary[] };
-        if (!alive || !data.runs) return;
-        setRuns(data.runs);
-        setUpdatedAt(new Date().toLocaleTimeString());
-      } catch {
-        /* ignore */
-      }
+      if (!alive) return;
+      await refresh();
     };
     void tick();
     const id = window.setInterval(() => {
@@ -145,7 +217,28 @@ export function RunTable({ runs: initialRuns }: { runs: RunSummary[] }) {
       alive = false;
       window.clearInterval(id);
     };
-  }, [fleetMode]);
+  }, [refresh]);
+
+  async function deleteRuns(payload: Record<string, unknown>) {
+    setBusy(true);
+    setError(null);
+    setMsg(null);
+    try {
+      const res = await fetch("/api/v1/runs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete", ...payload }),
+      });
+      const data = (await res.json()) as { error?: string; result?: { count?: number } };
+      if (!res.ok) throw new Error(data.error ?? res.statusText);
+      setMsg(`deleted ${data.result?.count ?? "?"} run(s)`);
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   const tags = useMemo(() => {
     const s = new Set<string>();
@@ -163,6 +256,7 @@ export function RunTable({ runs: initialRuns }: { runs: RunSummary[] }) {
   }, [runs, hostAliases]);
 
   const filtered = runs.filter((r) => {
+    if (hidePaused && isPausedLike(r.status)) return false;
     const hay = `${r.runId} ${r.name} ${r.host ?? ""} ${r.machineId ?? ""} ${r.tags.join(" ")} ${r.progress?.label ?? ""}`.toLowerCase();
     if (q && !hay.includes(q.toLowerCase())) return false;
     if (tag && !r.tags.includes(tag)) return false;
@@ -174,7 +268,16 @@ export function RunTable({ runs: initialRuns }: { runs: RunSummary[] }) {
   });
 
   const runningCount = runs.filter((r) => r.status === "running").length;
+  const localFailed = runs.filter(
+    (r) => r.status === "failed" && (r.local === true || r.host === localAlias || !r.host),
+  ).length;
+  const localPaused = runs.filter(
+    (r) => isPausedLike(r.status) && (r.local === true || r.host === localAlias || !r.host),
+  ).length;
   const errorHosts = Object.keys(fleetErrors);
+  const hiddenPaused = hidePaused
+    ? runs.filter((r) => isPausedLike(r.status)).length
+    : 0;
 
   return (
     <div className="stack">
@@ -209,6 +312,47 @@ export function RunTable({ runs: initialRuns }: { runs: RunSummary[] }) {
           />
           Fleet
         </label>
+        <label className="muted" style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          <input
+            type="checkbox"
+            checked={hidePaused}
+            onChange={(e) => setHidePaused(e.target.checked)}
+          />
+          Hide paused
+          {hiddenPaused > 0 ? ` (${hiddenPaused})` : ""}
+        </label>
+        <button
+          type="button"
+          className="btn btn-ghost"
+          disabled={busy || !jobsAllowed || localFailed === 0}
+          onClick={() => {
+            if (!window.confirm(`Delete ${localFailed} local failed run(s)? (directories removed)`)) {
+              return;
+            }
+            void deleteRuns({ failed: true });
+          }}
+          title="Remove local failed experiment directories"
+        >
+          Delete failed
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost"
+          disabled={busy || !jobsAllowed || localPaused === 0}
+          onClick={() => {
+            if (
+              !window.confirm(
+                `Delete ${localPaused} local paused run(s)? (Pause leftovers after Resume)`,
+              )
+            ) {
+              return;
+            }
+            void deleteRuns({ paused: true });
+          }}
+          title="Remove local paused/stop leftovers"
+        >
+          Delete paused
+        </button>
         <span className="muted">
           {filtered.length} / {runs.length}
         </span>
@@ -217,6 +361,9 @@ export function RunTable({ runs: initialRuns }: { runs: RunSummary[] }) {
         ) : null}
         {updatedAt ? <span className="muted">updated {updatedAt}</span> : null}
       </div>
+
+      {error ? <p className="error small">{error}</p> : null}
+      {msg ? <p className="muted mono small">{msg}</p> : null}
 
       {errorHosts.length > 0 ? (
         <p className="error small">
@@ -242,12 +389,15 @@ export function RunTable({ runs: initialRuns }: { runs: RunSummary[] }) {
               <th>Eps</th>
               <th>Flags</th>
               <th>Tags</th>
+              <th />
             </tr>
           </thead>
           <tbody>
             {filtered.map((r) => {
               const host = r.host || r.machineId || "—";
+              const isLocal = r.local === true || host === localAlias || !r.host;
               const canOpen = r.local !== false;
+              const canDelete = isLocal && DELETABLE_STATUSES.has(r.status);
               return (
                 <tr
                   key={`${host}:${r.runId}`}
@@ -298,13 +448,38 @@ export function RunTable({ runs: initialRuns }: { runs: RunSummary[] }) {
                       </span>
                     ))}
                   </td>
+                  <td className="row-actions">
+                    {canDelete ? (
+                      <button
+                        type="button"
+                        className="btn btn-tiny"
+                        disabled={busy || !jobsAllowed}
+                        onClick={() => {
+                          if (
+                            !window.confirm(
+                              `Delete run ${r.runId.slice(0, 24)}…? (directory removed)`,
+                            )
+                          ) {
+                            return;
+                          }
+                          void deleteRuns({ runId: r.runId });
+                        }}
+                        title="Delete experiment directory"
+                      >
+                        Delete
+                      </button>
+                    ) : null}
+                  </td>
                 </tr>
               );
             })}
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={8} className="muted">
+                <td colSpan={9} className="muted">
                   No runs match.
+                  {hidePaused && hiddenPaused > 0
+                    ? ` (${hiddenPaused} paused hidden — uncheck “Hide paused”)`
+                    : ""}
                 </td>
               </tr>
             ) : null}

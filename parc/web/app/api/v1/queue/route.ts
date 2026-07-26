@@ -40,6 +40,8 @@ export async function GET(request: Request) {
  *   { "action": "recover-stale", "maxAgeSec"?: number, "mode"?: "requeue"|"fail" }
  *   { "action": "requeue", "jobId": "..." }
  *   { "action": "resume", "runId": "...", "mode"?: "auto"|"eval"|"train" }
+ *   { "action": "cancel"|"pause", "jobId": "..." }  // running ならプロセス停止+cancelled
+ *   { "action": "delete", "jobId"?: "...", "failed"?: true, "cancelled"?: true, "done"?: true }
  */
 export async function POST(request: Request) {
   if (!jobsAllowed()) {
@@ -55,6 +57,9 @@ export async function POST(request: Request) {
     maxAgeSec?: number;
     mode?: string;
     notes?: string;
+    failed?: boolean;
+    cancelled?: boolean;
+    done?: boolean;
   };
   const action = body.action;
   if (!action) {
@@ -81,6 +86,24 @@ export async function POST(request: Request) {
     }
     args = ["resume", body.runId, "--mode", body.mode ?? "auto"];
     if (body.notes) args.push("--notes", body.notes);
+  } else if (action === "cancel" || action === "pause") {
+    if (!body.jobId) {
+      return NextResponse.json({ error: "jobId required" }, { status: 400 });
+    }
+    args = ["cancel", body.jobId];
+  } else if (action === "delete") {
+    // 終端ジョブのみ。run ディレクトリは残す（parc-queue delete）
+    args = ["delete"];
+    if (body.jobId) args.push(body.jobId);
+    if (body.failed) args.push("--failed");
+    if (body.cancelled) args.push("--cancelled");
+    if (body.done) args.push("--done");
+    if (!body.jobId && !body.failed && !body.cancelled && !body.done) {
+      return NextResponse.json(
+        { error: "jobId or failed/cancelled/done required" },
+        { status: 400 },
+      );
+    }
   } else {
     return NextResponse.json({ error: `unknown action: ${action}` }, { status: 400 });
   }

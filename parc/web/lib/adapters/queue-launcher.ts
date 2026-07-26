@@ -198,22 +198,15 @@ export class QueueJobLauncher implements JobLauncher {
   }
 
   async cancel(jobId: string): Promise<JobHandle | null> {
-    const job = readSnapshot(jobId);
-    if (!job) return null;
-    // スナップショットを cancelled に書き換え（worker は running のみ実行）
-    const rawPath = jobSnapshotPath(jobId);
+    const { runParcQueue, parseJsonOutput } = await import("@/lib/parc-queue");
+    const res = runParcQueue(["cancel", jobId]);
+    if (!res.ok) {
+      throw new Error(res.stderr || res.stdout || "parc-queue cancel failed");
+    }
     try {
-      const raw = JSON.parse(fs.readFileSync(rawPath, "utf8")) as Record<string, unknown>;
-      if (raw.status === "queued") {
-        raw.status = "cancelled";
-        raw.updated_at = nowIso();
-        fs.writeFileSync(rawPath, JSON.stringify(raw, null, 2));
-        // queue.jsonl にも追記（Python update と同等の最低限）
-        const qpath = path.join(queueDir(), "queue.jsonl");
-        fs.appendFileSync(qpath, JSON.stringify(raw) + "\n");
-      }
+      parseJsonOutput(res.stdout);
     } catch {
-      /* ignore */
+      /* ignore parse; snapshot below */
     }
     return readSnapshot(jobId);
   }

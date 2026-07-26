@@ -196,7 +196,7 @@ uv run parc-remote thor queue requeue <job_id>
 ```bash
 uv run parc-remote thor --tunnel
 # → ssh -N -L 3030:127.0.0.1:3030 ...
-uv run parc-remote pc2 --tunnel
+uv run parc-remote nuc --tunnel
 # hosts.yaml の local_web_port: 3031 なら
 # → http://127.0.0.1:3030 と :3031 で両マシンの UI
 ```

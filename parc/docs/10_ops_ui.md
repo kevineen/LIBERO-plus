@@ -6,8 +6,8 @@ PARC Lab Web（`:3030`）から実験・キュー・再開・ドキュメント�
 
 | ページ | 用途 |
 |--------|------|
-| **Runs** `/` | 実験一覧・成功率（SR）・**Progress**（train step% / eval）・タグフィルタ |
-| **Jobs / Queue** `/#jobs` | 投入・取消・再投入・stale 回収・進捗 |
+| **Runs** `/` | 実験一覧・SR・Progress・**Hide paused**・**Delete failed / Delete paused** |
+| **Jobs / Queue** `/#jobs` | 投入・取消・再投入・キュー削除・stale 回収・進捗 |
 | **Docs** `/docs` | 本マニュアル群の閲覧 |
 | Run 詳細 `/runs/<id>` | metrics・config・動画・**Resume** |
 
@@ -27,35 +27,54 @@ SSH トンネル例: `ssh -L 3030:127.0.0.1:3030 user@host`
 ## キュー操作（UI）
 
 1. **Launch** — 設定 YAML を選んで `train` / `eval` をキューへ（即実行ではない）
-2. **Cancel** — `queued` のみ取消可
-3. **Requeue** — `failed` / `cancelled` / `succeeded` を同じ設定で再投入（紐づく run があれば resume ヒント付き）
-4. **Recover stale** — 長時間 `running` のままのジョブを失敗扱いにし、中身を再キュー
-5. **進捗** — `phase`（train / eval / done）と紐づく `run_id`・SR を 5 秒ポーリング
+2. **Cancel** — `queued` のみ取消
+3. **Pause** — `running` の学習/評価プロセスを止め GPU を解放。ジョブは `cancelled`、ckpt / run は残る
+4. **Requeue** — `failed` / `cancelled` / `succeeded` を同じ設定で再投入
+5. **Delete** — `failed` / `cancelled` / `done` をキューから削除（**run ディレクトリは残す**）。行の Delete または **Delete failed (local)**
+6. **Resume** — 紐づく run の最新 ckpt から続き（Pause 後の再開はこれ）
+7. **Recover stale** — 長時間 `running` のままのジョブを失敗扱いにし、中身を再キュー
+8. **進捗** — `phase`（train / eval / done / paused）と紐づく `run_id`・SR をポーリング
 
 CLI 同等:
 
 ```bash
 uv run parc-queue status
+uv run parc-queue cancel <job_id>   # running ならプロセス kill + cancelled（Pause）
 uv run parc-queue requeue <job_id>
-uv run parc-queue recover-stale --max-age-sec 3600
+uv run parc-queue delete --failed   # 失敗ジョブをキューから削除
+uv run parc-queue delete <job_id>
 uv run parc-queue resume <run_id> --mode auto
+uv run parc-queue recover-stale --max-age-sec 3600
 ```
+
+Pause 後の再開例（mainpc / winpc）:
+
+```bash
+uv run parc-queue resume <run_id> --mode train   # 学習続き
+# または UI の Resume
+```
+
+※ Pause を効かせるには `parc-worker` が新しいコードで動いていること（PID ファイルを書く版）。古いワーカーは再起動してください。
 
 ## 途中停止からの再開
 
 | 状況 | やること |
 |------|----------|
 | ワーカーが落ちた・`running` のまま | UI の **Recover stale** または `parc-queue recover-stale` |
+| GPU を空けたい（指定ジョブ） | Jobs の **Pause** または `parc-queue cancel <job_id>` → あとで **Resume** |
 | train 済み・eval 未完了 | Run 詳細の **Resume (auto)** → eval ジョブ |
 | GRPO/GSPO を ckpt から続けたい | **Resume (train)** → `init_policy_path` 付きで再学習 |
 | 失敗ジョブを同じ設定で | **Requeue** |
+| 失敗ジョブを一覧から消す | Jobs の **Delete** / **Delete failed**（run は残る） |
+| 失敗・Pause 残骸の **run** を消す | Runs の **Delete failed** / **Delete paused** / 行の Delete |
+| Pause 済み run を隠す | Runs の **Hide paused**（デフォルト ON） |
 
 ※ LeRobot のステップ完全 resume はバックエンド依存です。GRPO は `init_policy_path` で方策を引き継ぎます。
 
 ## スコアの見方
 
 - Runs 表の **SR** = `metrics.json` の `success_rate`
-- Runs / Jobs の **Progress** = 学習 step（`train 1234/50000`）とバー。学習中は約 5 秒更新
+- Runs / Jobs の **Progress** = 学習 step（`train 1234/50000`）とバー。Fleet モードでも queue 進捗を合流して表示
 - 詳細の **by_category** = 摂動カテゴリ別
 - Queue パネルの **Top scores** = 最近ジョブに紐づく SR 上位
 - prune は `keep_best`（SR）を優先して残す

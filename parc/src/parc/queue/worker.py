@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import signal
 import subprocess
 import time
 from pathlib import Path
@@ -16,9 +17,10 @@ from parc.config import load_yaml
 from parc.disk.budget import check_budget, get_disk_budget
 from parc.disk.prune import prune_experiments
 from parc.paths import PARC_ROOT, apply_runtime_env, get_paths
-from parc.queue.store import QueueJob, claim_next, update_job, write_job_config
+from parc.queue.store import QueueJob, claim_next, list_jobs, update_job, write_job_config
 from parc.tracking.run import update_run_meta
 from parc.queue.ops import write_progress
+from parc.queue.process import clear_pid, write_pid
 
 
 def _find_latest_checkpoint(run_dir: Path) -> Path | None:
@@ -80,18 +82,64 @@ def _trim_intermediate_checkpoints(run_dir: Path, keep_last: int = 1) -> None:
         shutil.rmtree(p, ignore_errors=True)
 
 
-def _run_script(script: str, config: Path, extra: list[str] | None = None) -> subprocess.CompletedProcess[str]:
+def _job_cancelled(job_id: str) -> bool:
+    for j in list_jobs(limit=2000):
+        if j.job_id == job_id:
+            return j.status == "cancelled"
+    return False
+
+
+def _run_script(
+    script: str,
+    config: Path,
+    extra: list[str] | None = None,
+    *,
+    job_id: str | None = None,
+) -> subprocess.CompletedProcess[str]:
     cmd = ["bash", str(PARC_ROOT / "scripts" / script), str(config)]
     if extra:
         cmd.extend(extra)
-    return subprocess.run(
+    if job_id is None:
+        return subprocess.run(
+            cmd,
+            cwd=str(PARC_ROOT),
+            capture_output=True,
+            text=True,
+            check=False,
+            env=os.environ.copy(),
+        )
+    proc = subprocess.Popen(
         cmd,
         cwd=str(PARC_ROOT),
-        capture_output=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
         text=True,
-        check=False,
+        start_new_session=True,
         env=os.environ.copy(),
     )
+    write_pid(job_id, proc.pid)
+    chunks: list[str] = []
+    try:
+        assert proc.stdout is not None
+        for line in proc.stdout:
+            chunks.append(line)
+            if _job_cancelled(job_id):
+                try:
+                    os.killpg(proc.pid, signal.SIGTERM)
+                except OSError:
+                    proc.kill()
+                break
+        rc = proc.wait()
+    except Exception:
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except OSError:
+            proc.kill()
+        raise
+    finally:
+        clear_pid(job_id)
+    return subprocess.CompletedProcess(cmd, rc, stdout="".join(chunks), stderr="")
+
 
 
 _STEP_RE = re.compile(
@@ -195,9 +243,12 @@ def _run_train_with_progress(
         stderr=subprocess.STDOUT,
         text=True,
         bufsize=1,
+        start_new_session=True,
         env=os.environ.copy(),
     )
+    write_pid(job_id, proc.pid)
     assert proc.stdout is not None
+    cancelled = False
     try:
         for line in proc.stdout:
             chunks.append(line)
@@ -215,10 +266,22 @@ def _run_train_with_progress(
             if t is not None and t > 0:
                 total = t
             _flush_progress()
+            if _job_cancelled(job_id):
+                cancelled = True
+                try:
+                    os.killpg(proc.pid, signal.SIGTERM)
+                except OSError:
+                    proc.kill()
+                break
         rc = proc.wait()
     except Exception:
-        proc.kill()
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except OSError:
+            proc.kill()
         raise
+    finally:
+        clear_pid(job_id)
     text = "".join(chunks)
     log_path.write_text(text)
     if run_dir is None:
@@ -229,6 +292,9 @@ def _run_train_with_progress(
             step = ck if step is None else max(step, ck)
         update_job(job_id, run_id=run_dir.name)
     _flush_progress(force=True)
+    if cancelled or _job_cancelled(job_id):
+        # 負の rc で Pause を downstream に伝える
+        return subprocess.CompletedProcess(cmd, -15, stdout=text, stderr="")
     return subprocess.CompletedProcess(cmd, rc, stdout=text, stderr="")
 
 
@@ -395,6 +461,21 @@ def execute_job(job: QueueJob) -> dict[str, Any]:
         )
         log_path = get_paths()["experiments_dir"] / "queue" / f"{job.job_id}.log"
         run_dir = _parse_run_dir_from_output((proc.stdout or "") + (proc.stderr or ""))
+        if _job_cancelled(job.job_id) or proc.returncode == -15:
+            write_progress(job.job_id, phase="paused", run_id=run_dir.name if run_dir else None)
+            # cancel_job が既に cancelled にしている。上書きで failed にしない
+            if run_dir is not None:
+                update_job(job.job_id, run_id=run_dir.name)
+                try:
+                    update_run_meta(run_dir, status="paused")
+                except Exception:
+                    pass
+            return {
+                "status": "cancelled",
+                "phase": "train",
+                "run_id": run_dir.name if run_dir else None,
+                "log": str(log_path),
+            }
         if proc.returncode != 0 or run_dir is None:
             write_progress(job.job_id, phase="train_failed", returncode=proc.returncode)
             update_job(
@@ -437,6 +518,7 @@ def execute_job(job: QueueJob) -> dict[str, Any]:
             "eval_ckpt.sh",
             Path(run_dir / "config.yaml"),
             ["--run-dir", str(run_dir)],
+            job_id=job.job_id,
         )
         log_path.write_text(
             log_path.read_text()
@@ -445,6 +527,14 @@ def execute_job(job: QueueJob) -> dict[str, Any]:
             + "\n"
             + (eval_proc.stderr or "")
         )
+        if _job_cancelled(job.job_id) or eval_proc.returncode == -15:
+            write_progress(job.job_id, phase="paused", run_id=run_dir.name)
+            if run_dir is not None:
+                try:
+                    update_run_meta(run_dir, status="paused")
+                except Exception:
+                    pass
+            return {"status": "cancelled", "phase": "eval", "run_id": run_dir.name}
         if eval_proc.returncode != 0:
             write_progress(job.job_id, phase="eval_failed", run_id=run_dir.name)
             update_job(
@@ -483,10 +573,13 @@ def execute_job(job: QueueJob) -> dict[str, Any]:
 
     if job.kind == "eval":
         write_progress(job.job_id, phase="eval", kind="eval")
-        proc = _run_script("eval_ckpt.sh", cfg_path)
+        proc = _run_script("eval_ckpt.sh", cfg_path, job_id=job.job_id)
         log_path = get_paths()["experiments_dir"] / "queue" / f"{job.job_id}.log"
         log_path.write_text((proc.stdout or "") + "\n" + (proc.stderr or ""))
         run_dir = _parse_run_dir_from_output((proc.stdout or "") + (proc.stderr or ""))
+        if _job_cancelled(job.job_id) or proc.returncode == -15:
+            write_progress(job.job_id, phase="paused", run_id=run_dir.name if run_dir else None)
+            return {"status": "cancelled", "phase": "eval"}
         if proc.returncode != 0:
             write_progress(job.job_id, phase="eval_failed", returncode=proc.returncode)
             update_job(job.job_id, status="failed", error=f"eval rc={proc.returncode}")
@@ -525,7 +618,9 @@ def run_worker_once(
         result = {"status": "failed", "error": str(e)}
         if failure_count is not None:
             failure_count[0] += 1
-    # 完了通知（失敗してもワーカーは継続）
+    # 完了通知（失敗してもワーカーは継続）。Pause/Cancel は通知しない
+    if result.get("status") == "cancelled":
+        return job
     try:
         import importlib
 

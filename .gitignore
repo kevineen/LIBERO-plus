@@ -29,3 +29,5 @@ parc/configs/hosts.yaml
 parc/.env
 parc/.env.local
 parc/.env.*.local
+
+study/notebook/

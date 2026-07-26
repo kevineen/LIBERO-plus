@@ -366,16 +366,36 @@ def _resolve_job_id(job_id: str) -> str:
     raise KeyError(f"unknown job_id: {job_id}")
 
 
-def cancel_job(job_id: str) -> QueueJob:
-    """queued ジョブを cancelled にする。running はワーカー停止が別途必要。"""
+def cancel_job(job_id: str, *, pause: bool = True) -> QueueJob:
+    """queued / running ジョブを cancelled にする。
+
+    running の場合は PID ファイルのプロセスツリーを kill し GPU を解放する。
+    run ディレクトリと ckpt は残るので、UI の Resume で続きから再開できる。
+    """
+    from parc.queue.process import kill_job_process
+    from parc.tracking.run import update_run_meta
+
     job_id = _resolve_job_id(job_id)
     job = next(j for j in list_jobs(limit=2000) if j.job_id == job_id)
     if job.status == "running":
-        return update_job(
-            job_id,
-            status="cancelled",
-            error="cancelled while running (kill worker / train process if still alive)",
-        )
+        kill_info = kill_job_process(job_id)
+        note = "paused by user (process stopped; use Resume to continue)" if pause else "cancelled by user"
+        if not kill_info.get("killed") and kill_info.get("reason") not in {
+            "not_alive",
+            "gone",
+            "no_pid_file",
+        }:
+            note = f"{note}; kill={kill_info}"
+        updated = update_job(job_id, status="cancelled", error=note)
+        if job.run_id:
+            run = _run_dir(job.run_id)
+            if run is not None:
+                try:
+                    update_run_meta(run, status="paused", notes=note)
+                except Exception:
+                    pass
+        write_progress(job_id, phase="paused", run_id=job.run_id, kill=kill_info)
+        return updated
     if job.status != "queued":
         raise ValueError(f"cannot cancel status={job.status} (only queued/running)")
     return update_job(job_id, status="cancelled", error="cancelled by user")
