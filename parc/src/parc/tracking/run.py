@@ -174,3 +174,108 @@ def update_run_meta(run_dir: Path, **kwargs: Any) -> RunMeta:
     meta_path.write_text(json.dumps(asdict(meta), indent=2, ensure_ascii=False))
     append_registry(meta)
     return meta
+
+
+def _rewrite_registry(keep: dict[str, RunMeta]) -> None:
+    """registry.jsonl を keep の内容だけに書き直す（作成時刻順）。"""
+    path = registry_path()
+    rows = sorted(keep.values(), key=lambda m: m.created_at or m.run_id)
+    tmp = path.with_suffix(".jsonl.tmp")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tmp.open("w") as f:
+        for meta in rows:
+            f.write(json.dumps(asdict(meta), ensure_ascii=False) + "\n")
+    tmp.replace(path)
+
+
+def delete_runs(
+    *,
+    run_ids: list[str] | None = None,
+    statuses: list[str] | None = None,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    """実験ディレクトリを削除し registry から除去する。
+
+    run_ids と statuses のどちらか（または両方＝積集合）を指定する。
+    queued/running 相当の status=running は誤削除防止のため除外（明示 ID 指定時は許可）。
+    """
+    exp_dir = get_paths()["experiments_dir"]
+    latest = {r.run_id: r for r in list_registry(limit=None)}
+    # ディレクトリだけある orphan も拾う
+    if exp_dir.is_dir():
+        for d in exp_dir.iterdir():
+            if not d.is_dir() or d.name in {"queue"} or d.name in latest:
+                continue
+            meta_path = d / "meta.json"
+            if meta_path.is_file():
+                try:
+                    known = {f.name for f in RunMeta.__dataclass_fields__.values()}  # type: ignore[attr-defined]
+                    raw = json.loads(meta_path.read_text())
+                    latest[d.name] = RunMeta(**{k: v for k, v in raw.items() if k in known})
+                except Exception:
+                    latest[d.name] = RunMeta(
+                        run_id=d.name,
+                        name=d.name,
+                        created_at="",
+                        config_path="",
+                        status="unknown",
+                    )
+
+    status_filter = {s.strip() for s in (statuses or []) if s.strip()}
+    selected: list[str] = []
+
+    if run_ids:
+        for rid in run_ids:
+            rid = rid.strip()
+            if not rid:
+                continue
+            if rid in latest:
+                match = rid
+            else:
+                matches = [k for k in latest if k.startswith(rid)]
+                if len(matches) == 1:
+                    match = matches[0]
+                elif len(matches) > 1:
+                    raise KeyError(f"ambiguous run_id prefix {rid!r}: {matches[:5]}")
+                else:
+                    # ディレクトリ実体だけある場合
+                    if (exp_dir / rid).is_dir():
+                        match = rid
+                        latest.setdefault(
+                            rid,
+                            RunMeta(
+                                run_id=rid,
+                                name=rid,
+                                created_at="",
+                                config_path="",
+                                status="unknown",
+                            ),
+                        )
+                    else:
+                        raise KeyError(f"unknown run_id: {rid}")
+            meta = latest[match]
+            if status_filter and meta.status not in status_filter:
+                continue
+            # ステータス一括削除時は running を守る（ID 明示なら消せる）
+            selected.append(match)
+    else:
+        if not status_filter:
+            raise ValueError("run_ids か statuses のどちらかが必要です")
+        for rid, meta in latest.items():
+            if meta.status in status_filter:
+                selected.append(rid)
+
+    selected = list(dict.fromkeys(selected))
+    if dry_run:
+        return {"deleted": selected, "count": len(selected), "dry_run": True}
+
+    deleted: list[str] = []
+    for rid in selected:
+        run_dir = exp_dir / rid
+        if run_dir.is_dir():
+            shutil.rmtree(run_dir)
+        latest.pop(rid, None)
+        deleted.append(rid)
+
+    _rewrite_registry(latest)
+    return {"deleted": deleted, "count": len(deleted), "dry_run": False}

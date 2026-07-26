@@ -207,6 +207,54 @@ def list_jobs(limit: int = 50) -> list[QueueJob]:
     return rows[:limit]
 
 
+def _remove_job_sidecars(job_id: str) -> list[str]:
+    """キュー付帯ファイルを削除し、消したパス一覧を返す（run ディレクトリは触らない）。"""
+    qdir = queue_dir()
+    removed: list[str] = []
+    for path in (
+        qdir / f"{job_id}.json",
+        qdir / f"{job_id}.log",
+        qdir / f"{job_id}.progress.json",
+        qdir / "configs" / f"{job_id}.yaml",
+    ):
+        if path.is_file():
+            path.unlink()
+            removed.append(str(path))
+    return removed
+
+
+def delete_jobs(
+    job_ids: list[str] | set[str],
+    *,
+    remove_sidecars: bool = True,
+) -> list[str]:
+    """指定 job_id をキューから除去し JSONL を最新状態だけに圧縮する。
+
+    experiments/<run_id>/ は削除しない（キュー履歴とログのみ）。
+    """
+    targets = {jid for jid in job_ids if jid}
+    if not targets:
+        return []
+    deleted: list[str] = []
+    with _FileLock(lock_path()):
+        latest = _read_all_locked()
+        deleted = sorted(jid for jid in targets if jid in latest)
+        if not deleted:
+            return []
+        remaining = [j for jid, j in latest.items() if jid not in set(deleted)]
+        remaining.sort(key=lambda j: j.created_at)
+        path = queue_path()
+        tmp = path.with_suffix(".jsonl.tmp")
+        with tmp.open("w") as f:
+            for job in remaining:
+                f.write(json.dumps(asdict(job), ensure_ascii=False) + "\n")
+        tmp.replace(path)
+    if remove_sidecars:
+        for jid in deleted:
+            _remove_job_sidecars(jid)
+    return deleted
+
+
 def write_job_config(job: QueueJob) -> Path:
     """ジョブの設定を queue/configs/ に実体化しパスを返す。"""
     cfg_dir = queue_dir() / "configs"

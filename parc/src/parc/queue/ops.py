@@ -117,10 +117,125 @@ def _metrics_summary(run_dir: Path) -> dict[str, Any] | None:
     }
 
 
+def _parse_run_started(run_id: str | None) -> datetime | None:
+    """run_id 先頭の UTC 時刻（YYYYMMDDTHHMMSSZ_...）を開始時刻として使う。"""
+    if not run_id:
+        return None
+    head = run_id.split("_", 1)[0]
+    if len(head) < 16 or not head.endswith("Z"):
+        return None
+    try:
+        return datetime.strptime(head, "%Y%m%dT%H%M%SZ").replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
+
+
+def _train_total_from_run(run_dir: Path | None) -> int | None:
+    if run_dir is None:
+        return None
+    for name in ("config.yaml", "config.source.yaml"):
+        p = run_dir / name
+        if not p.is_file():
+            continue
+        try:
+            cfg = load_yaml(p)
+        except Exception:
+            continue
+        train = cfg.get("train") if isinstance(cfg, dict) else None
+        if not isinstance(train, dict):
+            continue
+        for key in ("steps", "updates"):
+            v = train.get(key)
+            if isinstance(v, int) and v > 0:
+                return v
+            if isinstance(v, float) and v > 0:
+                return int(v)
+    return None
+
+
+def estimate_eta(
+    *,
+    step: int | None,
+    total_steps: int | None,
+    started_at: str | datetime | None,
+    run_id: str | None = None,
+    now: datetime | None = None,
+) -> dict[str, Any]:
+    """step/total と開始時刻から残り時間・終了時刻を推定する。"""
+    if step is None or total_steps is None:
+        return {}
+    try:
+        step_i = int(step)
+        total_i = int(total_steps)
+    except (TypeError, ValueError):
+        return {}
+    # 誤パース（例: 4/83）を除外。本学習は通常数千 step 以上
+    if step_i <= 0 or total_i <= step_i:
+        return {}
+    if total_i < 500 and step_i < 100:
+        return {}
+
+    now_dt = now or datetime.now(timezone.utc)
+    start_dt: datetime | None = None
+    if isinstance(started_at, datetime):
+        start_dt = started_at
+    elif isinstance(started_at, str) and started_at:
+        start_dt = _parse_iso(started_at)
+    if start_dt is None:
+        start_dt = _parse_run_started(run_id)
+    if start_dt is None:
+        return {}
+    if start_dt.tzinfo is None:
+        start_dt = start_dt.replace(tzinfo=timezone.utc)
+
+    elapsed = (now_dt - start_dt).total_seconds()
+    if elapsed < 60:
+        return {"started_at": start_dt.isoformat()}
+    sec_per_step = elapsed / step_i
+    remain = (total_i - step_i) * sec_per_step
+    # 異常値ガード（1 step が 1 時間超、または残り 30 日超）
+    if sec_per_step > 3600 or remain > 30 * 24 * 3600:
+        return {"started_at": start_dt.isoformat(), "sec_per_step": round(sec_per_step, 3)}
+    eta_at = now_dt.timestamp() + remain
+    eta_dt = datetime.fromtimestamp(eta_at, tz=timezone.utc)
+    return {
+        "started_at": start_dt.isoformat(),
+        "sec_per_step": round(sec_per_step, 3),
+        "eta_sec": int(remain),
+        "eta_at": eta_dt.isoformat(),
+    }
+
+
 def enrich_job(job: QueueJob) -> dict[str, Any]:
     """UI 向けに進捗・スコアを付けた dict。"""
-    prog = read_progress(job.job_id) or {}
-    run = _run_dir(job.run_id)
+    prog = dict(read_progress(job.job_id) or {})
+    run = _run_dir(job.run_id or prog.get("run_id"))
+    # total_steps がログ誤パースで小さいとき config を優先
+    cfg_total = _train_total_from_run(run)
+    try:
+        prog_total = int(prog["total_steps"]) if prog.get("total_steps") is not None else None
+    except (TypeError, ValueError):
+        prog_total = None
+    if cfg_total and (prog_total is None or prog_total < 1000 or (
+        prog.get("step") is not None and int(prog["step"]) > prog_total
+    )):
+        prog["total_steps"] = cfg_total
+        try:
+            st = int(prog["step"]) if prog.get("step") is not None else None
+        except (TypeError, ValueError):
+            st = None
+        if st is not None and cfg_total > 0:
+            prog["percent"] = max(0, min(100, round(100.0 * st / cfg_total)))
+
+    eta = estimate_eta(
+        step=prog.get("step") if isinstance(prog.get("step"), (int, float)) else None,
+        total_steps=prog.get("total_steps") if isinstance(prog.get("total_steps"), (int, float)) else None,
+        started_at=prog.get("started_at"),
+        run_id=prog.get("run_id") or job.run_id,
+    )
+    if eta:
+        prog.update(eta)
+
     metrics = _metrics_summary(run) if run else None
     rl = _rl_tail(run) if run else None
     age = _age_sec(job.updated_at)
@@ -151,7 +266,11 @@ def queue_status(*, limit: int = 50, stale_after_sec: float = 3600) -> dict[str,
     """キュー全体の状況サマリ。"""
     jobs = list_jobs(limit=limit)
     enriched = []
+    seen: set[str] = set()
     for j in jobs:
+        if j.job_id in seen:
+            continue
+        seen.add(j.job_id)
         row = enrich_job(j)
         age = row.get("age_sec")
         row["stale"] = j.status == "running" and age is not None and age > stale_after_sec
@@ -260,6 +379,59 @@ def cancel_job(job_id: str) -> QueueJob:
     if job.status != "queued":
         raise ValueError(f"cannot cancel status={job.status} (only queued/running)")
     return update_job(job_id, status="cancelled", error="cancelled by user")
+
+
+# 削除可能な終端ステータス（queued / running は cancel を使う）
+_DELETABLE_STATUSES = frozenset({"failed", "cancelled", "done", "succeeded"})
+
+
+def delete_jobs(
+    *,
+    job_ids: list[str] | None = None,
+    statuses: list[str] | None = None,
+    remove_sidecars: bool = True,
+) -> dict[str, Any]:
+    """終端ジョブをキュー一覧から削除する（run ディレクトリは残す）。
+
+    job_ids と statuses のどちらか（または両方）を指定する。
+    両方指定時は積集合（指定 ID かつ指定 status）。
+    """
+    from parc.queue.store import delete_jobs as store_delete_jobs
+
+    if not job_ids and not statuses:
+        raise ValueError("job_ids か statuses のどちらかが必要です")
+
+    status_filter = {s.strip() for s in (statuses or []) if s.strip()}
+    if status_filter - _DELETABLE_STATUSES:
+        bad = sorted(status_filter - _DELETABLE_STATUSES)
+        raise ValueError(f"cannot delete status={bad} (only {sorted(_DELETABLE_STATUSES)})")
+
+    jobs = {j.job_id: j for j in list_jobs(limit=5000)}
+    selected: list[str] = []
+
+    if job_ids:
+        for raw in job_ids:
+            jid = _resolve_job_id(raw)
+            job = jobs[jid]
+            if job.status not in _DELETABLE_STATUSES:
+                raise ValueError(
+                    f"cannot delete {jid} status={job.status} "
+                    f"(only {sorted(_DELETABLE_STATUSES)}; use cancel for queued/running)"
+                )
+            if status_filter and job.status not in status_filter:
+                continue
+            selected.append(jid)
+    else:
+        selected = [j.job_id for j in jobs.values() if j.status in status_filter]
+
+    # 安定したユニーク順
+    selected = list(dict.fromkeys(selected))
+    deleted = store_delete_jobs(selected, remove_sidecars=remove_sidecars)
+    return {
+        "deleted": deleted,
+        "count": len(deleted),
+        "remove_sidecars": remove_sidecars,
+    }
 
 
 def requeue_job(job_id: str, *, resume_run: bool = True) -> QueueJob:
