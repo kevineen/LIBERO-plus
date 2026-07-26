@@ -4,21 +4,27 @@
 # 使い方:
 #   uv run parc-remote --list-hosts
 #   uv run parc-remote thor queue status
-#   uv run parc-remote thor enqueue -c configs/experiments/smoke_random.yaml
-#   uv run parc-remote thor queue cancel <job_id>
-#   uv run parc-remote thor queue resume <run_id> --mode train
+#   uv run parc-remote nuc enqueue -c configs/experiments/smoke_random.yaml
 #   uv run parc-remote thor --tunnel    # Web UI トンネルコマンド表示
+#   uv run parc-fleet hosts|runs|queue  # 横断集約（ハブ）
 #
 # 前提: 公開鍵 SSH（BatchMode）と、リモートに uv / parc が入っていること。
+# Fleet ハブに載せるマシンはすべてここに列挙する（自マシンは local として自動追加）。
 
 hosts:
+  # このマシンを明示したい場合（任意・alias は PARC_MACHINE_ID と揃える）
+  # pc2:
+  #   ssh: kevin@127.0.0.1
+  #   parc_dir: /home/kevin/Matsuo/robot/LIBERO-plus/parc
+  #   web_port: 3030
+  #   local_web_port: 3030
   thor:
     ssh: kevin@192.168.11.5
     parc_dir: /home/kevin/Matsuo/robot/LIBERO-plus/parc
     web_port: 3030
     local_web_port: 3030
-  # pc2:
-  #   ssh: kevin@192.168.11.20
-  #   parc_dir: /home/kevin/Matsuo/robot/LIBERO-plus/parc
-  #   web_port: 3030
-  #   local_web_port: 3031   # 手元で両 UI を同時に開くときポートをずらす
+  nuc:
+    ssh: kevin@100.82.118.86
+    parc_dir: /home/kevin/Matsuo/LIBERO-plus/parc
+    web_port: 3030
+    local_web_port: 3031   # 手元で両 UI を同時に開くときポートをずらす

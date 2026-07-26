@@ -19,6 +19,7 @@ LIBERO-Plus: In-depth Robustness Analysis of Vision-Language-Action Models
 
 ```bash
 cd parc && bash scripts/setup_env.sh && uv run parc-smoke --skip-env
+# 複数 PC / Fleet: docs → parc/docs/11_multi_machine.md
 ```
 
 詳細は [`parc/README.md`](./parc/README.md) と [`parc/docs/`](./parc/docs/) を参照してください。

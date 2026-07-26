@@ -131,9 +131,34 @@ def list_runs(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="parc-list")
     parser.add_argument("--limit", type=int, default=20)
     parser.add_argument("--sweep-id", default=None, help="スイープ ID でフィルタ")
+    parser.add_argument("--json", action="store_true", help="機械可読 JSON を出力")
     args = parser.parse_args(argv)
     apply_runtime_env()
     rows = list_registry(limit=args.limit, sweep_id=args.sweep_id)
+    if args.json:
+        payload = []
+        for r in rows:
+            sr = None
+            if r.metrics and "success_rate" in r.metrics:
+                try:
+                    sr = float(r.metrics["success_rate"])
+                except (TypeError, ValueError):
+                    sr = r.metrics["success_rate"]
+            payload.append(
+                {
+                    "run_id": r.run_id,
+                    "machine_id": r.machine_id or "",
+                    "name": r.name,
+                    "status": r.status,
+                    "success_rate": sr,
+                    "tags": list(r.tags),
+                    "sweep_id": r.sweep_id or "",
+                    "created_at": r.created_at,
+                    "notes": r.notes or "",
+                }
+            )
+        console.print_json(json.dumps(payload, ensure_ascii=False))
+        return
     table = Table(title=f"PARC runs ({get_paths()['experiments_dir']})")
     table.add_column("run_id")
     table.add_column("machine")
@@ -552,6 +577,72 @@ def sync_main(argv: list[str] | None = None) -> None:
         return
 
 
+def fleet_main(argv: list[str] | None = None) -> None:
+    """複数ホスト横断（hosts / runs / queue / enqueue）。"""
+    parser = argparse.ArgumentParser(prog="parc-fleet")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    p_hosts = sub.add_parser("hosts", help="hosts.yaml + local の名簿と到達性")
+    p_hosts.add_argument("--json", action="store_true", default=True)
+
+    p_runs = sub.add_parser("runs", help="全ホストの runs を集約")
+    p_runs.add_argument("--limit", type=int, default=50)
+    p_runs.add_argument("--json", action="store_true", default=True)
+
+    p_queue = sub.add_parser("queue", help="全ホストの queue を集約")
+    p_queue.add_argument("--limit", type=int, default=40)
+    p_queue.add_argument("--json", action="store_true", default=True)
+
+    p_enq = sub.add_parser("enqueue", help="指定ホストへジョブ投入")
+    p_enq.add_argument("--host", required=True, help="local / machine_id / hosts.yaml alias")
+    p_enq.add_argument("--config", "-c", default=None)
+    p_enq.add_argument("--sweep", "-s", default=None)
+    p_enq.add_argument(
+        "--kind",
+        default="train_eval",
+        choices=["train_eval", "train", "eval", "prune"],
+    )
+    p_enq.add_argument("--eval-config", default="")
+    p_enq.add_argument("--notes", default="")
+    p_enq.add_argument("--notify", action="store_true")
+
+    args = parser.parse_args(argv)
+    apply_runtime_env()
+    from parc.fleet import enqueue_on_host, fleet_hosts, fleet_queue, fleet_runs
+
+    if args.cmd == "hosts":
+        console.print_json(json.dumps(fleet_hosts(), ensure_ascii=False, default=str))
+        return
+    if args.cmd == "runs":
+        console.print_json(
+            json.dumps(fleet_runs(limit=args.limit), ensure_ascii=False, default=str)
+        )
+        return
+    if args.cmd == "queue":
+        console.print_json(
+            json.dumps(fleet_queue(limit=args.limit), ensure_ascii=False, default=str)
+        )
+        return
+    if args.cmd == "enqueue":
+        try:
+            out = enqueue_on_host(
+                args.host,
+                kind=args.kind,
+                config=args.config,
+                sweep=args.sweep,
+                eval_config=args.eval_config,
+                notes=args.notes,
+                notify=args.notify,
+            )
+        except (KeyError, ValueError) as e:
+            console.print(f"[red]{e}[/red]")
+            raise SystemExit(2) from e
+        console.print_json(json.dumps(out, ensure_ascii=False, default=str))
+        if out.get("ok") is False:
+            raise SystemExit(1)
+        return
+
+
 def remote_main(argv: list[str] | None = None) -> None:
     """他 PC の parc を SSH 経由で操作する。"""
     parser = argparse.ArgumentParser(
@@ -605,6 +696,7 @@ def remote_main(argv: list[str] | None = None) -> None:
         "worker",
         "prune",
         "sync",
+        "fleet",
         "train",
         "eval",
         "smoke",
@@ -622,7 +714,7 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         console.print(
             "Usage: python -m parc.cli "
-            "[new|eval|train|list|smoke|enqueue|worker|prune|queue|sync|remote]"
+            "[new|eval|train|list|smoke|enqueue|worker|prune|queue|sync|remote|fleet]"
         )
         sys.exit(1)
     cmd = sys.argv[1]
@@ -639,4 +731,5 @@ if __name__ == "__main__":
         "queue": queue_main,
         "sync": sync_main,
         "remote": remote_main,
+        "fleet": fleet_main,
     }.get(cmd, lambda _: sys.exit(1))(rest)

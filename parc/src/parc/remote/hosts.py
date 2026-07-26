@@ -49,18 +49,29 @@ def remote_run(
     *,
     check: bool = False,
     capture: bool = False,
+    connect_timeout: int = 8,
 ) -> subprocess.CompletedProcess[str]:
     """``ssh <host> 'cd <parc_dir> && uv run ...'`` を実行する。"""
     h = resolve_host(alias)
-    # リモート側: PARC ルートで uv run
+    # リモート側: PARC ディレクトリで uv run
+    # 非対話 SSH は ~/.local/bin が PATH に入らないことが多い
     inner = " && ".join(
         [
             f"cd {shlex.quote(h['parc_dir'])}",
+            'export PATH="$HOME/.local/bin:$PATH"',
             "unset VIRTUAL_ENV",
             "uv run " + " ".join(shlex.quote(a) for a in argv),
         ]
     )
-    cmd = ["ssh", "-o", "BatchMode=yes", h["ssh"], inner]
+    cmd = [
+        "ssh",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        f"ConnectTimeout={connect_timeout}",
+        h["ssh"],
+        inner,
+    ]
     return subprocess.run(
         cmd,
         check=check,

@@ -20,6 +20,10 @@ export type RunSummary = {
   notes: string;
   /** 実行ホスト識別（PARC_MACHINE_ID）。旧 run では null */
   machineId: string | null;
+  /** Fleet 集約時の hosts.yaml エイリアス（local 含む） */
+  host?: string | null;
+  /** このハブ機上の run なら true（詳細リンクが有効） */
+  local?: boolean | null;
   successRate: number | null;
   nEpisodes: number | null;
   hasMetrics: boolean;

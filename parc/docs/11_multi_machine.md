@@ -203,6 +203,46 @@ uv run parc-remote pc2 --tunnel
 
 各ホストで `bash scripts/start_web.sh` と `parc-worker --loop` が動いていることが前提です。
 
+## 5.1 Fleet 横断ビュー（推奨ハブ運用）
+
+各 PC の `experiments/` / queue は **ローカルのまま**。ハブ PC の Web / CLI が SSH で JSON を集約します。
+
+```bash
+# CLI
+uv run parc-list --json
+uv run parc-fleet hosts
+uv run parc-fleet runs --limit 50
+uv run parc-fleet queue
+uv run parc-fleet enqueue --host nuc -c configs/experiments/smoke_random.yaml --kind eval
+
+# Web（ハブで start_web.sh）
+# Runs: Fleet チェックON → All hosts フィルタ
+# Jobs: Target host セレクト → Launch
+```
+
+API（ハブ）:
+
+| Method | Path | 説明 |
+|--------|------|------|
+| GET | `/api/v1/fleet/hosts` | 名簿 + 到達性 |
+| GET | `/api/v1/fleet/runs` | 横断 runs |
+| GET | `/api/v1/fleet/queue` | 横断 queue |
+| POST | `/api/v1/fleet/enqueue` | `{ host, kind, configPath }` |
+
+### PC を追加する手順
+
+1. 新 PC で git clone → `cp .env.example .env.local`（`PARC_MACHINE_ID` を一意に）→ `bash scripts/setup_env.sh`
+2. ハブの `configs/hosts.yaml` にエントリ追加（ssh / parc_dir / web_port）
+3. ハブ → 新 PC の SSH 公開鍵ログイン（BatchMode）を確認
+4. 新 PC で `uv run parc-worker --loop`（と必要なら `start_web.sh`）
+5. ハブで `uv run parc-fleet hosts` に載ることを確認
+
+リモート側も **同じリビジョンの parc**（`parc-list --json` / `parc-fleet`）が必要です。未更新だと Fleet の errors に出ます。
+
+リモート詳細・動画はハブからストリームしません。当該ホストの Web（トンネル）を開いてください。
+
+将来: `enqueue --host auto` で queue depth 最小ホストへ振り分け（未実装。手動 Host 選択が現行）。
+
 ## 6. やってはいけないこと
 
 - 複数 PC から同じ `experiments_dir` / `queue.jsonl` を同時書き込み

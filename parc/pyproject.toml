@@ -33,6 +33,7 @@ parc-prune = "parc.cli:prune_main"
 parc-queue = "parc.cli:queue_main"
 parc-sync = "parc.cli:sync_main"
 parc-remote = "parc.cli:remote_main"
+parc-fleet = "parc.cli:fleet_main"
 
 [build-system]
 requires = ["hatchling"]

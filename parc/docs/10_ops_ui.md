@@ -118,6 +118,21 @@ uv run parc-enqueue --sweep configs/sweeps/long_ft_unfreeze_v1.yaml --notify
 
 Gate2（SR>0）達成前は GRPO/GSPO を開始しない。
 
+## Fleet（複数 PC 横断）
+
+ハブの Web では **Fleet** チェックで全ホストの Runs / Queue を横断表示できます。  
+Jobs の **Target host** で投入先（local / nuc / thor …）を選べます。
+
+前提: `configs/hosts.yaml` と SSH 鍵（BatchMode）。詳細は [11_multi_machine.md](11_multi_machine.md)。
+
+```bash
+uv run parc-fleet hosts
+uv run parc-fleet runs --limit 50
+uv run parc-fleet enqueue --host nuc -c configs/experiments/smoke_random.yaml --kind eval
+```
+
+リモート run の動画・詳細はハブから配信しません。対象ホストの Web（SSH トンネル）を開いてください。
+
 ## セキュリティ
 
 - ジョブ操作は `PARC_WEB_ALLOW_JOBS=1` のときのみ
@@ -129,3 +144,4 @@ Gate2（SR>0）達成前は GRPO/GSPO を開始しない。
 - [09_autoloop_and_rl.md](09_autoloop_and_rl.md) — 無人ループ・GRPO
 - [05_experiments.md](05_experiments.md) — run 規約
 - [08_remote_and_ui.md](08_remote_and_ui.md) — リモート接続
+- [11_multi_machine.md](11_multi_machine.md) — Fleet / hosts / GDrive
