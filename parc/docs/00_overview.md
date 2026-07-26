@@ -31,14 +31,17 @@ setup_env → smoke → (データ取得 / 自前変換) → train → eval_ckpt
 
 独自データや学習レシピの変え方は [07_custom_data_and_algos.md](07_custom_data_and_algos.md)。  
 別 PC からの Web / Jupyter は [08_remote_and_ui.md](08_remote_and_ui.md)。  
-**複数 PC で学習を分ける**ときは [11_multi_machine.md](11_multi_machine.md)（git 共有・ローカルデータ・machine_id・GDrive・`parc-remote`）。
+**複数 PC / Fleet 横断**は [11_multi_machine.md](11_multi_machine.md)
+（git 共有・ローカルデータ・machine_id・GDrive・`parc-remote` / `parc-fleet`）。
 
 ```mermaid
 flowchart LR
   A[configs/experiments/*.yaml] --> B[parc-new / parc-train / parc-eval]
   B --> C[experiments/run_id]
   C --> D[metrics.json]
-  D --> E[parc-list / 分析]
+  D --> E[parc-list / Fleet Web]
+  F[hosts.yaml] --> G[parc-fleet / Hub UI]
+  G --> H[nuc / thor / pc2 queues]
 ```
 
 ## ディスク注意

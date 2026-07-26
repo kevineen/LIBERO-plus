@@ -61,24 +61,26 @@ uv run python -c "from libero.libero import get_libero_path; print(get_libero_pa
 
 `.../LIBERO-plus/libero/libero/assets` になっていれば OK。
 
-## 3. 追加の依存（任意）
+## 3. 評価用の親 `.venv`（`parc.sh`）
+
+`./scripts/parc.sh` は **`LIBERO-plus/.venv`**（親）の Python を使います。無い場合:
 
 ```bash
-cd parc
-source .venv/bin/activate   # 任意
-uv pip install -e ..        # 親 LIBERO-plus を editable で（setup_env.sh でも試行）
+cd /home/kevin/Matsuo/robot/LIBERO-plus
+uv venv .venv
+# 評価に必要な最低限（例）
+uv pip install --python .venv/bin/python -e parc --no-deps
+uv pip install --python .venv/bin/python \
+  'numpy>=1.22,<2' pyyaml rich tqdm pillow imageio imageio-ffmpeg \
+  'robosuite==1.4.0' bddl easydict cloudpickle 'gym==0.25.2' \
+  opencv-python matplotlib 'hydra-core==1.2.0' \
+  wand scikit-image termcolor h5py
+uv pip install --python .venv/bin/python -e .
+# GPU torch（例: CUDA 12.8）
+uv pip install --python .venv/bin/python torch --index-url https://download.pytorch.org/whl/cu128
 ```
 
-親の `Matsuo/robot` で既に torch / lerobot がある場合、**学習は親 venv**、  
-**評価・実験管理は parc venv**、でも構いません（`docs/03_train.md` 参照）。
-
-Jetson で torch を使うときは親側の:
-
-```bash
-source ~/Matsuo/robot/scripts/thor_cuda_env.sh
-```
-
-を忘れずに。
+`hf` が無いときは `/path/to/miniconda3/bin/hf` や `huggingface-cli` を使う。
 
 ## 4. ヘッドレス描画
 
@@ -112,8 +114,13 @@ uv run parc-smoke --skip-env   # import / パス
 |------|------|
 | `No module named 'yaml'` | `uv sync` 後に `uv run python scripts/configure_libero_paths.py`（または `bash scripts/setup_env.sh`） |
 | HF `404` / Repository Not Found（assets） | `--repo-type dataset` を付ける（model 扱いだと 404） |
+| `hf: command not found` | miniconda の `hf` / `huggingface-cli` を使うか `uv pip install huggingface_hub` |
+| `No virtual environment ... ../.venv` | 親 `LIBERO-plus` で `uv venv .venv` を先に作成 |
+| `No module named parc.cli`（parc.sh） | 親 `.venv` へ `uv pip install -e parc --no-deps` |
+| `No module named 'torch'/'wand'/'skimage'` | 親 `.venv` に不足パッケージを追加（上記 §3） |
 | `PermissionError: /data` | `.env.local` の `PARC_EXPERIMENTS_DIR` 等を、その PC に存在するパスへ変更 |
 | `No module named 'libero'` | `configure_libero_paths.py` と `libero/__init__.py` があること、`PYTHONPATH=LIBERO-plus` |
 | `torch.load` / `weights_only` | `parc-eval` 内でローカル init は `weights_only=False` 済み |
 | `mj_fullM(): incompatible` | robosuite 1.4 と MuJoCo 3.x の API 差。`parc.env.mujoco_compat` が自動パッチ（旧: `mujoco==3.1.1` ピン） |
 | NumPy が突然 2.x に | 親 `.venv` へ `pip install -e parc` するとき必ず `--no-deps` |
+| WSL で rclone `127.0.0.1` 空レス | Windows で `rclone authorize` → WSL に token 貼付。または既存 remote（例: `matsuo-gdrive`）を使う |

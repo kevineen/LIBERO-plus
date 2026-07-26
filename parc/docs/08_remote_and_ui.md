@@ -155,7 +155,8 @@ registerStore(new MyStore());
 ## 関連
 
 - 実験規約: [05_experiments.md](05_experiments.md)
-- **複数 PC 分離**: [11_multi_machine.md](11_multi_machine.md)
+- **複数 PC / Fleet**: [11_multi_machine.md](11_multi_machine.md)（`parc-fleet`・hosts.yaml・GDrive）
 - 無人ループ / GRPO: [09_autoloop_and_rl.md](09_autoloop_and_rl.md)
 - 評価: [04_eval.md](04_eval.md)
 - データ・学習改善: [07_custom_data_and_algos.md](07_custom_data_and_algos.md)
+- UI 操作: [10_ops_ui.md](10_ops_ui.md)

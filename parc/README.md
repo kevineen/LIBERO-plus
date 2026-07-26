@@ -29,6 +29,11 @@ bash scripts/eval_ckpt.sh configs/experiments/smolvla_ckpt_smoke_eval.yaml
 bash scripts/start_web.sh
 # bash scripts/start_jupyter_remote.sh
 # 手順: docs/08_remote_and_ui.md
+
+# 複数 PC Fleet（hosts.yaml 必須）
+# uv run parc-fleet hosts
+# uv run parc-fleet runs
+# 手順: docs/11_multi_machine.md
 ```
 
 ベースライン結果:
@@ -36,7 +41,7 @@ bash scripts/start_web.sh
 - SmolVLA 200step: [`docs/baselines/smolvla_ft_smoke.md`](docs/baselines/smolvla_ft_smoke.md)
 - SmolVLA ckpt 評価: [`docs/baselines/smolvla_ckpt_smoke_eval.md`](docs/baselines/smolvla_ckpt_smoke_eval.md)
 
-> **重要:** ランダム評価は `./scripts/parc.sh`、学習・ckpt 評価は `train.sh` / `eval_ckpt.sh`。  
+> **重要:** ランダム評価は `./scripts/parc.sh`（親 `LIBERO-plus/.venv`）、学習・ckpt 評価は `train.sh` / `eval_ckpt.sh`。  
 > `lerobot/libero_plus` 初回は十数 GB。親 venv へ parc を入れるときは `--no-deps`。
 ## ディレクトリ構成
 
@@ -66,6 +71,7 @@ parc/
 | [docs/08_remote_and_ui.md](docs/08_remote_and_ui.md) | リモート Web / Jupyter / プレビュー |
 | [docs/09_autoloop_and_rl.md](docs/09_autoloop_and_rl.md) | 無人キュー・スイープ・prune・GRPO/GSPO |
 | [docs/10_ops_ui.md](docs/10_ops_ui.md) | Web UI 操作・再開・進捗 |
+| [docs/11_multi_machine.md](docs/11_multi_machine.md) | 複数 PC・Fleet 横断・GDrive |
 
 ## 無人実験ループ（一晩回す）
 
@@ -89,5 +95,7 @@ uv run parc-list --sweep-id overnight_ft_smoke
 | キュー / スイープ / ディスク prune | ライブ 3D シミュ操作 UI |
 | GRPO/GSPO スモーク（状態ガウス方策） | SmolVLA 本体 log-prob の本格 RL |
 | Web 実験管理・リモート Jupyter |  |
+| Fleet 横断（runs/queue・ホスト指定投入） | 自動ロードバランス（`--host auto`） |
+| Google Drive ckpt sync（rclone） | ハブ経由の remote artifact 配信 |
 
 親ディレクトリの upstream README はベンチマーク本体用です。コンペ作業は **この `parc/` をルート** にしてください。

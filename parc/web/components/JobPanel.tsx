@@ -10,6 +10,8 @@ type QueueJobRow = {
   kind: string;
   status: string;
   stale?: boolean;
+  host?: string;
+  local?: boolean;
   run_id?: string | null;
   error?: string | null;
   progress?: {
@@ -38,10 +40,20 @@ type SystemInfo = {
   launcher?: string;
 };
 
+type FleetHost = {
+  alias: string;
+  kind?: string;
+  reachable?: boolean;
+  tunnel_hint?: string | null;
+};
+
 export function JobPanel() {
   const [jobs, setJobs] = useState<JobHandle[]>([]);
   const [queue, setQueue] = useState<QueueStatus | null>(null);
   const [system, setSystem] = useState<SystemInfo | null>(null);
+  const [hosts, setHosts] = useState<FleetHost[]>([]);
+  const [localAlias, setLocalAlias] = useState("local");
+  const [targetHost, setTargetHost] = useState("local");
   const [kind, setKind] = useState<JobKind>("train");
   const [config, setConfig] = useState("");
   const [sweep, setSweep] = useState("");
@@ -50,13 +62,41 @@ export function JobPanel() {
   const [msg, setMsg] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
-    const [j, s, q] = await Promise.all([
+    const [j, s, q, fh] = await Promise.all([
       fetch("/api/v1/jobs?limit=30").then((r) => r.json()),
       fetch("/api/v1/system").then((r) => r.json()),
-      fetch("/api/v1/queue?limit=40").then((r) => r.json()).catch(() => null),
+      fetch("/api/v1/fleet/queue?limit=40")
+        .then((r) => r.json())
+        .catch(() => null),
+      fetch("/api/v1/fleet/hosts")
+        .then((r) => r.json())
+        .catch(() => null),
     ]);
     setJobs(j.jobs ?? []);
-    setQueue(q && !q.error ? q : null);
+    if (q && !q.error) {
+      const jobsRows = (q.jobs ?? []) as QueueJobRow[];
+      const counts: Record<string, number> = {};
+      for (const block of q.hosts ?? []) {
+        for (const [k, v] of Object.entries(block.counts ?? {})) {
+          counts[k] = (counts[k] ?? 0) + Number(v);
+        }
+      }
+      setQueue({
+        counts,
+        jobs: jobsRows,
+        stale_running: [],
+        top_scores: [],
+      });
+    } else {
+      setQueue(null);
+    }
+    if (fh && fh.hosts) {
+      setHosts(fh.hosts as FleetHost[]);
+      if (fh.local_alias) {
+        setLocalAlias(String(fh.local_alias));
+        setTargetHost((prev) => (prev === "local" ? String(fh.local_alias) : prev));
+      }
+    }
     setSystem({
       configs: s.configs ?? [],
       sweeps: s.sweeps ?? [],
@@ -74,7 +114,7 @@ export function JobPanel() {
 
   useEffect(() => {
     void refresh();
-    const t = setInterval(() => void refresh(), 5000);
+    const t = setInterval(() => void refresh(), 8000);
     return () => clearInterval(t);
   }, [refresh]);
 
@@ -83,20 +123,24 @@ export function JobPanel() {
     setError(null);
     setMsg(null);
     try {
-      const body: Record<string, unknown> = { kind };
+      const host = targetHost || localAlias;
+      const body: Record<string, unknown> = { host, kind };
       if (kind === "custom" && sweep) {
-        body.params = { sweep: sweep.startsWith("configs/") ? sweep : `configs/sweeps/${sweep}` };
+        body.sweep = sweep.startsWith("configs/") ? sweep : `configs/sweeps/${sweep}`;
       } else if (kind === "eval" || kind === "train") {
         body.configPath = config;
       }
-      const res = await fetch("/api/v1/jobs", {
+      const res = await fetch("/api/v1/fleet/enqueue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? res.statusText);
-      setMsg(`queued ${data.job?.jobId ?? ""}`);
+      const result = data.result ?? data;
+      setMsg(
+        `queued on ${result.host ?? host}: ${result.job_id ?? JSON.stringify(result).slice(0, 120)}`,
+      );
       await refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -110,6 +154,7 @@ export function JobPanel() {
     setError(null);
     setMsg(null);
     try {
+      // ローカルキュー操作のみ（リモート requeue は parc-remote 経由が別途必要）
       const res = await fetch("/api/v1/queue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -126,10 +171,14 @@ export function JobPanel() {
     }
   }
 
-  async function cancelJob(jobId: string) {
+  async function cancelJob(jobId: string, host?: string) {
     setBusy(true);
     setError(null);
     try {
+      if (host && host !== localAlias) {
+        setError(`Cancel on remote host via: uv run parc-remote ${host} queue cancel ${jobId}`);
+        return;
+      }
       const res = await fetch(`/api/v1/jobs/${encodeURIComponent(jobId)}`, { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? res.statusText);
@@ -149,16 +198,25 @@ export function JobPanel() {
       status: j.status,
       run_id: j.runId,
       error: j.error,
+      host: localAlias,
+      local: true,
     }));
+
+  const hostOptions =
+    hosts.length > 0
+      ? hosts
+      : [{ alias: localAlias, kind: "local", reachable: true }];
 
   return (
     <section className="panel">
       <header className="panel-head">
         <h2>Jobs / Queue</h2>
         <span className="muted">
-          {system?.jobsAllowed ? `launch on · ${system.launcher ?? "?"}` : "read-only (PARC_WEB_ALLOW_JOBS=1)"}
+          {system?.jobsAllowed ? `fleet launch · ${system.launcher ?? "?"}` : "read-only (PARC_WEB_ALLOW_JOBS=1)"}
           {" · "}
           <Link href="/docs/10_ops_ui">操作マニュアル</Link>
+          {" · "}
+          <Link href="/docs/11_multi_machine">Fleet</Link>
         </span>
       </header>
 
@@ -170,16 +228,24 @@ export function JobPanel() {
               <span className="muted">{k}</span>
             </div>
           ))}
-          {(queue.stale_running?.length ?? 0) > 0 ? (
-            <div>
-              <span className="stat-n warn">{queue.stale_running!.length}</span>
-              <span className="muted">stale</span>
-            </div>
-          ) : null}
         </div>
       ) : null}
 
       <div className="toolbar wrap">
+        <select
+          className="input"
+          value={targetHost}
+          onChange={(e) => setTargetHost(e.target.value)}
+          title="Target host"
+        >
+          {hostOptions.map((h) => (
+            <option key={h.alias} value={h.alias}>
+              {h.alias}
+              {h.reachable === false ? " (down)" : ""}
+              {h.kind === "local" || h.alias === localAlias ? " · local" : ""}
+            </option>
+          ))}
+        </select>
         <select
           className="input"
           value={kind}
@@ -223,36 +289,17 @@ export function JobPanel() {
           disabled={busy || !system?.jobsAllowed}
           onClick={() => void queueAction({ action: "recover-stale", maxAgeSec: 3600 })}
         >
-          Recover stale
+          Recover stale (local)
         </button>
       </div>
       {error ? <p className="error">{error}</p> : null}
       {msg ? <p className="muted mono small">{msg}</p> : null}
 
-      {(queue?.top_scores?.length ?? 0) > 0 ? (
-        <div className="score-strip">
-          <strong>Top scores</strong>
-          <ul>
-            {queue!.top_scores!.map((s) => (
-              <li key={`${s.job_id}-${s.run_id}`}>
-                {s.run_id ? (
-                  <Link href={`/runs/${encodeURIComponent(s.run_id)}`}>{s.run_id.slice(0, 22)}</Link>
-                ) : (
-                  "—"
-                )}
-                <span className="mono">
-                  {s.success_rate == null ? "—" : Number(s.success_rate).toFixed(3)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-
       <div className="table-wrap">
         <table className="data">
           <thead>
             <tr>
+              <th>Host</th>
               <th>Job</th>
               <th>Status</th>
               <th>Phase</th>
@@ -282,8 +329,11 @@ export function JobPanel() {
                 j.progress?.metrics?.success_rate ??
                 null;
               const rl = j.rl_latest;
+              const host = j.host || localAlias;
+              const isLocal = j.local === true || host === localAlias;
               return (
-                <tr key={j.job_id}>
+                <tr key={`${host}:${j.job_id}`}>
+                  <td className="mono muted">{host}</td>
                   <td>
                     <span className="mono">{j.kind}</span>
                     <div className="mono muted small trunc">{j.job_id}</div>
@@ -315,26 +365,30 @@ export function JobPanel() {
                     ) : null}
                   </td>
                   <td>
-                    {j.run_id ? (
+                    {j.run_id && isLocal ? (
                       <Link className="mono" href={`/runs/${encodeURIComponent(j.run_id)}`}>
                         {j.run_id.slice(0, 20)}
                       </Link>
+                    ) : j.run_id ? (
+                      <span className="mono muted" title="open on remote Web">
+                        {j.run_id.slice(0, 20)}
+                      </span>
                     ) : (
                       "—"
                     )}
                   </td>
                   <td className="row-actions">
-                    {(j.status === "queued" || j.status === "running") && (
+                    {(j.status === "queued" || j.status === "running") && isLocal && (
                       <button
                         type="button"
                         className="btn btn-tiny"
                         disabled={busy || !system?.jobsAllowed}
-                        onClick={() => void cancelJob(j.job_id)}
+                        onClick={() => void cancelJob(j.job_id, host)}
                       >
                         Cancel
                       </button>
                     )}
-                    {["failed", "cancelled", "done", "succeeded"].includes(j.status) && (
+                    {["failed", "cancelled", "done", "succeeded"].includes(j.status) && isLocal && (
                       <button
                         type="button"
                         className="btn btn-tiny"
@@ -344,7 +398,7 @@ export function JobPanel() {
                         Requeue
                       </button>
                     )}
-                    {j.run_id ? (
+                    {j.run_id && isLocal ? (
                       <button
                         type="button"
                         className="btn btn-tiny"
@@ -362,7 +416,7 @@ export function JobPanel() {
             })}
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={6} className="muted">
+                <td colSpan={8} className="muted">
                   No jobs yet. Worker: <code>uv run parc-worker --loop</code>
                 </td>
               </tr>

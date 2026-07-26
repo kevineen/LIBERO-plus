@@ -16,10 +16,13 @@ export default async function HomePage() {
           <p className="eyebrow">LIBERO-plus · experiment console</p>
           <h1>Runs</h1>
           <p className="lede">
-            Local registry at <code className="mono">{getExperimentsDir()}</code>
+            Fleet registry (local + hosts.yaml) ·{" "}
+            <code className="mono">{getExperimentsDir()}</code>
             {jobsAllowed() ? " · job launch on" : " · job launch off"}
             {" · "}
             <a href="/docs/10_ops_ui">操作マニュアル</a>
+            {" · "}
+            <a href="/docs/11_multi_machine">複数 PC / Fleet</a>
           </p>
         </div>
         <div className="stat-pills">

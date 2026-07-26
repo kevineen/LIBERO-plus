@@ -73,8 +73,11 @@ uv run parc-enqueue --sweep configs/sweeps/overnight_ft_smoke.yaml
 uv run parc-worker --loop --poll-sec 30
 uv run parc-prune --dry-run
 uv run parc-list --sweep-id overnight_ft_smoke
+# 機械可読 / 横断
+uv run parc-list --json
+uv run parc-fleet runs --limit 30
 ```
 
 各 run の `meta.json` には `git_sha` / `config_hash` / `eval_fingerprint` / `sweep_id` / `machine_id` などが入ります。
 
-複数 PC での分離は [11_multi_machine.md](11_multi_machine.md)。
+複数 PC / Fleet 横断は [11_multi_machine.md](11_multi_machine.md)。
