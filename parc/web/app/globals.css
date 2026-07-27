@@ -458,6 +458,55 @@ table.data th {
   background: #f7faff;
 }
 
+/* 実行中 run / job を一覧上部にまとめるカード */
+.running-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.75rem;
+  margin: 0.35rem 0 0.85rem;
+}
+
+.running-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.85rem 0.95rem;
+  background: #f7faff;
+  border: 1px solid #9bb7de;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(29, 79, 145, 0.08);
+}
+
+.running-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.running-card-title {
+  font-weight: 650;
+  font-size: 0.95rem;
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+.running-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.65rem;
+  align-items: baseline;
+  font-size: 0.78rem;
+}
+
+.running-card .run-progress {
+  min-width: 0;
+}
+
+.running-cards-empty {
+  display: none;
+}
+
 .flags {
   display: flex;
   gap: 0.35rem;

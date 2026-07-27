@@ -207,10 +207,28 @@ export function JobPanel() {
       local: true,
     }));
 
+  const runningJobs = rows.filter((j) => j.status === "running");
+  const tableJobs = rows.filter((j) => j.status !== "running");
+
   const hostOptions =
     hosts.length > 0
       ? hosts
       : [{ alias: localAlias, kind: "local", reachable: true }];
+
+  function progressLabel(j: QueueJobRow): string {
+    const phase = j.progress?.phase ?? "";
+    const step = j.progress?.step;
+    const total = j.progress?.total_steps;
+    const pct = j.progress?.percent;
+    if (step != null && total != null) {
+      let label = `${step}/${total}`;
+      if (pct != null) label += ` (${pct}%)`;
+      return label;
+    }
+    if (pct != null) return `${pct}%`;
+    if (phase === "train" || phase === "eval") return phase;
+    return "—";
+  }
 
   return (
     <section className="panel">
@@ -233,6 +251,65 @@ export function JobPanel() {
               <span className="muted">{k}</span>
             </div>
           ))}
+        </div>
+      ) : null}
+
+      {runningJobs.length > 0 ? (
+        <div className="running-cards" aria-label="Running jobs">
+          {runningJobs.map((j) => {
+            const host = j.host || localAlias;
+            const isLocal = j.local === true || host === localAlias;
+            const phase = j.progress?.phase ?? "";
+            const pct = j.progress?.percent;
+            const sr =
+              j.metrics?.success_rate ?? j.progress?.metrics?.success_rate ?? null;
+            return (
+              <div key={`${host}:${j.job_id}`} className="running-card">
+                <div className="running-card-head">
+                  <span className="running-card-title">
+                    {j.kind}
+                    {phase ? ` · ${phase}` : ""}
+                  </span>
+                  <span className="badge badge-run">running</span>
+                </div>
+                <div className="running-card-meta">
+                  <span className="mono muted">{host}</span>
+                  {j.run_id && isLocal ? (
+                    <Link className="mono" href={`/runs/${encodeURIComponent(j.run_id)}`}>
+                      {j.run_id.slice(0, 24)}
+                      {j.run_id.length > 24 ? "…" : ""}
+                    </Link>
+                  ) : j.run_id ? (
+                    <span className="mono muted">{j.run_id.slice(0, 24)}…</span>
+                  ) : (
+                    <span className="mono muted">{j.job_id.slice(0, 18)}…</span>
+                  )}
+                  {sr != null ? <span className="mono">SR {Number(sr).toFixed(3)}</span> : null}
+                </div>
+                <div className="run-progress">
+                  <div className="run-progress-label mono">{progressLabel(j)}</div>
+                  {pct != null ? (
+                    <div className="run-progress-track" title={`${pct}%`}>
+                      <div className="run-progress-fill" style={{ width: `${pct}%` }} />
+                    </div>
+                  ) : null}
+                </div>
+                {isLocal && system?.jobsAllowed ? (
+                  <div className="row-actions">
+                    <button
+                      type="button"
+                      className="btn btn-tiny"
+                      disabled={busy}
+                      onClick={() => void cancelJob(j.job_id, host)}
+                      title="Stop process and free GPU; Resume later from checkpoint"
+                    >
+                      Pause
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
       ) : null}
 
@@ -331,20 +408,9 @@ export function JobPanel() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((j) => {
+            {tableJobs.map((j) => {
               const phase = j.progress?.phase ?? "";
-              const step = j.progress?.step;
-              const total = j.progress?.total_steps;
-              const pct = j.progress?.percent;
-              let progLabel = "—";
-              if (step != null && total != null) {
-                progLabel = `${step}/${total}`;
-                if (pct != null) progLabel += ` (${pct}%)`;
-              } else if (pct != null) {
-                progLabel = `${pct}%`;
-              } else if (phase === "train" || phase === "eval") {
-                progLabel = phase;
-              }
+              const progLabel = progressLabel(j);
               const sr =
                 j.metrics?.success_rate ??
                 j.progress?.metrics?.success_rate ??
@@ -362,13 +428,11 @@ export function JobPanel() {
                   <td>
                     <span
                       className={`badge ${
-                        j.status === "running"
-                          ? "badge-run"
-                          : j.status === "failed"
-                            ? "badge-bad"
-                            : j.status === "done" || j.status === "succeeded"
-                              ? "badge-ok"
-                              : ""
+                        j.status === "failed"
+                          ? "badge-bad"
+                          : j.status === "done" || j.status === "succeeded"
+                            ? "badge-ok"
+                            : ""
                       }`}
                     >
                       {j.status}
@@ -410,17 +474,6 @@ export function JobPanel() {
                         Cancel
                       </button>
                     )}
-                    {j.status === "running" && isLocal && (
-                      <button
-                        type="button"
-                        className="btn btn-tiny"
-                        disabled={busy || !system?.jobsAllowed}
-                        onClick={() => void cancelJob(j.job_id, host)}
-                        title="Stop process and free GPU; Resume later from checkpoint"
-                      >
-                        Pause
-                      </button>
-                    )}
                     {["failed", "cancelled", "done", "succeeded"].includes(j.status) && isLocal && (
                       <button
                         type="button"
@@ -447,7 +500,7 @@ export function JobPanel() {
                         Delete
                       </button>
                     )}
-                    {j.run_id && isLocal && j.status !== "running" && j.status !== "queued" ? (
+                    {j.run_id && isLocal && j.status !== "queued" ? (
                       <button
                         type="button"
                         className="btn btn-tiny"
@@ -464,10 +517,16 @@ export function JobPanel() {
                 </tr>
               );
             })}
-            {rows.length === 0 ? (
+            {tableJobs.length === 0 ? (
               <tr>
                 <td colSpan={8} className="muted">
-                  No jobs yet. Worker: <code>uv run parc-worker --loop</code>
+                  {runningJobs.length > 0
+                    ? "No other jobs (running ones are in cards above)."
+                    : (
+                      <>
+                        No jobs yet. Worker: <code>uv run parc-worker --loop</code>
+                      </>
+                    )}
                 </td>
               </tr>
             ) : null}
