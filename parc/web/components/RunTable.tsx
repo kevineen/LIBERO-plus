@@ -54,17 +54,22 @@ function statusClass(status: string): string {
   return "badge";
 }
 
+function isActivelyRunning(run: RunSummary): boolean {
+  return run.status === "running" || run.progress?.jobStatus === "running";
+}
+
 function ProgressCell({ run }: { run: RunSummary }) {
   const p = run.progress;
   if (!p || p.label === "—") {
     return <span className="muted">—</span>;
   }
-  const showBar = p.percent != null && run.status === "running";
+  const active = isActivelyRunning(run);
+  const showBar = p.percent != null && active;
   return (
     <div className="run-progress">
       <div className="run-progress-label mono">
         {p.label}
-        {p.percent != null && run.status === "running" ? (
+        {p.percent != null && active ? (
           <span className="muted"> · {p.percent}%</span>
         ) : null}
       </div>
@@ -267,7 +272,10 @@ export function RunTable({ runs: initialRuns }: { runs: RunSummary[] }) {
     return true;
   });
 
-  const runningCount = runs.filter((r) => r.status === "running").length;
+  /** 実行中だけ上部カードに出す（一覧テーブルからも除外して重複を避ける） */
+  const runningRuns = filtered.filter(isActivelyRunning);
+  const tableRuns = filtered.filter((r) => !isActivelyRunning(r));
+  const runningCount = runs.filter(isActivelyRunning).length;
   const localFailed = runs.filter(
     (r) => r.status === "failed" && (r.local === true || r.host === localAlias || !r.host),
   ).length;
@@ -377,6 +385,53 @@ export function RunTable({ runs: initialRuns }: { runs: RunSummary[] }) {
         </p>
       ) : null}
 
+      {runningRuns.length > 0 ? (
+        <div className="running-cards" aria-label="Running runs">
+          {runningRuns.map((r) => {
+            const host = r.host || r.machineId || "—";
+            const canOpen = r.local !== false;
+            const body = (
+              <>
+                <div className="running-card-head">
+                  <span className="running-card-title">{r.name || r.runId}</span>
+                  <span className={statusClass(r.status)}>{r.status}</span>
+                </div>
+                <div className="running-card-meta">
+                  <span className="mono muted">{host}</span>
+                  <span className="mono muted trunc" title={r.runId}>
+                    {r.runId.slice(0, 28)}
+                    {r.runId.length > 28 ? "…" : ""}
+                  </span>
+                </div>
+                <ProgressCell run={r} />
+              </>
+            );
+            return canOpen || r.local ? (
+              <Link
+                key={`${host}:${r.runId}`}
+                className="running-card"
+                href={`/runs/${encodeURIComponent(r.runId)}`}
+              >
+                {body}
+              </Link>
+            ) : (
+              <div key={`${host}:${r.runId}`} className="running-card">
+                {body}
+                <div className="muted small">
+                  remote — open Web on {host}
+                  {tunnelHints[host] ? (
+                    <>
+                      {" "}
+                      (<code className="mono">{tunnelHints[host].split("\n")[0]}</code>)
+                    </>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+
       <div className="table-wrap">
         <table className="data">
           <thead>
@@ -393,16 +448,13 @@ export function RunTable({ runs: initialRuns }: { runs: RunSummary[] }) {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((r) => {
+            {tableRuns.map((r) => {
               const host = r.host || r.machineId || "—";
               const isLocal = r.local === true || host === localAlias || !r.host;
               const canOpen = r.local !== false;
               const canDelete = isLocal && DELETABLE_STATUSES.has(r.status);
               return (
-                <tr
-                  key={`${host}:${r.runId}`}
-                  className={r.status === "running" ? "row-running" : undefined}
-                >
+                <tr key={`${host}:${r.runId}`}>
                   <td>
                     {canOpen || r.local ? (
                       <Link className="run-link" href={`/runs/${encodeURIComponent(r.runId)}`}>
@@ -473,11 +525,13 @@ export function RunTable({ runs: initialRuns }: { runs: RunSummary[] }) {
                 </tr>
               );
             })}
-            {filtered.length === 0 ? (
+            {tableRuns.length === 0 ? (
               <tr>
                 <td colSpan={9} className="muted">
-                  No runs match.
-                  {hidePaused && hiddenPaused > 0
+                  {runningRuns.length > 0
+                    ? "No other runs (running ones are in cards above)."
+                    : "No runs match."}
+                  {hidePaused && hiddenPaused > 0 && runningRuns.length === 0
                     ? ` (${hiddenPaused} paused hidden — uncheck “Hide paused”)`
                     : ""}
                 </td>
