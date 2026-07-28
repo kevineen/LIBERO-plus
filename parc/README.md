@@ -33,7 +33,8 @@ bash scripts/start_web.sh
 # 複数 PC Fleet（hosts.yaml 必須）
 # uv run parc-fleet hosts
 # uv run parc-fleet runs
-# 手順: docs/11_multi_machine.md
+# uv run parc-fleet gpu-check   # hub→Discord GPU 死活
+# 手順: docs/11_multi_machine.md / docs/10_ops_ui.md
 ```
 
 ベースライン結果:

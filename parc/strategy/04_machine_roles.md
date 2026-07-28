@@ -48,7 +48,8 @@ ssh -N -L 3032:127.0.0.1:3030 winpc
 ## 環境変数（各マシン `.env.local`）
 
 必須に近いもの: `PARC_MACHINE_ID` / `PARC_EXPERIMENTS_DIR` / `PARC_WEB_ALLOW_JOBS=1` / `PARC_WEB_LAUNCHER=queue`  
-通知: `PARC_NOTIFY_WEBHOOK_URL`（完了時 `PARC · <machine>`）
+通知: `PARC_NOTIFY_WEBHOOK_URL`（ジョブ完了時 `PARC · <machine>`）  
+GPU 監視（任意）: `PARC_GPU_WATCH_REMIND_HOURS`（同じ障害の再通知間隔。未設定=再通知なし）
 
 ## よく使うコマンド
 
@@ -57,6 +58,8 @@ ssh -N -L 3032:127.0.0.1:3030 winpc
 uv run parc-queue status
 uv run parc-fleet hosts
 uv run parc-fleet runs --limit 30
+uv run parc-fleet gpu-check --no-notify   # nuc/thor GPU 死活
+# uv run parc-fleet gpu-check             # 変化時に Discord（cron 推奨）
 
 # 投入
 uv run parc-fleet enqueue --host thor -c configs/experiments/....yaml --kind eval --notify
@@ -66,4 +69,4 @@ uv run parc-fleet enqueue --host winpc -c configs/experiments/....yaml --kind tr
 uv run parc-worker --loop --poll-sec 30
 ```
 
-詳細: [docs/11_multi_machine.md](../docs/11_multi_machine.md) · [docs/10_ops_ui.md](../docs/10_ops_ui.md)
+詳細: [docs/11_multi_machine.md](../docs/11_multi_machine.md) · [docs/10_ops_ui.md](../docs/10_ops_ui.md)（GPU 監視・完了通知）

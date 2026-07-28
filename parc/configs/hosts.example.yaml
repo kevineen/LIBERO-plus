@@ -7,6 +7,7 @@
 #   uv run parc-remote nuc enqueue -c configs/experiments/smoke_random.yaml
 #   uv run parc-remote thor --tunnel    # Web UI トンネルコマンド表示
 #   uv run parc-fleet hosts|runs|queue  # 横断集約（ハブ）
+#   uv run parc-fleet gpu-check         # GPU 死活 → Discord（ハブ）
 #
 # 前提: 公開鍵 SSH（BatchMode）と、リモートに uv / parc が入っていること。
 # Fleet ハブに載せるマシンはすべてここに列挙する（自マシンは local として自動追加）。

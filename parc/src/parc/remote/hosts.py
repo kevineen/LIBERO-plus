@@ -43,6 +43,37 @@ def resolve_host(alias: str) -> dict[str, str]:
     }
 
 
+def remote_shell(
+    alias: str,
+    command: str,
+    *,
+    check: bool = False,
+    capture: bool = False,
+    connect_timeout: int = 8,
+) -> subprocess.CompletedProcess[str]:
+    """``ssh <host> '<command>'`` を実行する（任意シェルコマンド）。
+
+    ``remote_run`` と違い ``uv run`` / ``parc_dir`` に依存しない。
+    GPU プローブ（``nvidia-smi``）など OS 側コマンド向け。
+    """
+    h = resolve_host(alias)
+    cmd = [
+        "ssh",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        f"ConnectTimeout={connect_timeout}",
+        h["ssh"],
+        command,
+    ]
+    return subprocess.run(
+        cmd,
+        check=check,
+        capture_output=capture,
+        text=True,
+    )
+
+
 def remote_run(
     alias: str,
     argv: list[str],
@@ -63,20 +94,12 @@ def remote_run(
             "uv run " + " ".join(shlex.quote(a) for a in argv),
         ]
     )
-    cmd = [
-        "ssh",
-        "-o",
-        "BatchMode=yes",
-        "-o",
-        f"ConnectTimeout={connect_timeout}",
-        h["ssh"],
+    return remote_shell(
+        alias,
         inner,
-    ]
-    return subprocess.run(
-        cmd,
         check=check,
-        capture_output=capture,
-        text=True,
+        capture=capture,
+        connect_timeout=connect_timeout,
     )
 
 

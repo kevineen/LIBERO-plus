@@ -114,6 +114,34 @@ uv run parc-queue notify-send <job_id>
 
 `configs/paths.yaml` の `notify.notify_all: true` にすると全ジョブ通知（`--notify` 不要）。
 
+### GPU 死活監視（Fleet hub → Discord）
+
+ハブ PC から `hosts.yaml` の各機へ SSH で `nvidia-smi` を叩き、**OK↔NG の変化時だけ** webhook 通知します（ジョブ完了通知とは別）。
+
+```bash
+# 疎通確認（通知なし）
+uv run parc-fleet gpu-check --no-notify
+
+# 本番（状態変化時のみ Discord）
+uv run parc-fleet gpu-check
+
+# 特定ホスト / 自マシンも含める / 強制通知
+uv run parc-fleet gpu-check --host nuc --host thor
+uv run parc-fleet gpu-check --include-local
+uv run parc-fleet gpu-check --force
+
+# 同じ障害が続くとき N 時間ごとに再通知（または PARC_GPU_WATCH_REMIND_HOURS）
+uv run parc-fleet gpu-check --remind-hours 6
+```
+
+cron 例（5 分おき・ハブの parc ディレクトリで）:
+
+```cron
+*/5 * * * * cd /path/to/LIBERO-plus/parc && /home/kevin/.local/bin/uv run parc-fleet gpu-check >/tmp/parc-gpu-check.log 2>&1
+```
+
+状態は `experiments/.parc_gpu_watch.json` に保存。表示名は `PARC · <障害ホスト>`。
+
 ## 掴み精度改善（long FT ゲート）
 
 overnight 短学習で SR=0 のときは:
@@ -148,6 +176,7 @@ Jobs の **Target host** で投入先（local / nuc / thor …）を選べます
 uv run parc-fleet hosts
 uv run parc-fleet runs --limit 50
 uv run parc-fleet enqueue --host nuc -c configs/experiments/smoke_random.yaml --kind eval
+uv run parc-fleet gpu-check   # GPU 死活 → Discord（上記セクション参照）
 ```
 
 リモート run の動画・詳細はハブから配信しません。対象ホストの Web（SSH トンネル）を開いてください。
