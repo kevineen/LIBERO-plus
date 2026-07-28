@@ -606,7 +606,12 @@ def queue_main(argv: list[str] | None = None) -> None:
         return
 
     if args.cmd == "notify-test":
-        from parc.notify import notify_config, send_webhook
+        from parc.notify import (
+            discord_username_for_machine,
+            notify_config,
+            resolve_notify_machine,
+            send_webhook,
+        )
 
         cfg = notify_config()
         if not cfg.get("webhook_url"):
@@ -615,7 +620,11 @@ def queue_main(argv: list[str] | None = None) -> None:
                 "または configs/paths.yaml の notify.webhook_url"
             )
             raise SystemExit(2)
-        out = send_webhook(args.message)
+        machine = resolve_notify_machine()
+        msg = args.message
+        if "machine=" not in msg:
+            msg = f"{msg}\nmachine={machine}"
+        out = send_webhook(msg, username=discord_username_for_machine(machine))
         console.print_json(json.dumps(out, ensure_ascii=False))
         if not out.get("ok"):
             raise SystemExit(1)

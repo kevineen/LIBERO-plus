@@ -39,6 +39,39 @@ def webhook_provider(url: str) -> str:
     return "generic"
 
 
+def resolve_notify_machine(*, run_id: str | None = None) -> str:
+    """通知に載せる実行マシン名。
+
+    run_id 形式 ``{utc}_{machine}_{uuid8}_{name}`` があればそこを優先し、
+    なければ ``PARC_MACHINE_ID`` / paths.yaml / hostname。
+    """
+    rid = (run_id or "").strip()
+    if rid:
+        parts = rid.split("_")
+        # 例: 20260727T225455Z_winpc_cb66c529_smolvla_...
+        if len(parts) >= 3 and "T" in parts[0] and parts[0].endswith("Z"):
+            mid = parts[1].strip()
+            if mid:
+                return mid
+    try:
+        from parc.paths import get_machine_id
+
+        mid = (get_machine_id() or "").strip()
+        if mid:
+            return mid
+    except Exception:
+        pass
+    return "unknown"
+
+
+def discord_username_for_machine(machine_id: str) -> str:
+    """Discord webhook の表示名（username 上書き）。"""
+    mid = (machine_id or "unknown").strip() or "unknown"
+    # Discord username 上限 80。Webhook 既定名（例: thor）を上書きする。
+    name = f"PARC · {mid}"
+    return name[:80]
+
+
 def should_notify(job: QueueJob) -> bool:
     """このジョブ完了時に通知するか。"""
     params = job.params or {}
@@ -200,10 +233,11 @@ def format_job_message(job: QueueJob, *, result: dict[str, Any] | None = None) -
     status = job.status
     phase = ctx["phase"]
     run_id = ctx["run_id"]
+    machine = resolve_notify_machine(run_id=str(run_id) if run_id else None)
 
     lines = [
         f"[PARC] {status.upper()} · `{job.job_id}`",
-        f"kind={job.kind}  phase={phase}  elapsed={_fmt_duration(ctx.get('duration_sec'))}",
+        f"machine={machine}  kind={job.kind}  phase={phase}  elapsed={_fmt_duration(ctx.get('duration_sec'))}",
     ]
     lines.extend(_train_summary(job))
     if job.sweep_id:
@@ -246,24 +280,45 @@ def format_job_message(job: QueueJob, *, result: dict[str, Any] | None = None) -
     return "\n".join(lines)
 
 
-def build_payload(text: str, *, provider: str) -> dict[str, Any]:
+def build_payload(
+    text: str,
+    *,
+    provider: str,
+    username: str | None = None,
+) -> dict[str, Any]:
     """Slack / Discord / 汎用 webhook 用 JSON。"""
     if provider == "discord":
-        # Discord は content 上限 2000
-        return {"content": text[:1900]}
+        # Discord は content 上限 2000。username で Webhook 既定名を上書きできる。
+        payload: dict[str, Any] = {"content": text[:1900]}
+        if username:
+            payload["username"] = username[:80]
+        return payload
     if provider == "slack":
         return {"text": text}
     # 両方入れておく（多くの Incoming Webhook はどちらかを見る）
-    return {"text": text, "content": text[:1900]}
+    payload = {"text": text, "content": text[:1900]}
+    if username:
+        payload["username"] = username[:80]
+    return payload
 
 
-def send_webhook(text: str, *, webhook_url: str | None = None, timeout_sec: float = 10.0) -> dict[str, Any]:
+def send_webhook(
+    text: str,
+    *,
+    webhook_url: str | None = None,
+    timeout_sec: float = 10.0,
+    username: str | None = None,
+) -> dict[str, Any]:
     """Webhook へ POST。成功なら ok=True。"""
     url = (webhook_url or notify_config().get("webhook_url") or "").strip()
     if not url:
         return {"ok": False, "error": "webhook_url not set (PARC_NOTIFY_WEBHOOK_URL or paths.yaml notify.webhook_url)"}
     provider = webhook_provider(url)
-    payload = build_payload(text, provider=provider)
+    # Discord は username 未指定だと Webhook 作成時の名前（例: thor）のままになる
+    uname = username
+    if uname is None and provider == "discord":
+        uname = discord_username_for_machine(resolve_notify_machine())
+    payload = build_payload(text, provider=provider, username=uname)
     data = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(
         url,
@@ -279,6 +334,7 @@ def send_webhook(text: str, *, webhook_url: str | None = None, timeout_sec: floa
                 "provider": provider,
                 "status": getattr(resp, "status", None),
                 "body": body[:500],
+                "username": uname,
             }
     except urllib.error.HTTPError as e:
         detail = e.read().decode("utf-8", errors="replace")[:500]
@@ -299,9 +355,12 @@ def notify_job_finished(
     if not force and not should_notify(job):
         return {"ok": False, "skipped": True, "reason": "notify not enabled for job"}
     text = format_job_message(job, result=result)
-    out = send_webhook(text)
+    ctx = collect_job_context(job, result=result)
+    machine = resolve_notify_machine(run_id=str(ctx.get("run_id") or "") or None)
+    out = send_webhook(text, username=discord_username_for_machine(machine))
     out["job_id"] = job.job_id
     out["status"] = job.status
+    out["machine"] = machine
     out["preview"] = text[:400]
     return out
 

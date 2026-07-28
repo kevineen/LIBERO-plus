@@ -1,0 +1,24 @@
+# winpc: unfreeze@30k (薄い eval SR≈0.57) の厚い再評価
+# 学習なし。カテゴリあたり 5 タスクでノイズを下げ、次方針を決める。
+name: smolvla_thick_eval_unfreeze30k_winpc
+seed: 0
+tags: [eval, smolvla, thick, unfreeze, official_aligned, winpc]
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 1
+  task_ids: null
+  tasks_per_category: 5
+  max_steps: 280
+  camera_height: 256
+  camera_width: 256
+  save_video: true
+  save_frames: false
+  use_classification: true
+
+policy:
+  type: checkpoint
+  action_dim: 7
+  device: cuda
+  flip_images: true
+  path: /home/kevin/Matsuo/robot/LIBERO-plus/parc/experiments/20260727T034050Z_winpc_7cb13dbc_smolvla_ft_official_aligned_unfreeze30k_/train_output/checkpoints/030000/pretrained_model
