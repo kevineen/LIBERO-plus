@@ -1,0 +1,21 @@
+---
+description: PARC 実験オペ — strategy/AGENT.md と playbooks に従う
+alwaysApply: true
+---
+
+# PARC agent rule
+
+`LIBERO-plus/parc` で実験・キュー・評価・方針の話をするときは、次を読む:
+
+1. `strategy/AGENT.md`（手順の正本）
+2. `strategy/01_current_status.md` / `03_next_actions.md` / `05_decision_rules.md`
+3. 作業別: `strategy/playbooks/*.md`
+
+## 拘束
+
+- 実行は `uv run …`（`uv run python` 禁止）
+- ジョブはキュー経由。長い train / GRPO はユーザー確認なしで積まない
+- 薄い eval だけで親 ckpt・長い FT・RL を決めない
+- 完了後は `strategy/01`–`03` を更新（playbook `after_job_done` / `update_strategy_docs`）
+- winpc SSH は Port 2222（`04_machine_roles.md`）
+- `.env.local` / webhook / 鍵をコミット・ログに出さない
