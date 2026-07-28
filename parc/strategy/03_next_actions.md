@@ -10,6 +10,9 @@
 - [ ] **thor**: 厚い eval 2 本完了を待つ  
   - unfreeze@30k / continue@30k（expert-only）  
   - winpc 厚い結果と並べ、マシン間で逆転が再現するか確認
+- [ ] **nuc**: Gate3 `official_aligned` 30k FT（再起動後）完了を待つ  
+  - job `q_20260727T034627…` / run `20260728T032038Z_nuc_d9d066c5_…`  
+  - 完了後: 薄い eval SR を winpc/thor の 0.21 と比較し 02 に記録
 
 ## 次にやる（評価・判断）
 
@@ -34,7 +37,8 @@
 ## インフラ / Fleet
 
 - [x] thor `hosts.yaml` に winpc 追加（Port 2222 + deploy key）
-- [ ] nuc の SSH（thor→nuc）を安定化。必要なら winpc と同様の鍵整備
+- [x] nuc キュー復旧（stale fail / 重複 cancel / WSL GPU 復帰 / worker 再起動）— 2026-07-28
+- [ ] nuc の SSH（thor→nuc / Windows `100.77.194.30`）を安定化。必要なら winpc と同様の鍵整備
 - [ ] nuc の `official_aligned` 結果を確認し、Gate3 再現の有無を 02 に記録
 - [ ] 必要なら `hosts.example.yaml` / docs に winpc Port 2222 パターンを追記
 
