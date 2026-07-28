@@ -214,6 +214,8 @@ uv run parc-fleet hosts
 uv run parc-fleet runs --limit 50
 uv run parc-fleet queue
 uv run parc-fleet enqueue --host nuc -c configs/experiments/smoke_random.yaml --kind eval
+# GPU 死活（hub → Discord）。詳細は docs/10_ops_ui.md
+uv run parc-fleet gpu-check
 
 # Web（ハブで start_web.sh）
 # Runs: Fleet チェックON → All hosts フィルタ

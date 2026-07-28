@@ -6,10 +6,12 @@ from parc.fleet.aggregate import (
     fleet_queue,
     fleet_runs,
 )
+from parc.fleet.gpu_watch import gpu_check
 
 __all__ = [
     "enqueue_on_host",
     "fleet_hosts",
     "fleet_queue",
     "fleet_runs",
+    "gpu_check",
 ]

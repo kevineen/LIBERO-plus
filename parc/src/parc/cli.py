@@ -709,7 +709,7 @@ def sync_main(argv: list[str] | None = None) -> None:
 
 
 def fleet_main(argv: list[str] | None = None) -> None:
-    """複数ホスト横断（hosts / runs / queue / enqueue）。"""
+    """複数ホスト横断（hosts / runs / queue / enqueue / gpu-check）。"""
     parser = argparse.ArgumentParser(prog="parc-fleet")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
@@ -736,6 +736,45 @@ def fleet_main(argv: list[str] | None = None) -> None:
     p_enq.add_argument("--eval-config", default="")
     p_enq.add_argument("--notes", default="")
     p_enq.add_argument("--notify", action="store_true")
+
+    p_gpu = sub.add_parser(
+        "gpu-check",
+        help="hosts.yaml の GPU を SSH プローブし、死活変化を Discord/Slack 通知",
+    )
+    p_gpu.add_argument(
+        "--host",
+        action="append",
+        default=None,
+        help="対象 alias（複数可）。省略時は remote 全台",
+    )
+    p_gpu.add_argument(
+        "--include-local",
+        action="store_true",
+        help="自マシン GPU もチェックする",
+    )
+    p_gpu.add_argument(
+        "--no-notify",
+        action="store_true",
+        help="webhook 送信せずプローブ結果だけ出す",
+    )
+    p_gpu.add_argument(
+        "--force",
+        action="store_true",
+        help="状態変化に関係なく通知する（疎通確認用）",
+    )
+    p_gpu.add_argument(
+        "--remind-hours",
+        type=float,
+        default=None,
+        help="同じ障害が続くとき N 時間ごとに再通知（未指定なら env / 0）",
+    )
+    p_gpu.add_argument(
+        "--connect-timeout",
+        type=int,
+        default=8,
+        help="SSH ConnectTimeout 秒",
+    )
+    p_gpu.add_argument("--json", action="store_true", default=True)
 
     args = parser.parse_args(argv)
     apply_runtime_env()
@@ -770,6 +809,28 @@ def fleet_main(argv: list[str] | None = None) -> None:
             raise SystemExit(2) from e
         console.print_json(json.dumps(out, ensure_ascii=False, default=str))
         if out.get("ok") is False:
+            raise SystemExit(1)
+        return
+    if args.cmd == "gpu-check":
+        from parc.fleet.gpu_watch import gpu_check, remind_hours_from_env
+
+        remind = args.remind_hours
+        if remind is None:
+            remind = remind_hours_from_env()
+        try:
+            out = gpu_check(
+                hosts=args.host,
+                include_local=bool(args.include_local),
+                notify=not bool(args.no_notify),
+                remind_hours=float(remind),
+                force=bool(args.force),
+                connect_timeout=int(args.connect_timeout),
+            )
+        except KeyError as e:
+            console.print(f"[red]{e}[/red]")
+            raise SystemExit(2) from e
+        console.print_json(json.dumps(out, ensure_ascii=False, default=str))
+        if not out.get("ok"):
             raise SystemExit(1)
         return
 

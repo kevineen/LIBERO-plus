@@ -21,6 +21,7 @@ nvidia-smi --query-gpu=utilization.gpu,memory.used --format=csv,noheader | head 
 ```bash
 uv run parc-fleet hosts
 uv run parc-fleet runs --limit 20
+uv run parc-fleet gpu-check --no-notify   # nuc/thor GPU 死活
 # または remote
 uv run parc-remote thor queue status --limit 8
 ```
