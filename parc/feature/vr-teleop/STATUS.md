@@ -40,9 +40,10 @@ Quest 実機 E2E と LeRobot 実書き込みは環境依存で backlog。
 ```bash
 cd parc
 uv run pytest tests/test_vr_*.py -q
-uv run parc-vr-teleop --fake-episode --no-dataset --dataset-root /tmp/vr_smoke
-bash scripts/vr_teleop.sh --fake --host 127.0.0.1 --port 8765 --no-dataset
-# 別端末で Quest / NativeWebSocket クライアントを接続
+bash scripts/vr_teleop.sh --config configs/vr/fake_smoke.yaml --fake --no-dataset
+PARC_ROBOT_VENV=/home/kevin/Matsuo/robot/.venv \
+  bash scripts/vr_teleop.sh --fake-episode --config configs/vr/fake_smoke.yaml
+# Quest: PARC_ROBOT_VENV=... bash scripts/vr_teleop.sh --config configs/vr/quest3_libero_spatial_task0.yaml
 ```
 
 ## Blockers

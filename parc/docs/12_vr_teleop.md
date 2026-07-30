@@ -82,6 +82,19 @@ bash scripts/train.sh configs/experiments/smolvla_ft_vr_demos_smoke.yaml
 4. タスク完了後 **B (save)** でエピソード保存（失敗なら Grip で discard）
 5. Menu で env reset
 
+## action_map 調整
+
+`configs/vr/*.yaml` の `action_map` で操作感を変える。Quest 正本の初期値:
+
+| キー | 意味 | `quest3_libero_spatial_task0` |
+|------|------|-------------------------------|
+| `pos_scale` | 位置差分の倍率 | `0.7` |
+| `rot_scale` | 回転差分の倍率 | `1.0` |
+| `max_pos` | 1 step の位置クリップ (m) | `0.03` |
+| `max_rot` | 1 step の回転クリップ (rad) | `0.35` |
+
+過敏なら `pos_scale` / `max_pos` を下げ、鈍ければ少し上げる。変更後は同じ `--config` で再起動するだけでよい。
+
 ## トラブルシュート
 
 | 症状 | 確認 |
