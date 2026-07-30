@@ -1,0 +1,24 @@
+# nuc: Gate3 official_aligned@30k (薄い SR≈0.357) の厚い再評価
+# winpc/thor 薄い ≈0.21 との差を厚い eval で確認。学習なし。
+name: smolvla_thick_eval_aligned30k_nuc
+seed: 0
+tags: [eval, smolvla, thick, aligned, gate3, nuc]
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 1
+  task_ids: null
+  tasks_per_category: 5
+  max_steps: 280
+  camera_height: 256
+  camera_width: 256
+  save_video: true
+  save_frames: false
+  use_classification: true
+
+policy:
+  type: checkpoint
+  action_dim: 7
+  device: cuda
+  flip_images: true
+  path: /home/kevin/Matsuo/LIBERO-plus/parc/experiments/20260728T032038Z_nuc_d9d066c5_smolvla_ft_official_aligned_nuc/train_output/checkpoints/030000/pretrained_model

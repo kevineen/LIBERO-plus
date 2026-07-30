@@ -93,6 +93,96 @@ def eval_main(argv: list[str] | None = None) -> None:
         raise
 
 
+def mix_datasets_main(argv: list[str] | None = None) -> None:
+    """公開 libero_plus と cam 再レンダを物理マージする。"""
+    parser = argparse.ArgumentParser(
+        prog="parc-mix-datasets",
+        description=(
+            "LeRobot MultiDataset が無効なため、base 部分集合 + cam を "
+            "1 データセットへマージする。"
+        ),
+    )
+    parser.add_argument(
+        "--base-repo-id",
+        default="lerobot/libero_plus",
+        help="公開側 repo_id",
+    )
+    parser.add_argument(
+        "--base-root",
+        required=True,
+        help="公開側 LeRobot root（Hub snapshot パス可）",
+    )
+    parser.add_argument(
+        "--cam-repo-id",
+        default="local/libero_cam_views_v1",
+        help="cam 再レンダ repo_id",
+    )
+    parser.add_argument(
+        "--cam-root",
+        default="data/datasets/libero_cam_views_v1",
+        help="cam 再レンダ root（parc 相対可）",
+    )
+    parser.add_argument(
+        "--out",
+        default="data/datasets/libero_plus_cam_mix_v1",
+        help="マージ出力ディレクトリ",
+    )
+    parser.add_argument(
+        "--out-repo-id",
+        default="local/libero_plus_cam_mix_v1",
+        help="マージ後の repo_id",
+    )
+    parser.add_argument(
+        "--base-episodes",
+        type=int,
+        default=240,
+        help="base からサンプリングするエピソード数（既定 240 ≈ cam60 の 4:1）",
+    )
+    parser.add_argument(
+        "--cam-episodes",
+        type=int,
+        default=0,
+        help="cam から使う本数（0=全件）",
+    )
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="サンプリングと見積もりだけ（書き込まない）",
+    )
+    parser.add_argument("--overwrite", action="store_true")
+    args = parser.parse_args(argv)
+    apply_runtime_env()
+
+    from parc.data.mix_datasets import mix_lerobot_datasets
+
+    base_root = Path(args.base_root).expanduser()
+    if not base_root.is_absolute():
+        base_root = (PARC_ROOT / base_root).resolve()
+    cam_root = Path(args.cam_root).expanduser()
+    if not cam_root.is_absolute():
+        cam_root = (PARC_ROOT / cam_root).resolve()
+    out = Path(args.out).expanduser()
+    if not out.is_absolute():
+        out = (PARC_ROOT / out).resolve()
+
+    cam_eps = None if int(args.cam_episodes) <= 0 else int(args.cam_episodes)
+    result = mix_lerobot_datasets(
+        base_repo_id=args.base_repo_id,
+        base_root=base_root,
+        cam_repo_id=args.cam_repo_id,
+        cam_root=cam_root,
+        output_repo_id=args.out_repo_id,
+        output_root=out,
+        base_episodes=int(args.base_episodes),
+        cam_episodes=cam_eps,
+        seed=int(args.seed),
+        dry_run=bool(args.dry_run),
+        overwrite=bool(args.overwrite),
+    )
+    console.print_json(json.dumps(result.__dict__, ensure_ascii=False))
+
+
 def train_main(argv: list[str] | None = None) -> None:
     """学習（または dry-run でコマンド生成）。"""
     parser = argparse.ArgumentParser(prog="parc-train")
@@ -774,6 +864,16 @@ def fleet_main(argv: list[str] | None = None) -> None:
         default=8,
         help="SSH ConnectTimeout 秒",
     )
+    p_gpu.add_argument(
+        "--auto-reboot",
+        action="store_true",
+        help="hosts.yaml で auto_reboot:true の機を連続 gpu_dead 時に再起動",
+    )
+    p_gpu.add_argument(
+        "--dry-run-reboot",
+        action="store_true",
+        help="再起動コマンドを実行せず記録・判定のみ",
+    )
     p_gpu.add_argument("--json", action="store_true", default=True)
 
     args = parser.parse_args(argv)
@@ -825,6 +925,8 @@ def fleet_main(argv: list[str] | None = None) -> None:
                 remind_hours=float(remind),
                 force=bool(args.force),
                 connect_timeout=int(args.connect_timeout),
+                auto_reboot=bool(args.auto_reboot),
+                dry_run_reboot=bool(args.dry_run_reboot),
             )
         except KeyError as e:
             console.print(f"[red]{e}[/red]")
@@ -906,7 +1008,7 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         console.print(
             "Usage: python -m parc.cli "
-            "[new|eval|train|list|smoke|enqueue|worker|prune|queue|sync|remote|fleet]"
+            "[new|eval|train|list|smoke|enqueue|worker|prune|queue|sync|remote|fleet|mix-datasets]"
         )
         sys.exit(1)
     cmd = sys.argv[1]
@@ -924,4 +1026,5 @@ if __name__ == "__main__":
         "sync": sync_main,
         "remote": remote_main,
         "fleet": fleet_main,
+        "mix-datasets": mix_datasets_main,
     }.get(cmd, lambda _: sys.exit(1))(rest)

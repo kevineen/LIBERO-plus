@@ -25,7 +25,7 @@
 | Gate3 | 別マシンで同レシピ再現 | 偶然でない |
 | Gate-RL | 厚い eval で全体 SR に余裕 + 最悪カテゴリが極端ゼロでない | GRPO 等を開始してよい |
 
-現状（2026-07-28）: Gate2/3 は aligned→unfreeze ラインで達成済みに近いが、**Gate-RL 未達**（厚い SR≈0.37 after +15k でも Camera/Language/Sensor=0、深掘り 0.16）。
+現状（2026-07-30）: Gate2/3 OK。**親 = thor unfreeze@30k**。深掘りで Camera 0.08–0.12 · Sensor/Language/Robot ≈0.16–0.20。**Gate-RL 未達**。次は dataset mix（cam-only 禁止）。
 
 ## 学習レシピ
 

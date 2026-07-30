@@ -142,6 +142,26 @@ cron 例（5 分おき・ハブの parc ディレクトリで）:
 
 状態は `experiments/.parc_gpu_watch.json` に保存。表示名は `PARC · <障害ホスト>`。
 
+### GPU 自動再起動（`--auto-reboot`）
+
+`hosts.yaml` で `auto_reboot: true` のホストだけ、hub の `gpu-check` から連続 `gpu_dead` 時に再起動できます。
+
+```bash
+# cron 例（5 分おき・自動再起動あり）
+*/5 * * * * cd /path/to/LIBERO-plus/parc && uv run parc-fleet gpu-check --auto-reboot >>/tmp/parc-gpu-check.log 2>&1
+
+# 判定だけ（再起動コマンドは実行しない）
+uv run parc-fleet gpu-check --auto-reboot --dry-run-reboot --host nuc --no-notify
+```
+
+- イベントログ: `experiments/gpu_watch_events.jsonl`
+- 障害時ダンプ: `experiments/gpu_watch_dumps/`
+- `auto_reboot: true` のホストのみ対象（CLI `--auto-reboot` または `PARC_GPU_AUTO_REBOOT=1` が必要）
+- 再起動条件: **連続 2 回** `gpu_dead`（`unreachable` では再起動しない）
+- 同一ホストの再起動間隔: **1 時間**クールダウン（`--dry-run-reboot` はクールダウンを開始しない）
+- 復帰後: GPU OK を確認してから `parc-worker` を自動起動（既に動いていれば skip）
+- 設計: [specs/2026-07-30-gpu-auto-reboot-design.md](superpowers/specs/2026-07-30-gpu-auto-reboot-design.md)
+
 ## 掴み精度改善（long FT ゲート）
 
 overnight 短学習で SR=0 のときは:
@@ -176,7 +196,8 @@ Jobs の **Target host** で投入先（local / nuc / thor …）を選べます
 uv run parc-fleet hosts
 uv run parc-fleet runs --limit 50
 uv run parc-fleet enqueue --host nuc -c configs/experiments/smoke_random.yaml --kind eval
-uv run parc-fleet gpu-check   # GPU 死活 → Discord（上記セクション参照）
+uv run parc-fleet gpu-check              # GPU 死活 → Discord（上記セクション参照）
+uv run parc-fleet gpu-check --auto-reboot  # 許可機の自動再起動（上記）
 ```
 
 リモート run の動画・詳細はハブから配信しません。対象ホストの Web（SSH トンネル）を開いてください。

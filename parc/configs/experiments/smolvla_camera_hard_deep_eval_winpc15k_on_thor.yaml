@@ -1,0 +1,23 @@
+# thor: +15k Camera hard のみ深掘り（full deep で 610–612 がほぼ 0）
+# mild は 608=0.40 と相対的に良い。hard 壁の確認用。
+name: smolvla_camera_hard_deep_eval_winpc15k_on_thor
+seed: 0
+tags: [eval, smolvla, camera, deep, hard, finetune15k, cross_machine, thor]
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 15
+  task_ids: [610, 611, 612]
+  max_steps: 280
+  camera_height: 256
+  camera_width: 256
+  save_video: true
+  save_frames: false
+  use_classification: true
+
+policy:
+  type: checkpoint
+  action_dim: 7
+  device: cuda
+  flip_images: true
+  path: /mnt/sda/parc_libero_plus/experiments/imported/20260728T010727Z_winpc_cb240365_smolvla_ft_continue30k_finetune15k_winpc/015000/pretrained_model

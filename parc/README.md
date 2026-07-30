@@ -37,7 +37,8 @@ bash scripts/start_web.sh
 # 複数 PC Fleet（hosts.yaml 必須）
 # uv run parc-fleet hosts
 # uv run parc-fleet runs
-# uv run parc-fleet gpu-check   # hub→Discord GPU 死活
+# uv run parc-fleet gpu-check              # hub→Discord GPU 死活
+# uv run parc-fleet gpu-check --auto-reboot  # nuc 等 auto_reboot 機の自動再起動
 # 手順: docs/11_multi_machine.md / docs/10_ops_ui.md
 ```
 
@@ -102,6 +103,8 @@ uv run parc-list --sweep-id overnight_ft_smoke
 | GRPO/GSPO スモーク（状態ガウス方策） | SmolVLA 本体 log-prob の本格 RL |
 | Web 実験管理・リモート Jupyter |  |
 | Fleet 横断（runs/queue・ホスト指定投入） | 自動ロードバランス（`--host auto`） |
-| Google Drive ckpt sync（rclone） | ハブ経由の remote artifact 配信 |
+| GPU 死活監視 + 許可機の自動再起動 | ハブ経由の remote artifact 配信 |
+| データセット物理 mix（`parc-mix-datasets`） | MultiLeRobotDataset（現行 LeRobot 無効） |
+| Google Drive ckpt sync（rclone） | |
 
 親ディレクトリの upstream README はベンチマーク本体用です。コンペ作業は **この `parc/` をルート** にしてください。
