@@ -3,6 +3,8 @@
 ルール発表前でも、**データ差し替え**と**学習レシピ改善**を再現可能な形で回すための手順書です。  
 評価は常に `parc-eval` / `eval_ckpt.sh`、実験は YAML + `experiments/<run_id>/` で追跡します。
 
+対応度の要約（キャッチアップ向け）: [catchup/05_adaptability.md](../catchup/05_adaptability.md)。
+
 ## 改善の原則
 
 1. **1 回の実験で変える軸は 1〜2 個**（データ or ハイパーパラ or アーキ）
@@ -13,6 +15,20 @@
 ```text
 仮説 → YAML コピー → train → eval_ckpt → parc-list で比較 → 次の仮説
 ```
+
+### データ運用ルール（スケーリング）
+
+要約は [02_data.md](02_data.md)。自前デモ・mix・評価分割では次を守る。
+
+| ルール | 内容 |
+|--------|------|
+| **多環境 × 少デモ** | 同じ task への収録時間積み上げより、suite / `init_state` / 摂動カテゴリ（VR は `collection_queue`）を先に広げる。デモ本数は閾値で飽和しやすい |
+| **train/eval 分割** | **episode 単位**（可能なら operator / collection date / environment 単位）。**frame 単位のランダム分割はリーク**のため禁止 |
+| **raw 不変** | 生データセットを上書きしない。変換コード・設定・schema version を残す。`parc-filter-demos` / `parc-mix-datasets` は manifest で再生成可能にし、除外 episode は **ID + 理由**を残す（現状 manifest はあるが理由付き exclusion log は M0 後の M5） |
+| **Filter / Relabel / Condition** | 軌道が壊れていれば filter。軌道は有効でラベルだけ怪しければ relabel（指示文ミス等）。有効な軌道は資産、ラベルは修理可能な部品。学習 baseline は当面 success-only filter |
+| **同期・対応付け** | 現行 VR は同ステップ `(o,a)`。追従遅れ用の `a_{t+Δ}` は制御周期確定後に設計変数化する（roadmap） |
+
+品質ロードマップ: [feature/vr-teleop/roadmap-data-quality.md](../feature/vr-teleop/roadmap-data-quality.md)。
 
 ---
 

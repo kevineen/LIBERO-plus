@@ -1,13 +1,13 @@
 # 01. 現在の状況（スナップショット）
 
-時点: **2026-07-31 05:09 JST 頃**
+時点: **2026-07-31 08:26 JST 頃**
 
 ## 一言
 
 - **親 = continue10k** 維持（厚い 0.514 · Cam deep **0.20**）。
-- winpc lr↓5k 完了（薄い 0.500）。ckpt を thor `imported/` へ rsync 済み。
-- **thor**: lr↓5k 厚い + Camera deep を投入（親更新判定待ち）。
-- **VR**: データ品質 M1–M4（filter / RTT / queue / replay / Approx Time）ソフト完了。Quest 実機 E2E は blocked。
+- **mix v2 Phase A** 完了: winpc FT +5k · 薄い **SR=0.571**（Cam/Lang **0.000**）。
+- **thor**: mix v2 厚い **running** · Camera deep **queued**（親判定待ち）。
+- nuc 不通のまま。
 
 ## マシン別
 
@@ -15,24 +15,26 @@
 
 | 項目 | 状態 |
 |------|------|
-| worker | 稼働中（キュー空） |
+| worker | 稼働想定 |
 | running / queued | なし |
+| 直近完了 | mix v2 · `q_…a908742f` · run `20260730T221003Z_winpc_c9dc1b28_…` · 薄い **0.571** · ckpt `005000` |
 | 親 ckpt | continue10k `…cbbf5c8b…/010000/pretrained_model` |
-| 直近完了 | lr↓5k · job `q_20260730T184655…380a43e2` · run `20260730T184742Z_…c7e7c8f2_…` · 薄い **0.500** · ckpt `005000` |
+| dataset | `libero_plus_cam_mix_v2`（120+60=180 eps） |
 
 ### thor
 
 | 項目 | 状態 |
 |------|------|
-| worker | 稼働想定 |
-| running / queued | 厚い `q_20260730T200858…8aa312ee` · Cam deep `q_20260730T200859…3283952d` |
-| ckpt | `imported/…lr5e6_5k_wi/005000/pretrained_model` |
-| 直近完了 | continue10k 厚い **0.514** · Cam deep **0.20** |
+| worker | 稼働中 |
+| running | mix v2 厚い · `q_…c054cdce` · `smolvla_thick_eval_mix_v2_on_thor` |
+| queued | mix v2 Cam deep · `q_…3e13c45d` · `smolvla_camera_deep_eval_mix_v2_on_thor` |
+| ckpt 到着 | `…/imported/20260730T221003Z_winpc_c9dc1b28_…/005000/pretrained_model` **確認済** |
+| 直近完了 | lr↓5k 厚い **0.371** · Cam deep **0.14**（敗北） |
 
 ### nuc
 
 | 項目 | 状態 |
 |------|------|
-| 到達 | **不通**（2026-07-31 05:33）WSL `100.82.118.86` ping/SSH timeout |
-| Windows | Tailscale `100.77.194.30` は ping・:22 生存。**SSH 鍵未整備**のため `shutdown /r` 不可 |
-| 再起動 | リモート不可 → **手元／帯域外**が必要。戻ったら `parc-fleet hosts` / `gpu-check --host nuc` |
+| 到達 | **不通**（`100.82.118.86` SSH timeout） |
+| 想定 | Tailscale / WSL sshd 未起動の可能性 |
+| 次 | 到達後に `parc-fleet hosts` · worker 確認。ジョブは積まない |

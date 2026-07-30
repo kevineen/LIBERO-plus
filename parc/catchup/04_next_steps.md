@@ -40,13 +40,30 @@
 
 ## 3. おすすめの次アクション（人間メンバー）
 
-優先度は `strategy/03_next_actions.md` が正ですが、キャッチアップ直後の定番は次です。
+優先度は `strategy/03_next_actions.md` が正です。対応度の地図は [05_adaptability.md](05_adaptability.md)。
+
+### いまの主線（2026-07-31）
+
+1. **mix v2 親判定** — thor の厚い + Camera deep 結果を見て親更新 or Phase B（cam 量/重み）  
+2. **薄い eval だけで決めない** — [strategy/05](../strategy/05_decision_rules.md)  
+3. **Quest E2E（M0）** — 機材が来たら [docs/12](../docs/12_vr_teleop.md) → verify → success-only FT smoke  
+4. **本選モデルはアダプタ待ち** — Pi0/Gr00t は差し込み口のみ。配布前に独自 big train しない  
+
+### キャッチアップ直後の定番（主線と並行してよいもの）
 
 1. **smoke より長い FT** — YAML をコピーして `steps` を増やし、同じ eval プロトコルで比較する  
 2. **カテゴリ別の弱点を見る** — subset / classification 付き評価で Camera / Robot 等を見る  
 3. **改善仮説を 1 つだけ試す** — データ mix・学習レシピ・観測など（[docs/07](../docs/07_custom_data_and_algos.md)）  
-4. （任意）**VR デモ** — Quest が使えるなら [docs/12](../docs/12_vr_teleop.md)。学習は必ず success-only（`parc-filter-demos`）  
-5. （任意）**運用** — キュー / Web / Fleet は必要になったら docs/09–11
+4. （任意）**VR デモ** — Quest が使えるなら上記 M0。学習は必ず success-only（`parc-filter-demos`）  
+5. （任意）**運用** — キュー / Web / Fleet は必要になったら docs/09–11  
+
+### データ／モデルを変えるときの入口
+
+| 変えたい | まず読む |
+|----------|----------|
+| 公開・ローカル・mix・VR データ | [05](05_adaptability.md) §1 → [docs/07](../docs/07_custom_data_and_algos.md) A–B |
+| LeRobot 内アーキ（act 等） | [05](05_adaptability.md) §2 → docs/07 C2 |
+| Pi0 / Gr00t | [05](05_adaptability.md) §4-C → [strategy/03](../strategy/03_next_actions.md) 将来節 |
 
 ## 4. やってはいけないこと（短く）
 

@@ -81,6 +81,9 @@ PARC_ROBOT_VENV=/home/kevin/Matsuo/robot/.venv \
 - [x] **M2** RTT / 遅延ゲート（#2）
 - [x] **M3** 摂動・カテゴリ多様化キュー（#4）
 - [x] **M4** 物理リプレイ検証 + Approximate Time 同期器（#5 #6）
+- [ ] **M5** verify 統計監査 → exclusion log — **deferred**（M0 完了・承認後。順は固定）
+
+詳細・講義由来の次候補: [roadmap-data-quality.md](roadmap-data-quality.md)。
 
 ### その他
 

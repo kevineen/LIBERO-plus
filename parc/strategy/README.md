@@ -23,7 +23,7 @@ Cursor: `.cursor/rules/parc-agent.mdc` が alwaysApply で上記を指す。
 | [04_machine_roles.md](04_machine_roles.md) | winpc / thor / nuc の役割・速度目安・現在/将来の割り振り表 |
 | [05_decision_rules.md](05_decision_rules.md) | Gate・eval 信頼度・RL 投入の判断ルール |
 
-最終更新: **2026-07-31**（JST · thor に lr↓5k 厚い+Cam deep 投入）
+最終更新: **2026-07-31**（JST · mix v2 薄い 0.571 · thor 厚い+Cam 実行中 · 親判定待ち）
 
 関連オペ docs: [10_ops_ui.md](../docs/10_ops_ui.md) · [11_multi_machine.md](../docs/11_multi_machine.md) · [09_autoloop_and_rl.md](../docs/09_autoloop_and_rl.md)  
 新規メンバー: [catchup/](../catchup/)

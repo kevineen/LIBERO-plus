@@ -25,7 +25,7 @@
 | Gate3 | 別マシンで同レシピ再現 | 偶然でない |
 | Gate-RL | 厚い eval で全体 SR に余裕 + 最悪カテゴリが極端ゼロでない | GRPO 等を開始してよい |
 
-現状（2026-07-31）: Gate2/3 OK。**親 = continue10k**（厚い 0.514 · Cam deep **0.20**；mix10k は厚い同点・Cam 0.12；旧親 unfreeze 厚い 0.40）。lr↓5k 学習済み（薄い 0.500）· **親更新は thor 厚い+Cam deep 後**。**Gate-RL 未達**。cam-only 禁止は維持。
+現状（2026-07-31）: Gate2/3 OK。**親 = continue10k**（厚い 0.514 · Cam deep **0.20**）。lr↓5k 敗北。mix v2 薄い 0.571（Cam/Lang 0）→ **thor 厚いで親判定待ち**。**Gate-RL 未達**。cam-only 禁止は維持。
 
 ## 学習レシピ
 

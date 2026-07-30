@@ -66,7 +66,7 @@ parc/
 
 | 文書 | 内容 |
 |------|------|
-| [catchup/](catchup/) | **新規メンバー向けキャッチアップ**（概念・学習 URL・初回実行） |
+| [catchup/](catchup/) | **新規メンバー向けキャッチアップ**（概念・初回実行・[モデル/データ対応度](catchup/05_adaptability.md)） |
 | [docs/00_overview.md](docs/00_overview.md) | 全体像と用語 |
 | [docs/01_setup.md](docs/01_setup.md) | 環境構築・assets・libero パス |
 | [docs/02_data.md](docs/02_data.md) | 学習データ |
