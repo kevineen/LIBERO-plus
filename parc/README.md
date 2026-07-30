@@ -22,6 +22,10 @@ uv run parc-list
 # SmolVLA 実学習（親 Matsuo/robot venv + CUDA）
 bash scripts/train.sh configs/experiments/smolvla_ft_smoke.yaml
 
+# 公開 + cam 再レンダの物理 mix（MultiDataset 無効のため事前マージ）
+# bash scripts/mix_datasets.sh --base-root <libero_plus_snapshot> --dry-run
+# bash scripts/train.sh configs/experiments/smolvla_ft_libero_cam_mix_from_unfreeze_winpc.yaml
+
 # 学習済み checkpoint 評価（同じく robot venv）
 bash scripts/eval_ckpt.sh configs/experiments/smolvla_ckpt_smoke_eval.yaml
 
@@ -61,6 +65,7 @@ parc/
 
 | 文書 | 内容 |
 |------|------|
+| [catchup/](catchup/) | **新規メンバー向けキャッチアップ**（概念・学習 URL・初回実行） |
 | [docs/00_overview.md](docs/00_overview.md) | 全体像と用語 |
 | [docs/01_setup.md](docs/01_setup.md) | 環境構築・assets・libero パス |
 | [docs/02_data.md](docs/02_data.md) | 学習データ |

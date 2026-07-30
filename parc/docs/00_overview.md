@@ -1,5 +1,7 @@
 # 00. 全体像
 
+> **初めての方:** 用語と初回実行は [catchup/](../catchup/)（[README](../catchup/README.md) → 概念 → 学習 URL → first run）から始めてください。
+
 ## 何を作っているか
 
 PARC2026 はシミュレーション上で VLA（Vision-Language-Action）を鍛え、  

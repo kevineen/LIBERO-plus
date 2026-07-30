@@ -22,7 +22,8 @@ cd parc && bash scripts/setup_env.sh && uv run parc-smoke --skip-env
 # 複数 PC / Fleet: docs → parc/docs/11_multi_machine.md
 ```
 
-詳細は [`parc/README.md`](./parc/README.md) と [`parc/docs/`](./parc/docs/) を参照してください。
+詳細は [`parc/README.md`](./parc/README.md) と [`parc/docs/`](./parc/docs/) を参照してください。  
+新規メンバー・初心者は [`parc/catchup/`](./parc/catchup/) から始めてください。
 
 ## 🔥 Overview
 This repository contains the official implementation and benchmark for our paper "In-depth Robustness Analysis for Vision-Language-Action Models". We systematically expose the hidden vulnerabilities of contemporary VLA models through comprehensive robustness evaluation across seven perturbation dimensions. You can simply replace the original `libero` with a `pip install -e .` without modifying your code.
