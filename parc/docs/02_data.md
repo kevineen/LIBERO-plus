@@ -42,11 +42,24 @@ huggingface-cli download lerobot/libero_plus --repo-type dataset --include READM
 
 今は公開 LIBERO-plus データで **パイプライン動作確認** をする段階です。
 
+## データ品質・スケーリング運用ルール
+
+収録時間を増やすことが目的ではない。**単位コストあたりの「同期・多様・正しくラベル付け・検証可能」な軌跡**を増やす（詳細: [feature/vr-teleop/roadmap-data-quality.md](../feature/vr-teleop/roadmap-data-quality.md)）。
+
+| ルール | 内容 |
+|--------|------|
+| **多環境 × 少デモ** | 同じ task に時間を積むより、suite / init_state / 摂動カテゴリを先に広げる。デモ数は閾値で飽和しやすい |
+| **frame 分割禁止** | train/eval は **episode 単位**（可能なら operator / collection date 単位）。frame ランダム分割はリーク |
+| **raw 不変** | 生データセットを上書きしない。変換コード・設定はバージョン管理。filter/mix は manifest で再生成可能にする。除外した episode は ID + 理由を残す |
+| **失敗 vs 学習** | 失敗エピソードは分析用に残してよい。学習 baseline は `parc-filter-demos --success-only` |
+
+統計監査（Δt・行動分布・`stats.json`）と exclusion log のコード化は **M0 Quest E2E 後**（roadmap M5）。
+
 ## オリジナルデータの追加
 
 自前デモの LeRobot 変換、ローカル `dataset_root`、混合学習、評価スキーマ互換の手順は次を参照:
 
-→ **[07_custom_data_and_algos.md](07_custom_data_and_algos.md)**
+→ **[07_custom_data_and_algos.md](07_custom_data_and_algos.md)**（スキーマ・分割・raw 不変の詳細もこちら）
 
 **Quest 3 でデモを録る:** LIBERO sim を VR テレオプし、直接 LeRobot v3 に書く。
 

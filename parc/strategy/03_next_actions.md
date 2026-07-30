@@ -29,15 +29,23 @@
 - [x] **winpc: lr↓ 短 FT**（5e-6 · +5k · 同 mix）— **完了**  
   - job `q_20260730T184655…380a43e2` · run `20260730T184742Z_winpc_c7e7c8f2_…` · ckpt `005000`  
   - 薄い smoke **SR=0.500**（Camera 0.000 · 親決め未使用）
-- [ ] **thor: lr↓5k 厚い + Camera deep** — **投入**（親更新判定）  
-  - thick `q_20260730T200858…8aa312ee` · config `smolvla_thick_eval_mix_lr5e6_5k_on_thor.yaml`  
-  - Cam deep `q_20260730T200859…3283952d` · config `smolvla_camera_deep_eval_mix_lr5e6_5k_on_thor.yaml`  
-  - ckpt: `imported/…lr5e6_5k_wi/005000`
+- [x] **thor: lr↓5k 厚い + Camera deep** — **完了（親未満）**  
+  - thick **0.371** · `q_…8aa312ee` · `20260730T200910Z_thor_a4d14910_…`  
+  - Cam deep **0.14** · `q_…3283952d` · `20260730T202113Z_thor_fded971f_…`  
+  - → **親 = continue10k 維持** · lr↓ 同軸延長は打ち切り
+- [x] **winpc: mix v2 Phase A**（base120+cam60 · +5k · 1e-5 · from continue10k）— **完了**  
+  - job `q_20260730T220954…a908742f` · run `20260730T221003Z_winpc_c9dc1b28_…` · ckpt `005000`  
+  - 薄い **SR=0.571**（Cam/Lang **0.000** · 親決め未使用）
+- [ ] **thor: mix v2 厚い + Camera deep** — **投入済**（厚い running · Cam queued）  
+  - thick `q_…c054cdce` · Cam deep `q_…3e13c45d`  
+  - 比較: continue10k 厚い 0.514 / Cam deep 0.20 → 親判定 / 負けなら Phase B
 ## 直近で打ち切ったもの
 
 - [x] **winpc**: Camera 再レンダ FT（cam-only）  
   - job: `q_20260728T082609607849+0000_04e5d231` · 薄い **SR=0.000**（Camera 5/5 fail）
   - 判断: **同系の即延長はしない**。mix 方法を作り直さない限り再投入しない
+- [x] **winpc**: lr↓5k（5e-6 · +5k · 同 mix）  
+  - 厚い 0.371 / Cam 0.14 < continue10k → **同レシピ延長打ち切り**
 
 ## 次にやる（評価・判断）— 優先
 
@@ -57,8 +65,12 @@
 - [x] **mix10k 評価（thor）** — 厚い 0.514 / Cam deep 0.12
 - [x] **mix continue10k 学習** — 完了（薄い Cam smoke 0.000）
 - [x] **thor: continue10k 厚い + Camera deep** — 完了 → **親 = continue10k**
-- [x] **winpc: lr↓ 短 FT**（5e-6 · +5k）— 完了 · 薄い 0.500
-- [ ] **thor: lr↓5k 厚い + Camera deep**（親更新判定）— **進行中**
+- [x] **winpc: lr↓ 短 FT**（5e-6 · +5k）— 完了 · 薄い 0.500 · **厚いで敗北**
+- [x] **thor: lr↓5k 厚い + Camera deep** — 完了 · 親維持
+- [x] **mix 再設計 Phase A**（base120+cam60）→ winpc 短 FT — 薄い 0.571
+- [ ] **thor: mix v2 厚い + Camera deep** — **実行中**（親判定）
+- [ ] （負け時）Phase B: cam 量/重み再調整 → 短 FT
+- [ ] （任意・空き埋め）continue10k の Sensor/Language 深掘りを thor で補強
 - [ ] 必要なら winpc cam-only `010000` を Camera deep だけ再評価（優先低）
 
 ## 次の学習候補（レビュー後）
@@ -66,9 +78,9 @@
 優先候補（互角なら上）:
 
 1. ~~continue10k の thor 結果待ち~~ — 完了 · 親確定
-2. ~~lr↓ 短 FT~~ — 学習完了 · thor 評価進行中
-3. 親再評価（continue10k vs lr↓5k）— 厚い+Cam deep 結果後
-4. 伸びなければ mix 再設計（重み/量）。同レシピ延長は打ち切り候補
+2. ~~lr↓ 短 FT~~ — **敗北・打ち切り**
+3. **mix v2 厚い判定** — 次。負けなら Phase B（重み/量）
+4. （任意）親 continue10k の弱点深掘りだけ追加
 
 やらない（現状）:
 
@@ -76,6 +88,7 @@
 - [ ] ~~GRPO / GSPO~~（Camera hard=0・Gate-RL 未達）
 - [ ] ~~同レシピ +15k をもう一本すぐ~~
 - [ ] ~~cam-only rerender FT をそのまま再投入~~（薄い 0.000）
+- [ ] ~~lr↓5k のさらなる延長~~（厚いで親未満）
 - [ ] ~~色 jitter だけの aug を「Camera 対策」と呼ぶ~~（幾何視点が主因）
 
 ## インフラ / Fleet
@@ -88,7 +101,10 @@
   - 残: Quest 実機 E2E・LeRobot 永続化確認（robot venv）
 - [x] **VR データ品質 M1–M4（ソフト）** — 2026-07-31  
   - M1 `parc-filter-demos` success-only / M2 RTT ゲート / M3 collection_queue / M4 replay + Approx Time  
-  - 正本: [feature/vr-teleop/roadmap-data-quality.md](../feature/vr-teleop/roadmap-data-quality.md)
+  - 正本: [feature/vr-teleop/roadmap-data-quality.md](../feature/vr-teleop/roadmap-data-quality.md)  
+  - 運用ルール: [docs/02_data.md](../docs/02_data.md)（多環境×少デモ・frame 分割禁止・raw 不変）  
+  - **M5 deferred（M0 完了・承認後）:** verify 統計監査 → exclusion log（この順で固定。先行実装しない）
+- [x] **catchup: モデル/データ対応度** — [catchup/05_adaptability.md](../catchup/05_adaptability.md)（2026-07-31）
 - [ ] 必要なら `hosts.example.yaml` / docs に winpc Port 2222 パターンを追記
 - [ ] nuc の SSH（thor→nuc / Windows `100.77.194.30`）を安定化。必要なら winpc と同様の鍵整備
 - [ ] **Quest 実機でデモ 1 本** → `data/datasets/vr_libero_demos` → success-only FT smoke  

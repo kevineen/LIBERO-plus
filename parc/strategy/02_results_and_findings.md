@@ -99,7 +99,32 @@ vs mix10k: 厚い全体同点。Cam deep **0.20 > 0.12**。Lang/Light↑、Bg/Se
 | 厚い / Cam deep | **未実施**（thor 待ち） |
 
 薄いカテゴリ: Background **1.00** · Lang/Light/Objects/Robot/Sensor **0.50** · Camera **0.00**  
-解釈: continue 系の薄い Cam smoke 0.000 と同型。**親決めに使わない**。次は thor 厚い + Cam deep。
+解釈: continue 系の薄い Cam smoke 0.000 と同型。**親決めに使わない**。
+
+| 指標 | SR | run |
+|------|---:|-----|
+| 厚い (thor) | **0.371** | `20260730T200910Z_thor_a4d14910_…` |
+| Cam deep (thor) | **0.14** | `20260730T202113Z_thor_fded971f_…` |
+
+厚いカテゴリ: Light 0.80 · Objects 0.60 · Bg/Lang 0.40 · Robot/Sensor 0.20 · Camera **0.00**  
+Cam deep by task: 608:0.10 · 609:0.20 · 610:0.20 · 611:0.10 · 612:0.10  
+vs continue10k: 厚い **0.371 < 0.514** · Cam **0.14 < 0.20** → **親維持・同レシピ延長打ち切り**（05）。
+
+### mix v2 Phase A（2026-07-31 train · 薄いのみ）
+
+| 項目 | 値 |
+|------|-----|
+| job | `q_20260730T220954…a908742f` |
+| run | `20260730T221003Z_winpc_c9dc1b28_…` |
+| pretrained | continue10k `…cbbf5c8b…/010000` |
+| dataset | `libero_plus_cam_mix_v2`（base120+cam60） |
+| steps | +5k · lr **1e-5** · bs=8 |
+| ckpt | `005000`（`last`） |
+| 薄い smoke | tpc=2 · n=14 · **SR=0.571** |
+| 厚い / Cam deep | **未実施**（thor 待ち · YAML 済） |
+
+薄いカテゴリ: Bg/Light/Sensor **1.00** · Objects/Robot **0.50** · Camera/Language **0.000**  
+解釈: 全体は薄い unfreeze 並みに見えるが **Cam/Lang=0**。**親決めに使わない**。比較対象は continue10k 厚い 0.514 / Cam deep 0.20。
 
 ### カテゴリ別（厚い）
 
@@ -191,9 +216,10 @@ Run: `20260728T082624Z_winpc_8cd84fbf_…` · 薄い **SR=0.000**（Camera 5/5 f
 
 1. **親 = continue10k**（厚い 0.514 · Cam deep 0.20）。mix10k は厚い同点だが Cam 劣後。旧親 unfreeze cross 0.40。
 2. Sensor / Language / RobotInit 深掘りも **0.16–0.20**。Language はタスク二極。Camera hard は未解決だが深掘りは改善傾向。
-3. **lr↓5k 学習完了**・薄い 0.500（Cam 0）。親更新は thor 厚い+Cam deep 後。cam-only 禁止。
-4. Gate-RL 未達。GRPO しない。
-5. nuc Gate3 厚い 0.257。再現は確定。
+3. **lr↓5k は失敗**（厚い 0.371 / Cam 0.14）。同 mix・同軸延長は打ち切り。
+4. **mix v2**（base120+cam60 · +5k）薄い 0.571（Cam/Lang 0）— 厚いで親判定待ち。
+5. Gate-RL 未達。GRPO しない。
+6. nuc Gate3 厚い 0.257。再現は確定。nuc 現在不通。
 
 ## 主要 Run ID（参照用）
 
@@ -231,3 +257,6 @@ Run: `20260728T082624Z_winpc_8cd84fbf_…` · 薄い **SR=0.000**（Camera 5/5 f
 | thor thick continue10k（**0.514** · **現行親**） | `20260730T090125Z_thor_2798bc08_…` |
 | thor camera deep continue10k（**0.20**） | `20260730T091211Z_thor_ea7c443f_…` |
 | winpc lr↓5k train（薄い **0.500**） | `20260730T184742Z_winpc_c7e7c8f2_…` |
+| thor thick lr↓5k（**0.371** · 親未満） | `20260730T200910Z_thor_a4d14910_…` |
+| thor camera deep lr↓5k（**0.14**） | `20260730T202113Z_thor_fded971f_…` |
+| winpc mix v2 +5k train（薄い **0.571**） | `20260730T221003Z_winpc_c9dc1b28_…` |

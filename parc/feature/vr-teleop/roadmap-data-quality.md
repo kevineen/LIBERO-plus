@@ -141,6 +141,22 @@
 | オペレータ別 saved_per_hour UI | Web / Fleet ダッシュボード |
 | ハンドトラッキング / 3D ビュー / 実機 Franka / パススルー | 既存 Phase 2+ backlog |
 
+### 講義由来・次候補（M0 後にコード化）
+
+運用ルールの正本は [docs/02_data.md](../../docs/02_data.md) / [docs/07_custom_data_and_algos.md](../../docs/07_custom_data_and_algos.md)。ここでは実装バックログのみ。
+
+| 優先 | 項目 | メモ |
+|------|------|------|
+| 高 | verify 統計監査 | エピソード長・行動次元の分布/レンジ・Δt 分布・タスク別本数・`stats.json` 妥当性。壊れても例外を出さない同期バグの検知 |
+| 高 | exclusion log | 除外した episode ID + 理由を残す。`filter_manifest` / `mix_manifest` と契約を揃え、raw を上書きせず再生成可能にする |
+| 高 | train/eval 分割ルール | episode 単位（可能なら operator 単位）。frame ランダム分割はリークのため禁止（docs に固定済み） |
+| 中 | action lag Δ | `o_t` ↔ `a_{t+Δ}` を YAML 設計変数化。制御周期確定後に Δ=0 vs 小遅延の感度を 1 回測る |
+| 中 | Filter / Relabel / Condition | 壊れた軌道は filter。ラベルだけ怪しければ relabel（軌道は資産）。指示文汚染時は success-only だけでは足りない |
+| 低 | rerun / Foxglove | 軌道の目視監査。実機エピソードが溜まってから。M0 前の導入はコスパが悪い |
+
+**実装順（コードは承認後・M0 完了後）:**  
+`M0 Quest E2E` → `verify 統計監査` → `exclusion log（ID + reason）` →（必要なら）action lag Δ / 可視化。
+
 ---
 
 ## マイルストーン案
@@ -152,6 +168,7 @@
 | **M2** 遅延可視化・ゲート | #2 | RTT メタ + しきい値動作 — **done** |
 | **M3** スケール多様 | #4 | 摂動キュー + coverage — **done**（ラベル/キュー） |
 | **M4** 検証強化 | #5 #6 | replay + Approximate Time 同期器 — **done** |
+| **M5** 統計・再現ゲート | 講義由来・次候補の高優先 | verify 統計 + exclusion log — **deferred（M0 後）** |
 
 ---
 
@@ -160,3 +177,5 @@
 - 公開データ mix 戦略全体の再設計（別 docs / strategy）
 - LeRobot features への `success` 列追加（jsonl サイドカーを正とする）
 - Unity クライアントの大規模改修（E2E に必要な最小変更のみ #1 で可）
+- SLAM / UMI・rosbag/MCAP 移行・オフライン選別ライブラリ（ReMix 等）の先行実装
+- cross-embodiment 翻訳・data flywheel（π0 / RECAP）— 配布データ・閉ループ評価が揃ってから

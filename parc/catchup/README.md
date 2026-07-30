@@ -17,6 +17,7 @@ cd /home/kevin/Matsuo/robot/LIBERO-plus/parc
 | 2 | [02_study_urls.md](02_study_urls.md) | 半日〜 | Must URL を読む（論文は abstract + 図だけでも可） |
 | 3 | [03_first_run.md](03_first_run.md) | 半日〜1 日 | setup → smoke → FT → eval → list |
 | 4 | [04_next_steps.md](04_next_steps.md) | 必要時 | 既存 docs / strategy / 運用への橋渡し |
+| 5 | [05_adaptability.md](05_adaptability.md) | 30–60 分 | モデル・データ差し替えの対応度と次施策 |
 
 ## 完了チェックリスト
 
@@ -26,6 +27,7 @@ cd /home/kevin/Matsuo/robot/LIBERO-plus/parc
 - [ ] ランダム評価で `experiments/<run_id>/` ができる（03）
 - [ ] SmolVLA smoke FT（200 step）が終わる（03）
 - [ ] ckpt 評価を回し、`uv run parc-list` で自 run が見える（03）
+- [ ] 「データは YAML で差し替え可・本選モデルはアダプタ待ち」が説明できる（05）
 
 ## ドキュメントの役割分担
 
@@ -44,3 +46,4 @@ cd /home/kevin/Matsuo/robot/LIBERO-plus/parc
 - 環境構築の詳細 → [docs/01_setup.md](../docs/01_setup.md)
 - Quest 3 でデモを録る → [docs/12_vr_teleop.md](../docs/12_vr_teleop.md)（失敗は分析用・学習は `parc-filter-demos --success-only`）
 - VR 機能の進捗 → [feature/vr-teleop/STATUS.md](../feature/vr-teleop/STATUS.md)
+- モデル／データ差し替えの対応度 → [05_adaptability.md](05_adaptability.md)

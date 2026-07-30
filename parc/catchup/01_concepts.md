@@ -25,7 +25,8 @@
 | デモ / エピソード | 人間や専門家方策が残した軌跡データ |
 | ファインチューニング (FT) | 事前学習済みモデルを、自分のタスク用データで追加学習する |
 
-このプロジェクトの当面の主戦場は **デモデータでの FT** です（本選で配布モデルが来たら差し替え）。
+このプロジェクトの当面の主戦場は **デモデータでの FT** です（本選で配布モデルが来たら差し替え）。  
+差し替えのしやすさ: **同一スキーマのデータは YAML で高対応 / 本選モデルはアダプタ差し込み口のみ** — 詳細は [05_adaptability.md](05_adaptability.md)。
 
 デモの集め方の一例: **Meta Quest 3 で LIBERO をテレオプ**して LeRobot 形式で保存する（[docs/12_vr_teleop.md](../docs/12_vr_teleop.md)）。
 
@@ -33,10 +34,11 @@
 
 - **失敗エピソードも保存してよい**（分析用）。学習 baseline は `parc-filter-demos --success-only` で成功だけ切る
 - 遅延が悪い軌跡は `degraded` フラグや Save 拒否（`latency_policy`）で見える化する
-- 多様化は `collection_queue`（suite / task / init / category）でスケジュールする
+- 多様化は `collection_queue`（suite / task / init / category）でスケジュールする — **同じ task に時間を積むより多環境×少デモ**
+- train/eval は **episode 単位**（frame ランダム分割はリーク）
 - 保存 action の正しさは `parc-replay-demos` で物理リプレイ検証できる
 
-詳細ロードマップ: [feature/vr-teleop/roadmap-data-quality.md](../feature/vr-teleop/roadmap-data-quality.md)。
+詳細ロードマップ: [feature/vr-teleop/roadmap-data-quality.md](../feature/vr-teleop/roadmap-data-quality.md)。運用ルール: [docs/02_data.md](../docs/02_data.md)。
 
 ## 3. VLA（Vision-Language-Action）
 
