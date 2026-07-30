@@ -16,25 +16,22 @@ Quest (Unity OpenXR)  --WS-->  parc-vr-teleop (PC)
 ```bash
 cd /home/kevin/Matsuo/robot/LIBERO-plus/parc
 
-# 1) フェイク env（Quest / LIBERO 無しでプロトコル確認）
-bash scripts/vr_teleop.sh --fake --host 0.0.0.0 --port 8765 --no-dataset
+# 1) CLI オプション確認
+uv run parc-vr-teleop --help
 
-# 2) フェイク 1 エピソード書き込みスモーク（WS なし）
-bash scripts/vr_teleop.sh --fake-episode --no-dataset \
-  --dataset-root data/datasets/vr_libero_demos_smoke
+# 2) フェイク env（Quest / LIBERO 無しでプロトコル確認）
+bash scripts/vr_teleop.sh --config configs/vr/fake_smoke.yaml --fake --no-dataset
 
-# 3) 本番 LIBERO（親 LIBERO-plus/.venv）
-USE_LIBERO_VENV=1 bash scripts/vr_teleop.sh --host 0.0.0.0 --port 8765 \
-  --suite libero_spatial --task-id 0 \
-  --dataset-root data/datasets/vr_libero_demos
-
-# LeRobot 書き込みには robot venv（lerobot 入り）が必要:
+# 3) フェイク 1 エピソード書き込みスモーク（WS なし）
 PARC_ROBOT_VENV=/home/kevin/Matsuo/robot/.venv \
-  bash scripts/vr_teleop.sh --fake --host 0.0.0.0 --port 8765 \
-  --dataset-root data/datasets/vr_libero_demos
+  bash scripts/vr_teleop.sh --fake-episode --config configs/vr/fake_smoke.yaml
+
+# 4) Quest 実機待ち受け + LeRobot 書き込み
+PARC_ROBOT_VENV=/home/kevin/Matsuo/robot/.venv \
+  bash scripts/vr_teleop.sh --config configs/vr/quest3_libero_spatial_task0.yaml
 ```
 
-CLI 直叩き: `uv run parc-vr-teleop --help`
+`--config` で `configs/vr/*.yaml` を読み、必要なら CLI フラグで一部だけ上書きできる。
 
 ### 主なオプション
 
@@ -43,6 +40,7 @@ CLI 直叩き: `uv run parc-vr-teleop --help`
 | `--fake` | ダミー env（画像は色バー） |
 | `--fake-episode` | WS なしで 1 ep 書いて終了 |
 | `--no-dataset` | ディスク書き込みスキップ |
+| `--config` | `configs/vr/*.yaml` を読み込む |
 | `--suite` / `--task-id` | LIBERO タスク |
 | `--image-size` | 録画解像度（既定 256） |
 | `--jpeg-quality` | ストリーム品質 |
@@ -62,7 +60,6 @@ CLI 直叩き: `uv run parc-vr-teleop --help`
 ## 学習への接続
 
 ```yaml
-# configs/experiments/ にコピーして使う例
 train:
   backend: lerobot
   dataset_repo_id: local/vr_libero_demos
@@ -70,7 +67,9 @@ train:
 ```
 
 ```bash
-bash scripts/train.sh configs/experiments/<your_vr_ft>.yaml
+PARC_ROBOT_VENV=/home/kevin/Matsuo/robot/.venv bash scripts/vr_teleop.sh --config configs/vr/quest3_libero_spatial_task0.yaml
+bash scripts/train.sh configs/experiments/smolvla_ft_vr_demos_smoke.yaml
+./scripts/parc.sh eval -c configs/experiments/subset_eval.yaml
 ```
 
 スキーマは [`07_custom_data_and_algos.md`](07_custom_data_and_algos.md) と同じ（front/wrist/state8/action7/task）。
@@ -89,8 +88,8 @@ bash scripts/train.sh configs/experiments/<your_vr_ft>.yaml
 |------|------|
 | Quest が繋がらない | 同一 LAN・ファイアウォール・PC IP |
 | 映像が来ない | `--fake` で色が変わるか。JPEG 品質を下げる |
-| 保存されない | lerobot が入った venv か。`--no-dataset` になっていないか |
-| 動きが過敏/鈍い | `ActionMapConfig`（今後 YAML 化予定）。とりあえずゆっくり動かす |
+| 保存されない | `PARC_ROBOT_VENV` と `meta/info.json` を確認。`--no-dataset` になっていないか |
+| 動きが過敏/鈍い | `configs/vr/*.yaml` の `action_map` を調整 |
 | Unity が WSL で開けない | Windows ホストでビルド |
 
 ## Phase 2+

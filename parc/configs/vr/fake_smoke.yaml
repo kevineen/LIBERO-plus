@@ -1,0 +1,17 @@
+host: 127.0.0.1
+port: 8765
+suite: libero_spatial
+task_id: 0
+dataset_root: /tmp/vr_smoke
+repo_id: local/vr_libero_demos
+fps: 20
+jpeg_quality: 70
+camera_height: 64
+camera_width: 64
+image_size: 64
+flip_images: true
+action_map:
+  pos_scale: 1.0
+  rot_scale: 1.0
+  max_pos: 0.05
+  max_rot: 0.5

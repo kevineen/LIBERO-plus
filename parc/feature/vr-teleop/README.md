@@ -14,7 +14,8 @@ Meta Quest 3 から LIBERO / LIBERO-plus を遠隔操作し、SmolVLA 学習互�
 | ファイル | 内容 |
 |----------|------|
 | [design.md](design.md) | 設計の正本 |
-| [plan.md](plan.md) | 実装タスク（チェックボックス） |
+| [done/phase1-plan.md](done/phase1-plan.md) | 完了済みの Phase 1 実装計画 |
+| [next-sprint-plan.md](next-sprint-plan.md) | 次スプリント（C: 実機1本 + 最低限の運用整備）の実装計画 |
 | [protocol.md](protocol.md) | WebSocket メッセージ仕様 |
 | [STATUS.md](STATUS.md) | 進捗・バックログ |
 

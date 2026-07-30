@@ -237,7 +237,10 @@ class TeleopSession:
                 )
             )
         )
-        self.emit_status("saved")
+        summary = self.recorder.dataset_summary()
+        self.emit_status(
+            f"saved meta={summary['meta_exists']} episodes={summary['episode_count']}"
+        )
 
     def _handle_reset(self) -> None:
         """env reset。録画中なら破棄。"""

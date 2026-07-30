@@ -19,9 +19,12 @@
 - [x] **mix10k 評価（thor）** — 完了  
   - Camera deep **0.12** · `20260730T043236Z_thor_36e4bb0a_…`  
   - 厚い **0.514** · `20260730T044841Z_thor_db324def_…`
-- [ ] **winpc: mix continue +10k** — running  
-  - job `q_20260730T070854…a66dc81d` · `smolvla_ft_libero_cam_mix_continue10k_winpc.yaml`  
-  - pretrained = mix10k `…6133f628…/010000`
+- [x] **winpc: mix continue +10k** — 完了  
+  - job `q_20260730T070854…a66dc81d` · run `20260730T071018Z_winpc_cbbf5c8b_…` · ckpt `010000`  
+  - 薄い Cam-only smoke **SR=0.000**（親決めに使わない）
+- [ ] **thor: continue10k 厚い + Camera deep** — **投入済み**  
+  - thick: `q_20260730T090115…7903a580`（running）  
+  - Camera deep: `q_20260730T090115…72667de5`（queued）
 
 ## 直近で打ち切ったもの
 
@@ -45,17 +48,17 @@
 - [x] **dataset mix CLI** + **mix FT@10k winpc 完了**  
   - job `q_20260730T023633…a5076171` · run `20260730T023701Z_winpc_6133f628_…` · ckpt `010000`
 - [x] **mix10k 評価（thor）** — 厚い 0.514 / Cam deep 0.12
-- [ ] **mix continue10k 完了後** — thor で厚い + Camera deep（親確定用）
+- [x] **mix continue10k 学習** — 完了（薄い Cam smoke 0.000）
+- [ ] **thor: continue10k 厚い + Camera deep**（親確定用）— 進行中
 - [ ] 必要なら winpc cam-only `010000` を Camera deep だけ再評価（優先低）
 
 ## 次の学習候補（レビュー後）
 
 優先候補（互角なら上）:
 
-1. **mix continue +10k** — **投入済み（running）**  
-   - YAML: `configs/experiments/smolvla_ft_libero_cam_mix_continue10k_winpc.yaml`
-2. continue 完了後に thor 厚い + Camera deep で親確定
-3. **lr↓ 短 FT の継続** — 後回し（mix 結果後）
+1. **continue10k の thor 結果待ち** — 厚い → Camera deep の順で進行中
+2. 結果後に親確定（mix10k vs continue10k vs unfreeze）
+3. **lr↓ 短 FT の継続** — 後回し（親確定後）
 
 やらない（現状）:
 
@@ -76,6 +79,7 @@
 - [ ] 必要なら `hosts.example.yaml` / docs に winpc Port 2222 パターンを追記
 - [ ] nuc の SSH（thor→nuc / Windows `100.77.194.30`）を安定化。必要なら winpc と同様の鍵整備
 - [ ] **Quest 実機でデモ 1 本** → `data/datasets/vr_libero_demos` → smoke FT
+  - blocked: Quest / Windows 接続と `PARC_ROBOT_VENV` を使った実保存確認がまだ
 
 ## 将来・本選リスト（いまはやらない）
 
