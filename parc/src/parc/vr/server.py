@@ -7,6 +7,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
+from parc.vr.action_map import ActionMapConfig
 from parc.vr.env_factory import make_teleop_env
 from parc.vr.protocol import (
     ControlMessage,
@@ -108,6 +109,7 @@ def build_session_factory(
     camera_height: int,
     camera_width: int,
     image_size: tuple[int, int],
+    action_map: ActionMapConfig,
     fake: bool,
     create_dataset: bool,
     flip_images: bool,
@@ -130,6 +132,7 @@ def build_session_factory(
             jpeg_quality=jpeg_quality,
             flip_images=flip_images,
             image_size=image_size,
+            action_map=action_map,
             dataset_root=host_dataset_root,
             repo_id=repo_id,
             create_dataset=create_dataset,
@@ -152,6 +155,7 @@ async def serve_vr_teleop(
     camera_height: int = 128,
     camera_width: int = 128,
     image_size: tuple[int, int] = (256, 256),
+    action_map: ActionMapConfig | None = None,
     fake: bool = False,
     create_dataset: bool = True,
     flip_images: bool = True,
@@ -172,6 +176,7 @@ async def serve_vr_teleop(
         camera_height=camera_height,
         camera_width=camera_width,
         image_size=image_size,
+        action_map=action_map or ActionMapConfig(),
         fake=fake,
         create_dataset=create_dataset,
         flip_images=flip_images,

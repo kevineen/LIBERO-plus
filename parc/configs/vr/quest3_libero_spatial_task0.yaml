@@ -1,0 +1,17 @@
+host: 0.0.0.0
+port: 8765
+suite: libero_spatial
+task_id: 0
+dataset_root: data/datasets/vr_libero_demos
+repo_id: local/vr_libero_demos
+fps: 20
+jpeg_quality: 65
+camera_height: 128
+camera_width: 128
+image_size: 256
+flip_images: true
+action_map:
+  pos_scale: 0.7
+  rot_scale: 1.0
+  max_pos: 0.03
+  max_rot: 0.35
