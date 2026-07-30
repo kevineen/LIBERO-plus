@@ -82,8 +82,8 @@ def test_run_fake_episode_emits_saved_status_summary(tmp_path: Path) -> None:
     sent: list[str | bytes] = []
 
     class _CaptureRecorder(EpisodeRecorder):
-        def save_episode(self) -> int:
-            idx = super().save_episode()
+        def save_episode(self, *, quality=None) -> int:  # type: ignore[override]
+            idx = super().save_episode(quality=quality)
             self.root.mkdir(parents=True, exist_ok=True)
             meta_dir = self.root / "meta"
             meta_dir.mkdir(parents=True, exist_ok=True)
@@ -99,9 +99,11 @@ def test_run_fake_episode_emits_saved_status_summary(tmp_path: Path) -> None:
             dataset_root=tmp_path,
             create_dataset=False,
             image_size=(32, 32),
+            require_success=True,
         ),
         send=sent.append,
         recorder=_CaptureRecorder(root=tmp_path, create_dataset=False, image_size=(32, 32)),
+        init_states=[0, 1, 2],
     )
     session.handle_control(
         ControlMessage(t=0.0, pose=Pose(), gripper=0.0, buttons=Buttons(record=True))
@@ -119,4 +121,4 @@ def test_run_fake_episode_emits_saved_status_summary(tmp_path: Path) -> None:
         for item in sent
         if isinstance(item, str) and json.loads(item).get("type") == "status"
     ]
-    assert statuses[-1]["message"] == "saved meta=True episodes=1"
+    assert statuses[-1]["message"].startswith("saved meta=True episodes=1")

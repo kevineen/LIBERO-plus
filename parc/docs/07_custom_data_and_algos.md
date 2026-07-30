@@ -111,7 +111,10 @@ data/datasets/my_panda_demos/
 - 設計・進捗: [feature/vr-teleop/](../feature/vr-teleop/)
 - 起動例: `bash scripts/vr_teleop.sh --config configs/vr/fake_smoke.yaml --fake --no-dataset`  
   / `PARC_ROBOT_VENV=... bash scripts/vr_teleop.sh --config configs/vr/quest3_libero_spatial_task0.yaml`
-- 学習 YAML 例: `configs/experiments/smolvla_ft_vr_demos_smoke.yaml`
+- **失敗は分析用・学習は success-only:**  
+  `uv run parc-filter-demos --root data/datasets/vr_libero_demos --output data/datasets/vr_libero_demos_success --success-only --overwrite`  
+  → `configs/experiments/smolvla_ft_vr_demos_success_smoke.yaml`
+- 混在直読み（デバッグ）: `configs/experiments/smolvla_ft_vr_demos_smoke.yaml`
 
 Phase 1 はコントローラ 6DoF + カメラストリーム。ハンド／実機／3D ビューは feature STATUS の backlog。
 
@@ -161,7 +164,7 @@ ds.finalize()
 
 - **言語指示**は摂動カテゴリ「Language Instructions」対策にも効くので、言い換えバリエーションを入れる価値が高い  
 - アクション空間が絶対姿勢や関節角なら、学習前に **LIBERO 相対 7D へ変換**するか、評価側の制御モードを合わせる  
-- 失敗デモを混ぜるかは仮説次第（まずは成功のみで baseline）
+- 失敗デモを混ぜるかは仮説次第（**まずは成功のみで baseline**）。VR 収集は失敗も混在 DS に残し、学習前に `parc-filter-demos --success-only` で subset を切る（[12](12_vr_teleop.md)）
 
 ### B4. 複数データセットの混合（物理マージ）
 

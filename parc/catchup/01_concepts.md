@@ -29,6 +29,15 @@
 
 デモの集め方の一例: **Meta Quest 3 で LIBERO をテレオプ**して LeRobot 形式で保存する（[docs/12_vr_teleop.md](../docs/12_vr_teleop.md)）。
 
+収集のコツ（品質）:
+
+- **失敗エピソードも保存してよい**（分析用）。学習 baseline は `parc-filter-demos --success-only` で成功だけ切る
+- 遅延が悪い軌跡は `degraded` フラグや Save 拒否（`latency_policy`）で見える化する
+- 多様化は `collection_queue`（suite / task / init / category）でスケジュールする
+- 保存 action の正しさは `parc-replay-demos` で物理リプレイ検証できる
+
+詳細ロードマップ: [feature/vr-teleop/roadmap-data-quality.md](../feature/vr-teleop/roadmap-data-quality.md)。
+
 ## 3. VLA（Vision-Language-Action）
 
 **Vision**（画像）+ **Language**（指示文）→ **Action**（ロボット動作）を一本のモデルで扱う枠組みです。

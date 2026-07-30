@@ -68,7 +68,9 @@ Default endpoint: `ws://<host>:8765/vr`
   "type": "episode_saved",
   "episode_index": 0,
   "num_frames": 120,
-  "dataset_root": "data/datasets/vr_libero_demos"
+  "dataset_root": "data/datasets/vr_libero_demos",
+  "success": true,
+  "init_state_index": 2
 }
 ```
 

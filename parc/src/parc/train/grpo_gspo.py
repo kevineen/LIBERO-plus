@@ -13,6 +13,8 @@ from typing import Any
 
 import numpy as np
 
+from parc.env.success import is_libero_success
+
 
 def _group_advantages(rewards: list[float]) -> np.ndarray:
     """グループ内正規化 advantage。"""
@@ -140,11 +142,7 @@ def run_grpo_gspo_training(config: dict[str, Any], run_dir: Path) -> dict[str, A
                         actions.append(a)
                         obs, reward, done, info = env.step(a.tolist())
                         steps = t + 1
-                        if bool(done) or float(reward) > 0.5 or bool(info.get("success", False)):
-                            success = True
-                            break
-                        check = getattr(env, "check_success", None)
-                        if callable(check) and bool(check()):
+                        if is_libero_success(reward, done, info, env):
                             success = True
                             break
                     r = 1.0 if success else 0.0

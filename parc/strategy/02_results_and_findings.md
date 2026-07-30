@@ -1,6 +1,6 @@
 # 02. 結果と知見
 
-時点: **2026-07-30**
+時点: **2026-07-31**
 
 ## 学習ライン（薄い eval = tpc=2, n=14）
 
@@ -36,8 +36,8 @@ run: `20260728T032038Z_nuc_d9d066c5_…` · job `q_20260727T034627…`
 | continue expert-only@30k (thor) | 0.286 | — | **0.286** | — | 厚い≈薄い。Camera 弱 |
 | **+15k finetune (lr 1e-5, winpc)** | — | **0.371** | **0.343** (cross) | — | 自機厚いより thor でやや低下 |
 | thor unfreeze@30k **クロス** | — | **0.400** | 0.429 (自機) | — | 旧親（mix10k 登場前） |
-| **mix10k**（unfreeze→cam mix · winpc） | — | — | **0.514** | — | **厚いで親候補更新**。Camera cat 0.20 |
-| mix continue+10k（mix10k→+10k） | Cam smoke **0.000** | — | （thor 待ち） | — | 薄い Cam-only は無視。厚いで親確定 |
+| **mix10k**（unfreeze→cam mix · winpc） | — | — | **0.514** | — | 厚い同点候補。Cam deep 0.12 |
+| **mix continue+10k**（mix10k→+10k） | Cam smoke **0.000** | — | **0.514** | — | **現行親**。Cam deep **0.20** で mix10k 上回り |
 
 ### 親 ckpt 再確定（クロス厚い · 2026-07-29）
 
@@ -58,7 +58,7 @@ run: `20260728T032038Z_nuc_d9d066c5_…` · job `q_20260727T034627…`
 | Sensor | 0.00 | 0.20 |
 | Camera | **0.00** | **0.00** |
 
-→ 2026-07-29 時点の親は **thor unfreeze@30k**。2026-07-30 の mix10k 厚い 0.514 で **親候補 = mix10k**。continue+10k 学習完了 → **厚い再評価待ち**で親確定。
+→ 2026-07-29 時点の親は **thor unfreeze@30k**。2026-07-30 mix10k 厚い 0.514 で親候補更新。2026-07-31 **親 = continue10k**（厚い同点・Cam deep 改善）。
 
 ### mix10k（2026-07-30 · thor eval）
 
@@ -67,10 +67,10 @@ run: `20260728T032038Z_nuc_d9d066c5_…` · job `q_20260727T034627…`
 | 厚い tpc=5 | **0.514** | `20260730T044841Z_thor_db324def_…` |
 | Camera deep 608–612×10 | **0.12** | `20260730T043236Z_thor_36e4bb0a_…` |
 
-厚いカテゴリ（抜粋）: Objects/Background 0.80 · Camera **0.20** · Language/Light/Robot 0.40 · Sensor 要確認  
+厚いカテゴリ（抜粋）: Objects/Background 0.80 · Camera **0.20** · Language/Light/Robot 0.40 · Sensor 0.60  
 解釈: unfreeze 厚い 0.40 / Camera deep 0.08 を上回る。cam-only 禁止の mix 方針は有効。
 
-### mix continue+10k（2026-07-30 · winpc train）
+### mix continue+10k（2026-07-30 train · 2026-07-31 親確定）
 
 | 項目 | 値 |
 |------|-----|
@@ -79,9 +79,27 @@ run: `20260728T032038Z_nuc_d9d066c5_…` · job `q_20260727T034627…`
 | pretrained | mix10k `…6133f628…/010000` |
 | steps | +10k · lr 1e-5 · bs=8 |
 | ckpt | `010000`（run 内） |
-| 薄い smoke | Camera 608–612 ×1 · **SR=0.000** |
+| 薄い smoke | Camera 608–612 ×1 · **SR=0.000**（無視） |
+| 厚い (thor) | **0.514** · `20260730T090125Z_thor_2798bc08_…` |
+| Cam deep (thor) | **0.20** · `20260730T091211Z_thor_ea7c443f_…` |
 
-解釈: Cam-only 薄い 0 は親決めに使わない（05）。次は thor 厚い + Camera deep で mix10k（0.514 / 0.12）と比較。
+厚いカテゴリ (continue10k): Objects 0.80 · Bg/Lang/Light 0.60 · Robot/Sensor 0.40 · Camera 0.20  
+vs mix10k: 厚い全体同点。Cam deep **0.20 > 0.12**。Lang/Light↑、Bg/Sensor↓。弱点 Camera が改善したので **親更新**（05）。
+
+### lr↓ 短 FT +5k（2026-07-31 train · 薄いのみ）
+
+| 項目 | 値 |
+|------|-----|
+| job | `q_20260730T184655…380a43e2` |
+| run | `20260730T184742Z_winpc_c7e7c8f2_…` |
+| pretrained | continue10k `…cbbf5c8b…/010000` |
+| steps | +5k · lr **5e-6** · bs=8 · 同 mix |
+| ckpt | `005000`（`last`） |
+| 薄い smoke | tpc=2 · n=14 · **SR=0.500** |
+| 厚い / Cam deep | **未実施**（thor 待ち） |
+
+薄いカテゴリ: Background **1.00** · Lang/Light/Objects/Robot/Sensor **0.50** · Camera **0.00**  
+解釈: continue 系の薄い Cam smoke 0.000 と同型。**親決めに使わない**。次は thor 厚い + Cam deep。
 
 ### カテゴリ別（厚い）
 
@@ -171,9 +189,9 @@ Run: `20260728T082624Z_winpc_8cd84fbf_…` · 薄い **SR=0.000**（Camera 5/5 f
 
 ## 解釈（短く）
 
-1. **親候補 = mix10k**（厚い 0.514）。旧親 unfreeze cross 0.40。continue+10k は厚い待ち。
-2. Sensor / Language / RobotInit 深掘りも **0.16–0.20**。Language はタスク二極。Camera hard は未解決。
-3. **次軸 = mix 延長の親確定**（thor 厚い + Cam deep）。cam-only は禁止。
+1. **親 = continue10k**（厚い 0.514 · Cam deep 0.20）。mix10k は厚い同点だが Cam 劣後。旧親 unfreeze cross 0.40。
+2. Sensor / Language / RobotInit 深掘りも **0.16–0.20**。Language はタスク二極。Camera hard は未解決だが深掘りは改善傾向。
+3. **lr↓5k 学習完了**・薄い 0.500（Cam 0）。親更新は thor 厚い+Cam deep 後。cam-only 禁止。
 4. Gate-RL 未達。GRPO しない。
 5. nuc Gate3 厚い 0.257。再現は確定。
 
@@ -210,3 +228,6 @@ Run: `20260728T082624Z_winpc_8cd84fbf_…` · 薄い **SR=0.000**（Camera 5/5 f
 | thor thick mix10k（**0.514**） | `20260730T044841Z_thor_db324def_…` |
 | thor camera deep mix10k（**0.12**） | `20260730T043236Z_thor_36e4bb0a_…` |
 | winpc mix continue+10k train（Cam smoke 0.000） | `20260730T071018Z_winpc_cbbf5c8b_…` |
+| thor thick continue10k（**0.514** · **現行親**） | `20260730T090125Z_thor_2798bc08_…` |
+| thor camera deep continue10k（**0.20**） | `20260730T091211Z_thor_ea7c443f_…` |
+| winpc lr↓5k train（薄い **0.500**） | `20260730T184742Z_winpc_c7e7c8f2_…` |

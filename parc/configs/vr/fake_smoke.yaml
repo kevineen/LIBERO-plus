@@ -2,6 +2,7 @@ host: 127.0.0.1
 port: 8765
 suite: libero_spatial
 task_id: 0
+task_ids: [0]
 dataset_root: /tmp/vr_smoke
 repo_id: local/vr_libero_demos
 fps: 20
@@ -10,6 +11,14 @@ camera_height: 64
 camera_width: 64
 image_size: 64
 flip_images: true
+require_success: false
+init_state_mode: cycle
+operator_id: smoke_operator
+device_id: fake_quest
+location: lab_local
+max_rtt_ms: 150
+latency_policy: degraded
+approx_time_slop_ms: 100
 action_map:
   pos_scale: 1.0
   rot_scale: 1.0

@@ -1,0 +1,21 @@
+# 収集キュー例 — suite / task / init / 摂動カテゴリ
+# VR YAML から参照: collection_queue: configs/vr/collection_queue.example.yaml
+# または inline で queue: [...] を直接書く
+
+min_success_per_category: 2
+queue:
+  - suite: libero_spatial
+    task_id: 0
+    init_state_index: 0
+    category: baseline
+    perturbation: none
+  - suite: libero_spatial
+    task_id: 0
+    init_state_index: 1
+    category: init_shift
+    perturbation: init_state
+  - suite: libero_spatial
+    task_id: 0
+    init_state_index: 2
+    category: init_shift
+    perturbation: init_state

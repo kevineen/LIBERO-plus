@@ -7,8 +7,10 @@
 ## Goals
 
 1. Quest 3 コントローラで LIBERO / LIBERO-plus タスクを操作する
-2. 成功エピソードを LeRobot v3（front / wrist / state8 / action7 / task）で保存する
+2. **成功/失敗ラベル付き**エピソードを LeRobot Dataset **v3.0**（front / wrist / state8 / action7 / task）で保存する
 3. 保存先をそのまま `train.sh` の `dataset_root` に使えるようにする
+4. init_state（と任意の `task_ids`）を cycle し、単位コストあたりの多様な軌跡を増やす
+5. `meta/collection_info.json` + `episode_quality.jsonl` + `episode_timestamps.jsonl` + `parc-verify-demos` で検証可能にする
 
 ## Architecture
 
@@ -26,6 +28,9 @@ Quest3 Unity OpenXR  --WS JSON control-->  parc-vr-teleop (Python)
 - コントローラ相対変位 → 相対 7D action（OSC_POSE 互換）
 - agentview / wrist を JPEG 化し Quest へ配信
 - 録画は PC 側のみ（学習スキーマと一致させるため）
+- Save ゲート: `parc.env.success.is_libero_success`（eval と共有）
+- 多様化: init_states cycle + 任意 `task_ids` round-robin
+- 品質メタ: `meta/episode_quality.jsonl` / `meta/collection_stats.json`
 
 ### Quest client (`parc/unity/VrTeleop`)
 

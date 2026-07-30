@@ -84,6 +84,8 @@ class EpisodeSavedMessage:
     episode_index: int
     num_frames: int
     dataset_root: str
+    success: bool = True
+    init_state_index: int = 0
     type: str = "episode_saved"
 
 

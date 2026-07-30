@@ -1,0 +1,32 @@
+{
+  "cameras": {
+    "front": {
+      "intrinsics": {
+        "fx": 100.0,
+        "fy": 100.0,
+        "cx": 128.0,
+        "cy": 128.0,
+        "distortion": [0, 0, 0, 0, 0]
+      },
+      "extrinsics": {
+        "parent": "world",
+        "translation": [0.0, 0.0, 0.5],
+        "quaternion_xyzw": [0.0, 0.0, 0.0, 1.0]
+      }
+    },
+    "wrist": {
+      "intrinsics": {
+        "fx": 90.0,
+        "fy": 90.0,
+        "cx": 128.0,
+        "cy": 128.0,
+        "distortion": [0, 0, 0, 0, 0]
+      },
+      "extrinsics": {
+        "parent": "eef",
+        "translation": [0.0, 0.0, 0.05],
+        "quaternion_xyzw": [0.0, 0.0, 0.0, 1.0]
+      }
+    }
+  }
+}

@@ -2,6 +2,11 @@ name: smolvla_ft_vr_demos_smoke
 seed: 0
 tags: [smolvla, ft, vr, smoke]
 
+# 混在 DS 直読み（分析・デバッグ用）。学習 baseline は success-only を推奨:
+#   configs/experiments/smolvla_ft_vr_demos_success_smoke.yaml
+#   uv run parc-filter-demos --root data/datasets/vr_libero_demos \
+#     --output data/datasets/vr_libero_demos_success --success-only --overwrite
+
 train:
   backend: lerobot
   policy_type: smolvla

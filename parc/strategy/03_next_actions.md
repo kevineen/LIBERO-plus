@@ -22,10 +22,17 @@
 - [x] **winpc: mix continue +10k** — 完了  
   - job `q_20260730T070854…a66dc81d` · run `20260730T071018Z_winpc_cbbf5c8b_…` · ckpt `010000`  
   - 薄い Cam-only smoke **SR=0.000**（親決めに使わない）
-- [ ] **thor: continue10k 厚い + Camera deep** — **投入済み**  
-  - thick: `q_20260730T090115…7903a580`（running）  
-  - Camera deep: `q_20260730T090115…72667de5`（queued）
-
+- [x] **thor: continue10k 厚い + Camera deep** — 完了  
+  - thick **0.514** · `q_…7903a580` · `20260730T090125Z_thor_2798bc08_…`  
+  - Cam deep **0.20** · `q_…72667de5` · `20260730T091211Z_thor_ea7c443f_…`  
+  - → **親 = continue10k**（厚い同点 · Cam deep 改善）
+- [x] **winpc: lr↓ 短 FT**（5e-6 · +5k · 同 mix）— **完了**  
+  - job `q_20260730T184655…380a43e2` · run `20260730T184742Z_winpc_c7e7c8f2_…` · ckpt `005000`  
+  - 薄い smoke **SR=0.500**（Camera 0.000 · 親決め未使用）
+- [ ] **thor: lr↓5k 厚い + Camera deep** — **投入**（親更新判定）  
+  - thick `q_20260730T200858…8aa312ee` · config `smolvla_thick_eval_mix_lr5e6_5k_on_thor.yaml`  
+  - Cam deep `q_20260730T200859…3283952d` · config `smolvla_camera_deep_eval_mix_lr5e6_5k_on_thor.yaml`  
+  - ckpt: `imported/…lr5e6_5k_wi/005000`
 ## 直近で打ち切ったもの
 
 - [x] **winpc**: Camera 再レンダ FT（cam-only）  
@@ -49,16 +56,19 @@
   - job `q_20260730T023633…a5076171` · run `20260730T023701Z_winpc_6133f628_…` · ckpt `010000`
 - [x] **mix10k 評価（thor）** — 厚い 0.514 / Cam deep 0.12
 - [x] **mix continue10k 学習** — 完了（薄い Cam smoke 0.000）
-- [ ] **thor: continue10k 厚い + Camera deep**（親確定用）— 進行中
+- [x] **thor: continue10k 厚い + Camera deep** — 完了 → **親 = continue10k**
+- [x] **winpc: lr↓ 短 FT**（5e-6 · +5k）— 完了 · 薄い 0.500
+- [ ] **thor: lr↓5k 厚い + Camera deep**（親更新判定）— **進行中**
 - [ ] 必要なら winpc cam-only `010000` を Camera deep だけ再評価（優先低）
 
 ## 次の学習候補（レビュー後）
 
 優先候補（互角なら上）:
 
-1. **continue10k の thor 結果待ち** — 厚い → Camera deep の順で進行中
-2. 結果後に親確定（mix10k vs continue10k vs unfreeze）
-3. **lr↓ 短 FT の継続** — 後回し（親確定後）
+1. ~~continue10k の thor 結果待ち~~ — 完了 · 親確定
+2. ~~lr↓ 短 FT~~ — 学習完了 · thor 評価進行中
+3. 親再評価（continue10k vs lr↓5k）— 厚い+Cam deep 結果後
+4. 伸びなければ mix 再設計（重み/量）。同レシピ延長は打ち切り候補
 
 やらない（現状）:
 
@@ -76,10 +86,14 @@
 - [x] **VR teleop Phase 1（コード）** — `parc-vr-teleop` / Unity 薄クライアント / `feature/vr-teleop/`  
   - 運用: [docs/12_vr_teleop.md](../docs/12_vr_teleop.md)
   - 残: Quest 実機 E2E・LeRobot 永続化確認（robot venv）
+- [x] **VR データ品質 M1–M4（ソフト）** — 2026-07-31  
+  - M1 `parc-filter-demos` success-only / M2 RTT ゲート / M3 collection_queue / M4 replay + Approx Time  
+  - 正本: [feature/vr-teleop/roadmap-data-quality.md](../feature/vr-teleop/roadmap-data-quality.md)
 - [ ] 必要なら `hosts.example.yaml` / docs に winpc Port 2222 パターンを追記
 - [ ] nuc の SSH（thor→nuc / Windows `100.77.194.30`）を安定化。必要なら winpc と同様の鍵整備
-- [ ] **Quest 実機でデモ 1 本** → `data/datasets/vr_libero_demos` → smoke FT
+- [ ] **Quest 実機でデモ 1 本** → `data/datasets/vr_libero_demos` → success-only FT smoke  
   - blocked: Quest / Windows 接続と `PARC_ROBOT_VENV` を使った実保存確認がまだ
+  - 学習 YAML: `configs/experiments/smolvla_ft_vr_demos_success_smoke.yaml`
 
 ## 将来・本選リスト（いまはやらない）
 

@@ -2,6 +2,7 @@ host: 0.0.0.0
 port: 8765
 suite: libero_spatial
 task_id: 0
+task_ids: [0]
 dataset_root: data/datasets/vr_libero_demos
 repo_id: local/vr_libero_demos
 fps: 20
@@ -10,6 +11,12 @@ camera_height: 128
 camera_width: 128
 image_size: 256
 flip_images: true
+require_success: false
+init_state_mode: cycle
+operator_id: ""
+device_id: quest3
+location: ""
+# calib_override_path: configs/vr/calib_override.example.json
 action_map:
   pos_scale: 0.7
   rot_scale: 1.0

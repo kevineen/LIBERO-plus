@@ -16,6 +16,7 @@ from parc.env.make_env import (
     select_task_ids,
 )
 from parc.env.metrics import EpisodeMetrics, aggregate, finalize_episode
+from parc.env.success import is_libero_success
 from parc.eval.media import extract_rgb, save_episode_media
 from parc.policies.base import Policy, build_policy
 
@@ -80,13 +81,7 @@ def run_episode(
         ee_positions.append(_ee_pos(obs))
         steps = t + 1
         _maybe_capture(obs, t + 1)
-        # LIBERO は done / reward / info のいずれかで成功を示す実装差がある
-        if bool(done) or float(reward) > 0.5 or bool(info.get("success", False)):
-            success = True
-            break
-        # check_success がある場合
-        check = getattr(env, "check_success", None)
-        if callable(check) and bool(check()):
+        if is_libero_success(reward, done, info, env):
             success = True
             break
 
