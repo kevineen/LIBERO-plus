@@ -32,7 +32,8 @@ cd /home/kevin/Matsuo/robot/LIBERO-plus/parc
 | 場所 | 役割 |
 |------|------|
 | **この `catchup/`** | 初心者向けの「なぜ・何の順・最短パス」 |
-| [`docs/`](../docs/) | セットアップ・学習・評価・Fleet の操作マニュアル |
+| [`docs/`](../docs/) | セットアップ・学習・評価・Fleet・VR の操作マニュアル |
+| [`feature/`](../feature/) | 機能単位の設計・計画・STATUS（例: [vr-teleop](../feature/vr-teleop/)） |
 | [`strategy/`](../strategy/) | いま何が分かっていて次に何をするか（方針メモ） |
 | [`README.md`](../README.md) | 最短 Quickstart |
 

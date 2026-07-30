@@ -103,6 +103,17 @@ data/datasets/my_panda_demos/
 
 `parc-train` は `--dataset.root=...` を付与します（`src/parc/train/lerobot_train.py`）。
 
+### B2.5. Quest 3 VR テレオプでデモを録る（推奨経路の一つ）
+
+シミュ上の LIBERO を Meta Quest 3 で操作し、**変換スクリプト無し**で LeRobot v3 に直接書く。
+
+- 運用: [12_vr_teleop.md](12_vr_teleop.md)
+- 設計・進捗: [feature/vr-teleop/](../feature/vr-teleop/)
+- 起動例: `bash scripts/vr_teleop.sh --fake` / `USE_LIBERO_VENV=1 bash scripts/vr_teleop.sh ...`
+- 学習 YAML 例: `configs/experiments/smolvla_ft_vr_demos_smoke.yaml`
+
+Phase 1 はコントローラ 6DoF + カメラストリーム。ハンド／実機／3D ビューは feature STATUS の backlog。
+
 ### B3. デモ・独自ログから LeRobot 形式へ変換
 
 1. 生データ（ROS bag、自前 npz、シミュレータログ等）を用意  

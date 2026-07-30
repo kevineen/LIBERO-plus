@@ -1,6 +1,6 @@
 # 02. 結果と知見
 
-時点: **2026-07-29**
+時点: **2026-07-30**
 
 ## 学習ライン（薄い eval = tpc=2, n=14）
 
@@ -35,7 +35,8 @@ run: `20260728T032038Z_nuc_d9d066c5_…` · job `q_20260727T034627…`
 | continue unfreeze@30k (winpc) | 0.500 | **0.314** | — | — | winpc 旧親 |
 | continue expert-only@30k (thor) | 0.286 | — | **0.286** | — | 厚い≈薄い。Camera 弱 |
 | **+15k finetune (lr 1e-5, winpc)** | — | **0.371** | **0.343** (cross) | — | 自機厚いより thor でやや低下 |
-| thor unfreeze@30k **クロス** | — | **0.400** | 0.429 (自機) | — | **親に復帰**（winpc 上で +15k 超え） |
+| thor unfreeze@30k **クロス** | — | **0.400** | 0.429 (自機) | — | 旧親（mix10k 登場前） |
+| **mix10k**（unfreeze→cam mix · winpc） | — | — | **0.514** | — | **厚いで親候補更新**。Camera cat 0.20 |
 
 ### 親 ckpt 再確定（クロス厚い · 2026-07-29）
 
@@ -56,7 +57,17 @@ run: `20260728T032038Z_nuc_d9d066c5_…` · job `q_20260727T034627…`
 | Sensor | 0.00 | 0.20 |
 | Camera | **0.00** | **0.00** |
 
-→ **親 = thor unfreeze@30k**（`…4e89a1ad…/030000`）。+15k は延長ラインの参考に残す。Camera はどちらも 0。
+→ 2026-07-29 時点の親は **thor unfreeze@30k**。2026-07-30 の mix10k 厚い 0.514 で **親候補を mix10k に更新中**（continue+10k 学習中。確定は完了後の厚い再評価）。
+
+### mix10k（2026-07-30 · thor eval）
+
+| 指標 | SR | run |
+|------|---:|-----|
+| 厚い tpc=5 | **0.514** | `20260730T044841Z_thor_db324def_…` |
+| Camera deep 608–612×10 | **0.12** | `20260730T043236Z_thor_36e4bb0a_…` |
+
+厚いカテゴリ（抜粋）: Objects/Background 0.80 · Camera **0.20** · Language/Light/Robot 0.40 · Sensor 要確認  
+解釈: unfreeze 厚い 0.40 / Camera deep 0.08 を上回る。cam-only 禁止の mix 方針は有効。延長 FT を winpc で実施中。
 
 ### カテゴリ別（厚い）
 
@@ -181,3 +192,6 @@ Run: `20260728T082624Z_winpc_8cd84fbf_…` · 薄い **SR=0.000**（Camera 5/5 f
 | thor robot deep unfreeze（**0.16**） | `20260729T181042Z_thor_4c3fec0a_…` |
 | thor camera deep continue（**0.04**） | `20260729T181845Z_thor_53a9d293_…` |
 | thor camera deep +15k full（**0.12**） | `20260729T183530Z_thor_ba843a64_…` |
+| winpc mix10k train | `20260730T023701Z_winpc_6133f628_…` |
+| thor thick mix10k（**0.514**） | `20260730T044841Z_thor_db324def_…` |
+| thor camera deep mix10k（**0.12**） | `20260730T043236Z_thor_36e4bb0a_…` |

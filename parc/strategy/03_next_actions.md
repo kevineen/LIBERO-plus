@@ -7,7 +7,7 @@
 - [x] **thor**: 厚い eval 2 本完了（unfreeze 0.429 / continue expert 0.286）
 - [x] **nuc**: Gate3 薄い 0.357 · 厚い **0.257**
 - [x] **親 ckpt クロス厚い** — 完了  
-  - +15k on thor **0.343** · unfreeze on winpc **0.400** → **親 = thor unfreeze**
+  - +15k on thor **0.343** · unfreeze on winpc **0.400** → 当時親 = thor unfreeze
 - [x] **thor**: Camera deep unfreeze（608–612×10）— **SR=0.08**  
   - job `q_20260729T093137…4e2a1fe6` · run `20260729T093144Z_thor_fa549217_…`  
   - 608:0.20 · 609:0.10 · 610–611:0 · 612:0.10（continue 深掘り 0.16 より弱い）
@@ -15,10 +15,13 @@
   - 608:0.40 · 609:0.20 · run `20260729T174037Z_thor_abf2aca9_…`
 - [x] **thor**: 弱点深掘りバッチ — **完了**  
   - Sensor 0.20 · Language 0.20 · RobotInit 0.16 · continue Cam 0.04 · +15k Cam 0.12
-- [ ] **フォロー評価（2026-07-30）** — running  
-  - thor: Language hard 984/986/988×10 · `q_…c8f18f52`  
-  - thor: +15k Camera hard 610–612×15 · `q_…96b8aa6d`  
-  - nuc: 親 Camera deep クロス · `q_…9ec45635`
+- [x] **フォロー評価（2026-07-30）** — thor 側完了（Lang hard / +15k Cam hard）
+- [x] **mix10k 評価（thor）** — 完了  
+  - Camera deep **0.12** · `20260730T043236Z_thor_36e4bb0a_…`  
+  - 厚い **0.514** · `20260730T044841Z_thor_db324def_…`
+- [ ] **winpc: mix continue +10k** — running  
+  - job `q_20260730T070854…a66dc81d` · `smolvla_ft_libero_cam_mix_continue10k_winpc.yaml`  
+  - pretrained = mix10k `…6133f628…/010000`
 
 ## 直近で打ち切ったもの
 
@@ -40,24 +43,19 @@
 - [x] （任意）+15k mild 608/609 深掘り — **SR=0.30**
 - [x] 弱点深掘りバッチ記録（Sensor/Language/Robot/+15k Cam）
 - [x] **dataset mix CLI** + **mix FT@10k winpc 完了**  
-  - job `q_20260730T023633…a5076171` · run `20260730T023701Z_winpc_6133f628_…` · ckpt `010000`  
-  - 次: thor で Camera deep + 厚い（投入済み）
-- [ ] **mix10k 評価（thor）** — queued/running  
-  - Camera deep 608–612×10 · `q_20260730T043221…ac6aad22`  
-  - 厚い tpc=5 · `q_20260730T043222…6472381a`
+  - job `q_20260730T023633…a5076171` · run `20260730T023701Z_winpc_6133f628_…` · ckpt `010000`
+- [x] **mix10k 評価（thor）** — 厚い 0.514 / Cam deep 0.12
+- [ ] **mix continue10k 完了後** — thor で厚い + Camera deep（親確定用）
 - [ ] 必要なら winpc cam-only `010000` を Camera deep だけ再評価（優先低）
 
 ## 次の学習候補（レビュー後）
 
 優先候補（互角なら上）:
 
-1. **混合方法を作り直した視点 OOD 学習**  
-   - `cam-only` は 0.000 だったため、そのまま再実行しない  
-   - **手順**: `parc-mix-datasets`（base≈240 + cam60）→ 親=unfreeze 短 FT（10k · lr 1e-5）→ Camera deep  
-   - YAML: `configs/experiments/smolvla_ft_libero_cam_mix_from_unfreeze_winpc.yaml`（初期 `dry_run: true`）
-2. **lr↓ 短 FT の継続** — 後回し
-3. **unfreeze を親に戻す** — **実施済み（2026-07-29 cross）**  
-   - 以降の学習延長は `…4e89a1ad…/030000` を pretrained_path に
+1. **mix continue +10k** — **投入済み（running）**  
+   - YAML: `configs/experiments/smolvla_ft_libero_cam_mix_continue10k_winpc.yaml`
+2. continue 完了後に thor 厚い + Camera deep で親確定
+3. **lr↓ 短 FT の継続** — 後回し（mix 結果後）
 
 やらない（現状）:
 
@@ -72,8 +70,12 @@
 - [x] thor `hosts.yaml` に winpc 追加（Port 2222 + deploy key）
 - [x] nuc キュー復旧（stale fail / 重複 cancel / WSL GPU 復帰 / worker 再起動）— 2026-07-28
 - [x] nuc の `official_aligned` 結果を確認し、Gate3 再現の有無を 02 に記録（薄い 0.357）
+- [x] **VR teleop Phase 1（コード）** — `parc-vr-teleop` / Unity 薄クライアント / `feature/vr-teleop/`  
+  - 運用: [docs/12_vr_teleop.md](../docs/12_vr_teleop.md)
+  - 残: Quest 実機 E2E・LeRobot 永続化確認（robot venv）
 - [ ] 必要なら `hosts.example.yaml` / docs に winpc Port 2222 パターンを追記
 - [ ] nuc の SSH（thor→nuc / Windows `100.77.194.30`）を安定化。必要なら winpc と同様の鍵整備
+- [ ] **Quest 実機でデモ 1 本** → `data/datasets/vr_libero_demos` → smoke FT
 
 ## 将来・本選リスト（いまはやらない）
 

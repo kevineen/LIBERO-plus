@@ -14,6 +14,7 @@
 | 実験管理 | [docs/05_experiments.md](../docs/05_experiments.md) |
 | コンペ準備 | [docs/06_competition.md](../docs/06_competition.md) |
 | 独自データ・改善アイデア | [docs/07_custom_data_and_algos.md](../docs/07_custom_data_and_algos.md) |
+| Quest 3 VR デモ収集 | [docs/12_vr_teleop.md](../docs/12_vr_teleop.md) / [feature/vr-teleop/](../feature/vr-teleop/) |
 | リモート Web / Jupyter | [docs/08_remote_and_ui.md](../docs/08_remote_and_ui.md) |
 | 無人キュー・RL スモーク | [docs/09_autoloop_and_rl.md](../docs/09_autoloop_and_rl.md) |
 | Web UI 操作 | [docs/10_ops_ui.md](../docs/10_ops_ui.md) |

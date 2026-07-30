@@ -30,6 +30,7 @@
 | SmolVLA ベース重み | https://huggingface.co/lerobot/smolvla_base | FT の初期重み |
 | SmolVLA 論文 | https://arxiv.org/abs/2506.01844 | 軽量 VLA の設計意図 |
 | LeRobot GitHub | https://github.com/huggingface/lerobot | ソース・Issue |
+| Meta Quest / OpenXR（VR デモ収集時） | https://developer.oculus.com/documentation/unity/unity-openxr/ | Quest 3 クライアント構築の公式 |
 
 ## Optional（本選・深掘り）
 

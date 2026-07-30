@@ -47,6 +47,23 @@ type FleetHost = {
   tunnel_hint?: string | null;
 };
 
+/**
+ * 同一ホスト上の同一 job_id が複数行あると React key が衝突する。
+ * 先勝ちで残す（fleet はホスト内で新しい順）。
+ */
+function dedupeQueueRows(jobs: QueueJobRow[], localAlias: string): QueueJobRow[] {
+  const seen = new Set<string>();
+  const out: QueueJobRow[] = [];
+  for (const j of jobs) {
+    const host = j.host || localAlias;
+    const key = `${host}:${j.job_id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(j);
+  }
+  return out;
+}
+
 export function JobPanel() {
   const [jobs, setJobs] = useState<JobHandle[]>([]);
   const [queue, setQueue] = useState<QueueStatus | null>(null);
@@ -195,7 +212,7 @@ export function JobPanel() {
     }
   }
 
-  const rows: QueueJobRow[] =
+  const rawRows: QueueJobRow[] =
     queue?.jobs ??
     jobs.map((j) => ({
       job_id: j.jobId,
@@ -206,6 +223,9 @@ export function JobPanel() {
       host: localAlias,
       local: true,
     }));
+
+  // Fleet 集約やポーリング競合で同一 host:job_id が二重に来ると React key 警告になる
+  const rows = dedupeQueueRows(rawRows, localAlias);
 
   const runningJobs = rows.filter((j) => j.status === "running");
   const tableJobs = rows.filter((j) => j.status !== "running");
