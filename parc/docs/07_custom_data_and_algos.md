@@ -109,7 +109,8 @@ data/datasets/my_panda_demos/
 
 - 運用: [12_vr_teleop.md](12_vr_teleop.md)
 - 設計・進捗: [feature/vr-teleop/](../feature/vr-teleop/)
-- 起動例: `bash scripts/vr_teleop.sh --fake` / `USE_LIBERO_VENV=1 bash scripts/vr_teleop.sh ...`
+- 起動例: `bash scripts/vr_teleop.sh --config configs/vr/fake_smoke.yaml --fake --no-dataset`  
+  / `PARC_ROBOT_VENV=... bash scripts/vr_teleop.sh --config configs/vr/quest3_libero_spatial_task0.yaml`
 - 学習 YAML 例: `configs/experiments/smolvla_ft_vr_demos_smoke.yaml`
 
 Phase 1 はコントローラ 6DoF + カメラストリーム。ハンド／実機／3D ビューは feature STATUS の backlog。
