@@ -34,6 +34,7 @@ parc-queue = "parc.cli:queue_main"
 parc-sync = "parc.cli:sync_main"
 parc-remote = "parc.cli:remote_main"
 parc-fleet = "parc.cli:fleet_main"
+parc-mix-datasets = "parc.cli:mix_datasets_main"
 
 [build-system]
 requires = ["hatchling"]
@@ -50,3 +51,8 @@ package = true
 
 [tool.uv.sources]
 libero = { path = "../", editable = true }
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]

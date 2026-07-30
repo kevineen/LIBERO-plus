@@ -22,6 +22,8 @@ nvidia-smi --query-gpu=utilization.gpu,memory.used --format=csv,noheader | head 
 uv run parc-fleet hosts
 uv run parc-fleet runs --limit 20
 uv run parc-fleet gpu-check --no-notify   # nuc/thor GPU 死活
+# hub で自動再起動を有効にしている場合（判定のみ）:
+# uv run parc-fleet gpu-check --auto-reboot --dry-run-reboot --host nuc --no-notify
 # または remote
 uv run parc-remote thor queue status --limit 8
 ```
@@ -54,3 +56,5 @@ thor の experiments は多くが `/mnt/sda/parc_libero_plus/experiments/`。
 | running なのに GPU 0% | eval ロード中か CPU 前処理。数分待って再確認 |
 | Fleet に winpc が無い | Hub 側 `hosts.yaml` 未登録。`04_machine_roles.md` |
 | Discord が「thor」なのに winpc の話 | 旧通知。`machine=` 行と run_id 内の machine を見る |
+| `gpu_dead` / NVML N/A（SSH は生きてる） | WSL2 GPU パススルー死。nuc は `auto_reboot` で Windows 再起動可（`docs/10_ops_ui.md`） |
+| イベントログを見る | `experiments/gpu_watch_events.jsonl`（hub） |

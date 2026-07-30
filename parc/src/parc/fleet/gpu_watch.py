@@ -19,12 +19,24 @@ from pathlib import Path
 from typing import Any, Literal
 
 from parc.fleet.aggregate import fleet_targets
+from parc.fleet.gpu_recover import (
+    append_event,
+    auto_reboot_enabled_from_env,
+    collect_gpu_evidence,
+    next_gpu_dead_streak,
+    recover_after_reboot,
+    request_reboot,
+    should_attempt_reboot,
+)
 from parc.notify.webhook import discord_username_for_machine, send_webhook
 from parc.paths import apply_runtime_env, get_machine_id, get_paths
-from parc.remote.hosts import remote_shell
+from parc.remote.hosts import host_gpu_recover_config, remote_shell
 
 # nvidia-smi が返す 1 行 = 1 GPU。空 / 失敗を「GPU 死」とみなす。
+# WSL2 では nvidia-smi が /usr/lib/wsl/lib にあり、非対話 SSH の PATH に入らない。
 GPU_PROBE_CMD = (
+    "export PATH=/usr/lib/wsl/lib:$HOME/.local/bin:$PATH; "
+    "export LD_LIBRARY_PATH=/usr/lib/wsl/lib:${LD_LIBRARY_PATH:-}; "
     "nvidia-smi --query-gpu=index,name,memory.total,temperature.gpu "
     "--format=csv,noheader"
 )
@@ -306,10 +318,14 @@ def gpu_check(
     force: bool = False,
     connect_timeout: int = 8,
     state_file: Path | None = None,
+    auto_reboot: bool = False,
+    dry_run_reboot: bool = False,
+    recover_timeout_sec: float = 600.0,
 ) -> dict[str, Any]:
     """全（または指定）ホストの GPU をプローブし、必要なら webhook 通知する。"""
     apply_runtime_env()
     hub = get_machine_id() or "hub"
+    auto_reboot_switch = bool(auto_reboot) or auto_reboot_enabled_from_env()
     targets = fleet_targets()
     # remote のみ既定。local は include_local か hosts 明示時。
     selected: list[dict[str, Any]] = []
@@ -347,6 +363,7 @@ def gpu_check(
         rows.append(by_alias[t["alias"]])
 
     notifications: list[dict[str, Any]] = []
+    reboots: list[dict[str, Any]] = []
     new_hosts: dict[str, Any] = dict(prev_hosts)
     unhealthy = 0
 
@@ -373,6 +390,27 @@ def gpu_check(
         }
         row["event"] = event
         row["notified"] = False
+        is_remote = row.get("kind") == "remote"
+        streak = 0
+        last_reboot_at = (prev or {}).get("last_reboot_at")
+
+        if is_remote:
+            prev_streak = int((prev or {}).get("gpu_dead_streak") or 0)
+            streak = next_gpu_dead_streak(prev_streak, status)
+            entry["gpu_dead_streak"] = streak
+            entry["last_reboot_at"] = last_reboot_at
+            entry["last_reboot_result"] = (prev or {}).get("last_reboot_result")
+            append_event(
+                {
+                    "hub": hub,
+                    "host": alias,
+                    "event": event if do_send else "probe",
+                    "status": status,
+                    "detail": row.get("detail"),
+                    "streak": streak,
+                    "action": "none",
+                }
+            )
 
         if do_send and notify:
             text = format_gpu_alert(row, event=event, hub=hub)
@@ -398,6 +436,153 @@ def gpu_check(
                 }
             )
 
+        if auto_reboot_switch and is_remote:
+            try:
+                cfg = host_gpu_recover_config(alias)
+            except KeyError:
+                cfg = None
+            if cfg is not None:
+                should_reboot, reason = should_attempt_reboot(
+                    auto_reboot_enabled=auto_reboot_switch,
+                    host_auto_reboot=bool(cfg["auto_reboot"]),
+                    status=status,
+                    streak=streak,
+                    last_reboot_at=last_reboot_at,
+                    cooldown_hours=float(cfg["cooldown_hours"]),
+                    streak_needed=int(cfg["streak_needed"]),
+                )
+                if not should_reboot and reason in {
+                    "streak_low",
+                    "cooldown",
+                    "host_disabled",
+                }:
+                    append_event(
+                        {
+                            "hub": hub,
+                            "host": alias,
+                            "event": f"reboot_skipped_{reason}",
+                            "status": status,
+                            "detail": row.get("detail"),
+                            "streak": streak,
+                            "action": "none",
+                        }
+                    )
+                elif should_reboot:
+                    try:
+                        evidence = collect_gpu_evidence(alias)
+                    except Exception as exc:  # noqa: BLE001 — evidence は best-effort
+                        evidence = {"ok": False, "detail": str(exc)[:400]}
+                    try:
+                        reboot_result = request_reboot(
+                            alias,
+                            method=str(cfg["reboot_method"]),
+                            dry_run=dry_run_reboot,
+                        )
+                    except Exception as exc:  # noqa: BLE001 — 失敗を状態・イベントへ残す
+                        reboot_result = {
+                            "ok": False,
+                            "dry_run": dry_run_reboot,
+                            "detail": str(exc)[:400],
+                        }
+                    reboot_action = {
+                        **reboot_result,
+                        "host": alias,
+                        "method": str(cfg["reboot_method"]),
+                        "evidence": evidence,
+                    }
+                    reboots.append(reboot_action)
+                    reboot_event = (
+                        "reboot_sent"
+                        if reboot_result.get("ok")
+                        else "reboot_failed"
+                    )
+                    append_event(
+                        {
+                            "hub": hub,
+                            "host": alias,
+                            "event": reboot_event,
+                            "status": status,
+                            "detail": reboot_result.get("detail") or row.get("detail"),
+                            "streak": streak,
+                            "action": "reboot",
+                            "ok": bool(reboot_result.get("ok")),
+                            "dry_run": bool(reboot_result.get("dry_run")),
+                        }
+                    )
+                    entry["last_reboot_result"] = reboot_action
+                    # dry-run ではクールダウンを汚さない（実再起動時のみ last_reboot_at）
+                    if reboot_result.get("ok") and not dry_run_reboot:
+                        entry["last_reboot_at"] = _utc_iso()
+                    if reboot_result.get("ok") and notify:
+                        text = format_gpu_alert(row, event="reboot", hub=hub)
+                        out = send_webhook(
+                            text,
+                            username=discord_username_for_machine(alias),
+                        )
+                        out["host"] = alias
+                        out["event"] = "reboot"
+                        out["preview"] = text[:400]
+                        notifications.append(out)
+
+                    if reboot_result.get("ok") and not dry_run_reboot:
+                        recovery = recover_after_reboot(
+                            alias,
+                            parc_dir=str(cfg["parc_dir"]),
+                            timeout_sec=recover_timeout_sec,
+                        )
+                        reboot_action["recovery"] = recovery
+                        recovery_event = (
+                            "recovered" if recovery.get("ok") else "recover_timeout"
+                        )
+                        append_event(
+                            {
+                                "hub": hub,
+                                "host": alias,
+                                "event": recovery_event,
+                                "status": "ok" if recovery.get("ok") else status,
+                                "detail": recovery.get("detail") or row.get("detail"),
+                                "streak": streak,
+                                "action": "recover",
+                                "ok": bool(recovery.get("ok")),
+                            }
+                        )
+                        worker = recovery.get("worker") if isinstance(recovery, dict) else None
+                        if recovery.get("ok") and isinstance(worker, dict):
+                            worker_event = (
+                                "worker_already_running"
+                                if worker.get("already")
+                                else "worker_started"
+                            )
+                            append_event(
+                                {
+                                    "hub": hub,
+                                    "host": alias,
+                                    "event": worker_event,
+                                    "status": "ok",
+                                    "detail": worker.get("stdout") or worker.get("detail"),
+                                    "streak": streak,
+                                    "action": "worker",
+                                    "ok": bool(worker.get("ok")),
+                                }
+                            )
+                        if recovery.get("ok") and notify:
+                            recovered_row = recovery.get("probe")
+                            if not isinstance(recovered_row, dict):
+                                recovered_row = {**row, "status": "ok"}
+                            text = format_gpu_alert(
+                                recovered_row,
+                                event="recovered",
+                                hub=hub,
+                            )
+                            out = send_webhook(
+                                text,
+                                username=discord_username_for_machine(alias),
+                            )
+                            out["host"] = alias
+                            out["event"] = "recovered"
+                            out["preview"] = text[:400]
+                            notifications.append(out)
+
         new_hosts[alias] = entry
 
     path = save_state({"hosts": new_hosts}, state_file)
@@ -407,6 +592,7 @@ def gpu_check(
         "state_path": str(path),
         "hosts": rows,
         "notifications": notifications,
+        "reboots": reboots,
         "unhealthy": unhealthy,
         "ok": unhealthy == 0,
     }

@@ -121,6 +121,27 @@ def tunnel_hint(alias: str, *, local_port: int | None = None) -> str:
     )
 
 
+def host_gpu_recover_config(alias: str) -> dict[str, Any]:
+    """auto_reboot 関連設定。未知ホストは KeyError。"""
+    hosts = load_hosts()
+    if alias not in hosts:
+        raise KeyError(alias)
+    raw = hosts[alias]
+    method = str(raw.get("reboot_method") or "windows_shutdown").strip()
+    if method not in {"windows_shutdown", "linux_reboot"}:
+        method = "windows_shutdown"
+    streak = raw.get("gpu_dead_streak_needed")
+    cool = raw.get("reboot_cooldown_hours")
+    return {
+        "auto_reboot": bool(raw.get("auto_reboot", False)),
+        "reboot_method": method,
+        "streak_needed": int(streak) if streak not in (None, "") else 2,
+        "cooldown_hours": float(cool) if cool not in (None, "") else 1.0,
+        "parc_dir": str(raw.get("parc_dir") or ""),
+        "ssh": str(raw.get("ssh") or ""),
+    }
+
+
 def list_host_summaries() -> list[dict[str, Any]]:
     out = []
     for alias, raw in load_hosts().items():
@@ -131,6 +152,7 @@ def list_host_summaries() -> list[dict[str, Any]]:
                 "parc_dir": raw.get("parc_dir"),
                 "web_port": raw.get("web_port", "3030"),
                 "local_web_port": raw.get("local_web_port"),
+                "auto_reboot": bool(raw.get("auto_reboot", False)),
             }
         )
     return out

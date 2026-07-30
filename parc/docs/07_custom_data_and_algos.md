@@ -151,16 +151,37 @@ ds.finalize()
 - アクション空間が絶対姿勢や関節角なら、学習前に **LIBERO 相対 7D へ変換**するか、評価側の制御モードを合わせる  
 - 失敗デモを混ぜるかは仮説次第（まずは成功のみで baseline）
 
-### B4. 複数データセットの混合
+### B4. 複数データセットの混合（物理マージ）
 
-LeRobot は `dataset.repo_id` に **リスト**を渡せます（共通キーだけ残る）。
+**注意（2026-07）:** 現行 LeRobot は `MultiLeRobotDataset` が無効です。
+`factory.make_dataset` は非 str の `repo_id` で `NotImplementedError` になります。
+ドキュメントにある `--dataset.repo_id=[a,b]` は **使えません**。
 
-```yaml
-train:
-  # 実装: extra_args で明示（リストは CLI 表記に注意）
-  extra_args:
-    - --dataset.repo_id=[lerobot/libero_plus,local/my_panda_demos]
+代わりに **事前マージ**してから単一データセットで学習します。
+
+```bash
+# 例: libero_plus から 240 ep + cam 全 60 ep → ~80/20（エピソード比）
+# ※ lerobot 入りの親 venv を使う（parc 単独 .venv では不可）
+cd /home/kevin/Matsuo/robot/LIBERO-plus/parc
+set -a && source .env.local && set +a
+
+bash scripts/mix_datasets.sh \
+  --base-root /mnt/b/hf/hub/lerobot/hub/datasets--lerobot--libero_plus/snapshots/f3f49f426d75030177b18778374005bc12ccd588 \
+  --cam-root data/datasets/libero_cam_views_v1 \
+  --base-episodes 240 \
+  --dry-run
+
+bash scripts/mix_datasets.sh \
+  --base-root /mnt/b/hf/hub/lerobot/hub/datasets--lerobot--libero_plus/snapshots/f3f49f426d75030177b18778374005bc12ccd588 \
+  --cam-root data/datasets/libero_cam_views_v1 \
+  --base-episodes 240 \
+  --out data/datasets/libero_plus_cam_mix_v1 \
+  --overwrite
 ```
+
+学習 YAML は単一 `dataset_repo_id` + `dataset_root` を指す
+（例: `configs/experiments/smolvla_ft_libero_cam_mix_from_unfreeze_winpc.yaml`）。
+**cam-only FT は禁止**（薄い SR=0.000 で打ち切り済み）。
 
 または公式データで warm-start したあと、自前データだけで追加 FT（2 段階）の方が制御しやすいです。
 

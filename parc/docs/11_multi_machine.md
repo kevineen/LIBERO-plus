@@ -216,6 +216,9 @@ uv run parc-fleet queue
 uv run parc-fleet enqueue --host nuc -c configs/experiments/smoke_random.yaml --kind eval
 # GPU 死活（hub → Discord）。詳細は docs/10_ops_ui.md
 uv run parc-fleet gpu-check
+# 許可ホストのみ自動再起動（hosts.yaml で auto_reboot: true）
+# uv run parc-fleet gpu-check --auto-reboot
+# uv run parc-fleet gpu-check --auto-reboot --dry-run-reboot --host nuc --no-notify
 
 # Web（ハブで start_web.sh）
 # Runs: Fleet チェックON → All hosts フィルタ

@@ -29,36 +29,62 @@ def build_lerobot_train_cmd(
     repo_id = train_cfg.get("policy_repo_id")
     dataset_root = train_cfg.get("dataset_root")
 
+    # 現行 LeRobot は MultiLeRobotDataset 無効。リスト mix は物理マージ後に単一 ID で渡す。
+    if isinstance(dataset, (list, tuple)) or (
+        isinstance(dataset, str) and dataset.strip().startswith("[")
+    ):
+        raise ValueError(
+            "train.dataset_repo_id にリストは渡せません（LeRobot MultiDataset 無効）。"
+            " 先に `parc-mix-datasets` でマージし、単一 repo_id + dataset_root を指定してください。"
+        )
+
+    # 任意の追加 CLI（アルゴリズム実験用）
+    extra = train_cfg.get("extra_args") or []
+    if isinstance(extra, str):
+        extra = [extra]
+    extra_list = [str(x) for x in extra]
+    # extra_args 側で dataset.repo_id / root を既に指定している場合は二重指定を避ける
+    extra_has_repo = any(x.startswith("--dataset.repo_id") for x in extra_list)
+    extra_has_root = any(x.startswith("--dataset.root") for x in extra_list)
+    if extra_has_repo and any(
+        ("=[" in x) or (x.rstrip().endswith("]")) for x in extra_list if "repo_id" in x
+    ):
+        raise ValueError(
+            "extra_args の --dataset.repo_id=[...] は現行 LeRobot で未対応。"
+            " `parc-mix-datasets` で物理マージしてください。"
+        )
+
     cmd = [
         "lerobot-train",
         f"--policy.type={policy_type}",
-        f"--dataset.repo_id={dataset}",
-        # LeRobot 0.5.x: libero_plus env type は未収録。plus fork を import して評価する想定。
-        f"--env.type=libero",
-        f"--env.task={env_task}",
-        f"--output_dir={output_dir}",
-        f"--steps={steps}",
-        f"--batch_size={batch_size}",
-        f"--seed={seed}",
-        f"--eval.batch_size=1",
-        f"--eval.n_episodes={eval_n}",
-        f"--eval_freq={eval_freq}",
-        f"--policy.load_vlm_weights={'true' if load_vlm else 'false'}",
-        # Hub への自動 push はオフ（ローカル実験用）
-        "--policy.push_to_hub=false",
     ]
-    if dataset_root:
+    if not extra_has_repo:
+        cmd.append(f"--dataset.repo_id={dataset}")
+    # LeRobot 0.5.x: libero_plus env type は未収録。plus fork を import して評価する想定。
+    cmd.extend(
+        [
+            f"--env.type=libero",
+            f"--env.task={env_task}",
+            f"--output_dir={output_dir}",
+            f"--steps={steps}",
+            f"--batch_size={batch_size}",
+            f"--seed={seed}",
+            f"--eval.batch_size=1",
+            f"--eval.n_episodes={eval_n}",
+            f"--eval_freq={eval_freq}",
+            f"--policy.load_vlm_weights={'true' if load_vlm else 'false'}",
+            # Hub への自動 push はオフ（ローカル実験用）
+            "--policy.push_to_hub=false",
+        ]
+    )
+    if dataset_root and not extra_has_root:
         root = Path(str(dataset_root)).expanduser()
         if not root.is_absolute():
             root = (PARC_ROOT / root).resolve()
         cmd.append(f"--dataset.root={root}")
     if repo_id:
         cmd.append(f"--policy.repo_id={repo_id}")
-    # 任意の追加 CLI（アルゴリズム実験用）
-    extra = train_cfg.get("extra_args") or []
-    if isinstance(extra, str):
-        extra = [extra]
-    cmd.extend(str(x) for x in extra)
+    cmd.extend(extra_list)
     return cmd
 
 

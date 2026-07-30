@@ -32,7 +32,8 @@
 - 旧 `from_official_*`（width 未整合）や SR0 の `continue_unfreeze50k` 延長を再利用しない
 - Resume より **pretrained_path を書いた新規 YAML**
 - Discord の実行マシンは表示名 `PARC · <machine>` と本文 `machine=` を見る（Hub 名と混同しない）
-- GPU 死活は hub で `uv run parc-fleet gpu-check`（変化時のみ Discord）。詳細は `docs/10_ops_ui.md`
+- GPU 死活は hub で `uv run parc-fleet gpu-check`（変化時のみ Discord）
+- nuc 等の自動再起動は `gpu-check --auto-reboot`（hosts で `auto_reboot: true` + 連続 2 回 `gpu_dead`）。詳細は `docs/10_ops_ui.md`
 - winpc への SSH は **Port 2222**（`:22` は Windows OpenSSH）。ホスト割り振りは `04_machine_roles.md`
 
 ## 典型タスク → playbook
@@ -41,6 +42,7 @@
 |----------|----------|
 | 状況は？ / キュー空？ | [playbooks/check_status.md](playbooks/check_status.md) |
 | GPU 死んだ？ / Discord 監視 | `uv run parc-fleet gpu-check`（→ `docs/10_ops_ui.md`） |
+| 自動再起動を試す / dry-run | `parc-fleet gpu-check --auto-reboot --dry-run-reboot` |
 | ジョブを投げて | [playbooks/enqueue_job.md](playbooks/enqueue_job.md) |
 | DONE 通知が来た | [playbooks/after_job_done.md](playbooks/after_job_done.md) |
 | strategy を更新して | [playbooks/update_strategy_docs.md](playbooks/update_strategy_docs.md) |

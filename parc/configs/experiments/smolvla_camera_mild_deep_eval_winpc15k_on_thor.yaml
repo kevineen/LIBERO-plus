@@ -1,0 +1,24 @@
+# thor: winpc +15k の Camera mild（608/609）だけ深掘り
+# continue@30k では mild 0.30–0.50。+15k / 親 unfreeze 深掘りと比較。学習なし。
+# ckpt は imported（親ピック時に rsync 済み）
+name: smolvla_camera_mild_deep_eval_winpc15k_on_thor
+seed: 0
+tags: [eval, smolvla, camera, deep, mild, finetune15k, cross_machine, thor]
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 10
+  task_ids: [608, 609]
+  max_steps: 280
+  camera_height: 256
+  camera_width: 256
+  save_video: true
+  save_frames: false
+  use_classification: true
+
+policy:
+  type: checkpoint
+  action_dim: 7
+  device: cuda
+  flip_images: true
+  path: /mnt/sda/parc_libero_plus/experiments/imported/20260728T010727Z_winpc_cb240365_smolvla_ft_continue30k_finetune15k_winpc/015000/pretrained_model

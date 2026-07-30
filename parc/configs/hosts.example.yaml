@@ -29,3 +29,5 @@ hosts:
     parc_dir: /home/kevin/Matsuo/LIBERO-plus/parc
     web_port: 3030
     local_web_port: 3031   # 手元で両 UI を同時に開くときポートをずらす
+    # auto_reboot: true              # hub gpu-check --auto-reboot 時のみ再起動
+    # reboot_method: windows_shutdown  # windows_shutdown | linux_reboot

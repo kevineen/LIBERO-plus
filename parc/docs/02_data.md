@@ -47,3 +47,6 @@ huggingface-cli download lerobot/libero_plus --repo-type dataset --include READM
 自前デモの LeRobot 変換、ローカル `dataset_root`、混合学習、評価スキーマ互換の手順は次を参照:
 
 → **[07_custom_data_and_algos.md](07_custom_data_and_algos.md)**
+
+**複数データセットの混合:** 現行 LeRobot は `MultiLeRobotDataset` が無効のため、
+`bash scripts/mix_datasets.sh` / `uv run parc-mix-datasets` で事前に物理マージしてから単一 `dataset_root` で学習する（詳細は 07 §B4）。
