@@ -1,10 +1,10 @@
 # Implementation Plan: VR Teleop Phase 1
 
-> Agentic workers: track progress with checkboxes. Update [STATUS.md](STATUS.md) when a section completes.
+> Agentic workers: track progress with checkboxes. Update [../STATUS.md](../STATUS.md) when a section completes.
 
 **Goal:** Quest 3 コントローラで LIBERO を操作し、LeRobot v3 デモを `data/datasets/vr_libero_demos` に保存できる。
 
-**Architecture:** Approach A（`parc.vr` サーバ + Unity 薄クライアント）。詳細は [design.md](design.md)。
+**Architecture:** Approach A（`parc.vr` サーバ + Unity 薄クライアント）。詳細は [../design.md](../design.md)。
 
 **Tech Stack:** Python 3.10+, websockets, Pillow/numpy, LIBERO OffScreenRenderEnv, LeRobot dataset v3, Unity OpenXR
 

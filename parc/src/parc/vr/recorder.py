@@ -103,7 +103,6 @@ class EpisodeRecorder:
             return
         from lerobot.datasets.lerobot_dataset import LeRobotDataset
 
-        self.root.mkdir(parents=True, exist_ok=True)
         meta = self.root / "meta" / "info.json"
         if meta.is_file():
             self._ds = LeRobotDataset(self.repo_id, root=self.root)
@@ -165,6 +164,14 @@ class EpisodeRecorder:
         self._episode_count += 1
         self.buffer.clear()
         return idx
+
+    def dataset_summary(self) -> dict[str, object]:
+        """保存先データセットの最低限の状態を返す。"""
+        return {
+            "root": str(self.root),
+            "meta_exists": (self.root / "meta" / "info.json").is_file(),
+            "episode_count": self._episode_count,
+        }
 
     def finalize(self) -> None:
         """データセットを閉じる。"""

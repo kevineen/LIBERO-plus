@@ -17,6 +17,8 @@ custom_pddl/
 libero.egg-info/
 .vscode/
 libero/libero/assets/
+# Accidental dump of remote /inspire/hdd/... scene assets
+libero/libero/inspire/
 # PARC workspace run artifacts (keep parc/configs & docs tracked)
 parc/experiments/**
 !parc/experiments/.gitkeep
