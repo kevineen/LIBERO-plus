@@ -25,16 +25,15 @@ Meta Quest 3 から LIBERO / LIBERO-plus を遠隔操作し、SmolVLA 学習互�
 
 ```bash
 cd /home/kevin/Matsuo/robot/LIBERO-plus/parc
-# フェイク入力で録画スモーク（Quest 不要）
-bash scripts/vr_teleop.sh --fake --suite libero_spatial --task-id 0
+# フェイク env（Quest / LIBERO 無し）
+bash scripts/vr_teleop.sh --config configs/vr/fake_smoke.yaml --fake --no-dataset
 
-# Quest 待ち受け
-bash scripts/vr_teleop.sh --host 0.0.0.0 --port 8765 \
-  --suite libero_spatial --task-id 0 \
-  --dataset-root data/datasets/vr_libero_demos
+# Quest 待ち受け + LeRobot 書き込み（robot venv）
+PARC_ROBOT_VENV=/home/kevin/Matsuo/robot/.venv \
+  bash scripts/vr_teleop.sh --config configs/vr/quest3_libero_spatial_task0.yaml
 ```
 
-学習 YAML では `train.dataset_root` に上記パスを指定する。
+正本設定: `configs/vr/`。詳細手順・smoke FT: [docs/12_vr_teleop.md](../../docs/12_vr_teleop.md)。
 
 ## スコープ外（Phase 2+）
 

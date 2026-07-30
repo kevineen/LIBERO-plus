@@ -54,8 +54,11 @@ huggingface-cli download lerobot/libero_plus --repo-type dataset --include READM
 
 ```bash
 # フェイクスモーク（Quest 不要）
-bash scripts/vr_teleop.sh --fake-episode --no-dataset \
-  --dataset-root data/datasets/vr_libero_demos_smoke
+bash scripts/vr_teleop.sh --config configs/vr/fake_smoke.yaml --fake --no-dataset
+
+# ディスク書き込みスモーク（robot venv）
+PARC_ROBOT_VENV=/home/kevin/Matsuo/robot/.venv \
+  bash scripts/vr_teleop.sh --fake-episode --config configs/vr/fake_smoke.yaml
 ```
 
 学習 YAML 例: `configs/experiments/smolvla_ft_vr_demos_smoke.yaml`

@@ -49,15 +49,15 @@
 ```bash
 cd LIBERO-plus/parc
 # フェイクで接続確認
-bash scripts/vr_teleop.sh --fake --host 0.0.0.0 --port 8765 --no-dataset
+bash scripts/vr_teleop.sh --config configs/vr/fake_smoke.yaml --fake --no-dataset
 
-# 本番 LIBERO
-USE_LIBERO_VENV=1 bash scripts/vr_teleop.sh --host 0.0.0.0 --port 8765 \
-  --suite libero_spatial --task-id 0 \
-  --dataset-root data/datasets/vr_libero_demos
+# 本番 LIBERO + LeRobot 書き込み
+PARC_ROBOT_VENV=/home/kevin/Matsuo/robot/.venv \
+  bash scripts/vr_teleop.sh --config configs/vr/quest3_libero_spatial_task0.yaml
 ```
 
-Quest の `Server Url` は `localhost` ではなく **PC の LAN IP** にする。
+Quest の `Server Url` は `localhost` ではなく **PC の LAN IP** にする。  
+詳細: [`docs/12_vr_teleop.md`](../../docs/12_vr_teleop.md)。
 
 ## プロトコル
 
