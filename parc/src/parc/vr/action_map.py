@@ -61,6 +61,26 @@ class ActionMapConfig:
     max_pos: float = 0.05
     max_rot: float = 0.5
 
+    @classmethod
+    def from_mapping(cls, raw: dict[str, float] | None) -> "ActionMapConfig":
+        """YAML/辞書から設定を復元する。"""
+        data = raw or {}
+        return cls(
+            pos_scale=float(data.get("pos_scale", 1.0)),
+            rot_scale=float(data.get("rot_scale", 1.0)),
+            max_pos=float(data.get("max_pos", 0.05)),
+            max_rot=float(data.get("max_rot", 0.5)),
+        )
+
+    def to_mapping(self) -> dict[str, float]:
+        """設定をシリアライズしやすい dict にする。"""
+        return {
+            "pos_scale": self.pos_scale,
+            "rot_scale": self.rot_scale,
+            "max_pos": self.max_pos,
+            "max_rot": self.max_rot,
+        }
+
 
 @dataclass
 class PoseActionMapper:

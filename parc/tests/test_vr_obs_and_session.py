@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import numpy as np
@@ -75,3 +76,47 @@ def test_run_fake_episode(tmp_path: Path):
         image_size=(32, 32),
     )
     assert n == 1
+
+
+def test_run_fake_episode_emits_saved_status_summary(tmp_path: Path) -> None:
+    sent: list[str | bytes] = []
+
+    class _CaptureRecorder(EpisodeRecorder):
+        def save_episode(self) -> int:
+            idx = super().save_episode()
+            self.root.mkdir(parents=True, exist_ok=True)
+            meta_dir = self.root / "meta"
+            meta_dir.mkdir(parents=True, exist_ok=True)
+            (meta_dir / "info.json").write_text("{}", encoding="utf-8")
+            return idx
+
+    from parc.vr.protocol import Buttons, ControlMessage, Pose
+    from parc.vr.session import FakeLiberoEnv, TeleopSession, TeleopSessionConfig
+
+    session = TeleopSession(
+        env=FakeLiberoEnv(height=32, width=32),
+        config=TeleopSessionConfig(
+            dataset_root=tmp_path,
+            create_dataset=False,
+            image_size=(32, 32),
+        ),
+        send=sent.append,
+        recorder=_CaptureRecorder(root=tmp_path, create_dataset=False, image_size=(32, 32)),
+    )
+    session.handle_control(
+        ControlMessage(t=0.0, pose=Pose(), gripper=0.0, buttons=Buttons(record=True))
+    )
+    session.handle_control(
+        ControlMessage(t=0.1, pose=Pose(pos=(0.01, 0.0, 0.0)), gripper=1.0, buttons=Buttons())
+    )
+    session.handle_control(
+        ControlMessage(t=0.2, pose=Pose(pos=(0.02, 0.0, 0.0)), gripper=1.0, buttons=Buttons(save=True))
+    )
+    session.close()
+
+    statuses = [
+        json.loads(item)
+        for item in sent
+        if isinstance(item, str) and json.loads(item).get("type") == "status"
+    ]
+    assert statuses[-1]["message"] == "saved meta=True episodes=1"

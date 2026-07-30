@@ -1,13 +1,3 @@
-# smoke: VR 収集デモで短 FT（データが揃ってから）
-#
-# 事前:
-#   PARC_ROBOT_VENV=... bash scripts/vr_teleop.sh --fake-episode \
-#     --dataset-root data/datasets/vr_libero_demos
-#   （本番は Quest + USE_LIBERO_VENV=1 でデモ収集）
-#
-# 実行:
-#   bash scripts/train.sh configs/experiments/smolvla_ft_vr_demos_smoke.yaml
-
 name: smolvla_ft_vr_demos_smoke
 seed: 0
 tags: [smolvla, ft, vr, smoke]
