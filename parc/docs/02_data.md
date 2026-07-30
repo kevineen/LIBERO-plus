@@ -48,5 +48,17 @@ huggingface-cli download lerobot/libero_plus --repo-type dataset --include READM
 
 → **[07_custom_data_and_algos.md](07_custom_data_and_algos.md)**
 
+**Quest 3 でデモを録る:** LIBERO sim を VR テレオプし、直接 LeRobot v3 に書く。
+
+→ **[12_vr_teleop.md](12_vr_teleop.md)** / [feature/vr-teleop/](../feature/vr-teleop/)
+
+```bash
+# フェイクスモーク（Quest 不要）
+bash scripts/vr_teleop.sh --fake-episode --no-dataset \
+  --dataset-root data/datasets/vr_libero_demos_smoke
+```
+
+学習 YAML 例: `configs/experiments/smolvla_ft_vr_demos_smoke.yaml`
+
 **複数データセットの混合:** 現行 LeRobot は `MultiLeRobotDataset` が無効のため、
 `bash scripts/mix_datasets.sh` / `uv run parc-mix-datasets` で事前に物理マージしてから単一 `dataset_root` で学習する（詳細は 07 §B4）。

@@ -79,6 +79,8 @@ parc/
 | [docs/09_autoloop_and_rl.md](docs/09_autoloop_and_rl.md) | 無人キュー・スイープ・prune・GRPO/GSPO |
 | [docs/10_ops_ui.md](docs/10_ops_ui.md) | Web UI 操作・再開・進捗 |
 | [docs/11_multi_machine.md](docs/11_multi_machine.md) | 複数 PC・Fleet 横断・GDrive |
+| [docs/12_vr_teleop.md](docs/12_vr_teleop.md) | Quest 3 VR テレオプ・デモ収集 |
+| [feature/vr-teleop/](feature/vr-teleop/) | VR 機能の設計・計画・STATUS |
 
 ## 無人実験ループ（一晩回す）
 
@@ -106,5 +108,6 @@ uv run parc-list --sweep-id overnight_ft_smoke
 | GPU 死活監視 + 許可機の自動再起動 | ハブ経由の remote artifact 配信 |
 | データセット物理 mix（`parc-mix-datasets`） | MultiLeRobotDataset（現行 LeRobot 無効） |
 | Google Drive ckpt sync（rclone） | |
+| VR teleop サーバ + Unity 薄クライアント（Quest 3） | Quest 実機 E2E・ハンド/実機/3D ビュー（Phase 2） |
 
 親ディレクトリの upstream README はベンチマーク本体用です。コンペ作業は **この `parc/` をルート** にしてください。

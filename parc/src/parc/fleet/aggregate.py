@@ -403,10 +403,23 @@ def fleet_queue(*, limit: int = 40) -> dict[str, Any]:
         if block.get("error"):
             errors[t["alias"]] = str(block["error"])
         all_jobs.extend(block.get("jobs") or [])
+    # 同一 host:job_id の重複は UI の React key 衝突になるため除去（先勝ち）
+    seen_job: set[tuple[str, str]] = set()
+    deduped_jobs: list[dict[str, Any]] = []
+    for row in all_jobs:
+        if not isinstance(row, dict):
+            continue
+        host = str(row.get("host") or "")
+        jid = str(row.get("job_id") or "")
+        key = (host, jid)
+        if not jid or key in seen_job:
+            continue
+        seen_job.add(key)
+        deduped_jobs.append(row)
     return {
         "local_alias": _local_alias(),
         "hosts": per_host,
-        "jobs": all_jobs,
+        "jobs": deduped_jobs,
         "errors": errors,
     }
 

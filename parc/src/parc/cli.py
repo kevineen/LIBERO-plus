@@ -93,6 +93,13 @@ def eval_main(argv: list[str] | None = None) -> None:
         raise
 
 
+def vr_teleop_main(argv: list[str] | None = None) -> None:
+    """Quest 3 VR teleop → LIBERO デモ収集サーバ。"""
+    from parc.vr.cli_main import main as _vr_main
+
+    _vr_main(argv)
+
+
 def mix_datasets_main(argv: list[str] | None = None) -> None:
     """公開 libero_plus と cam 再レンダを物理マージする。"""
     parser = argparse.ArgumentParser(
@@ -1008,7 +1015,7 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         console.print(
             "Usage: python -m parc.cli "
-            "[new|eval|train|list|smoke|enqueue|worker|prune|queue|sync|remote|fleet|mix-datasets]"
+            "[new|eval|train|list|smoke|enqueue|worker|prune|queue|sync|remote|fleet|mix-datasets|vr-teleop]"
         )
         sys.exit(1)
     cmd = sys.argv[1]
@@ -1027,4 +1034,5 @@ if __name__ == "__main__":
         "remote": remote_main,
         "fleet": fleet_main,
         "mix-datasets": mix_datasets_main,
+        "vr-teleop": vr_teleop_main,
     }.get(cmd, lambda _: sys.exit(1))(rest)

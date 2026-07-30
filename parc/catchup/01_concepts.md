@@ -27,6 +27,8 @@
 
 このプロジェクトの当面の主戦場は **デモデータでの FT** です（本選で配布モデルが来たら差し替え）。
 
+デモの集め方の一例: **Meta Quest 3 で LIBERO をテレオプ**して LeRobot 形式で保存する（[docs/12_vr_teleop.md](../docs/12_vr_teleop.md)）。
+
 ## 3. VLA（Vision-Language-Action）
 
 **Vision**（画像）+ **Language**（指示文）→ **Action**（ロボット動作）を一本のモデルで扱う枠組みです。
