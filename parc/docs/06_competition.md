@@ -3,6 +3,8 @@
 公式: https://weblab.t.u-tokyo.ac.jp/physical-ai-competition/  
 説明会資料: https://drive.google.com/drive/folders/1-gTOKG5uEXjkmphKJSCo9mCmSCEGbOtI
 
+新規メンバー向けの概念・学習 URL・初回実行は [catchup/](../catchup/) を参照。
+
 ## 公開情報（2026-06 説明会）
 
 - 評価環境: **LIBERO / LIBERO-Plus（7 摂動）**

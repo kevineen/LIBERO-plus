@@ -10,5 +10,6 @@
 | [strategy/playbooks/](strategy/playbooks/) | 状況確認 / 投入 / DONE 後 / docs 更新 |
 | [strategy/01](strategy/01_current_status.md)–[05](strategy/05_decision_rules.md) | 現状・結果・バックログ・判断ルール |
 | [docs/](docs/) | セットアップ・API・Fleet 詳細 |
+| [catchup/](catchup/) | 人間の新規メンバー向け（エージェントは通常不要） |
 
 Cursor rule: `.cursor/rules/parc-agent.mdc`（alwaysApply）

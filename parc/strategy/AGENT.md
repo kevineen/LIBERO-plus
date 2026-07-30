@@ -20,6 +20,7 @@
 | `strategy/01`–`05` | 方針・現状 | **更新対象**。事実が変わったら必ず直す |
 | `strategy/AGENT.md` + `playbooks/` | エージェント | 手順の正本。コマンドはここからコピー |
 | `docs/*.md` | セットアップ・API | 参照。手順変更時のみ触る |
+| `catchup/` | 人間の新規メンバー | 参照のみ。オンボーディング案内時に指す |
 | `configs/experiments/*.yaml` | 実験定義 | 新規ジョブはここ。ckpt path は絶対パス明示 |
 | `.env.local` / `configs/hosts.yaml` | マシン固有 | **git に載せない**。中身の秘密をチャットに貼らない |
 
@@ -32,7 +33,7 @@
 - Resume より **pretrained_path を書いた新規 YAML**
 - Discord の実行マシンは表示名 `PARC · <machine>` と本文 `machine=` を見る（Hub 名と混同しない）
 - GPU 死活は hub で `uv run parc-fleet gpu-check`（変化時のみ Discord）。詳細は `docs/10_ops_ui.md`
-- winpc への SSH は **Port 2222**（`:22` は Windows OpenSSH）。詳細は `04_machine_roles.md`
+- winpc への SSH は **Port 2222**（`:22` は Windows OpenSSH）。ホスト割り振りは `04_machine_roles.md`
 
 ## 典型タスク → playbook
 
