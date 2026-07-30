@@ -42,3 +42,5 @@ cd /home/kevin/Matsuo/robot/LIBERO-plus/parc
 - コンペ概要 → [docs/06_competition.md](../docs/06_competition.md)
 - 用語・ワークフロー → [docs/00_overview.md](../docs/00_overview.md)
 - 環境構築の詳細 → [docs/01_setup.md](../docs/01_setup.md)
+- Quest 3 でデモを録る → [docs/12_vr_teleop.md](../docs/12_vr_teleop.md)（失敗は分析用・学習は `parc-filter-demos --success-only`）
+- VR 機能の進捗 → [feature/vr-teleop/STATUS.md](../feature/vr-teleop/STATUS.md)

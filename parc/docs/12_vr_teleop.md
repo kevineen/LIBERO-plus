@@ -45,6 +45,11 @@ PARC_ROBOT_VENV=/home/kevin/Matsuo/robot/.venv \
 | `--image-size` | 録画解像度（既定 256） |
 | `--jpeg-quality` | ストリーム品質 |
 | `--no-flip-images` | 学習用 180° flip をオフ |
+| `--require-success` | 未成功の Save を拒否（既定は失敗も保存） |
+| `--operator-id` / `--device-id` / `--location` | 収集メタ |
+| `--calib-override` | カメラ校正上書き JSON |
+
+YAML 追加キー: `require_success`（既定 false）、`init_state_mode: cycle`、`task_ids`、`operator_id` / `device_id` / `location`、`calib_override_path`。
 
 ## Quest クライアント
 
@@ -59,6 +64,22 @@ PARC_ROBOT_VENV=/home/kevin/Matsuo/robot/.venv \
 
 ## 学習への接続
 
+**方針:** 失敗エピソードは分析用に混在 DS へ残す。学習 baseline は **success-only subset** を使う。
+
+```bash
+# 1) 混在 DS → 成功だけ物理 subset
+uv run parc-filter-demos \
+  --root data/datasets/vr_libero_demos \
+  --output data/datasets/vr_libero_demos_success \
+  --success-only --overwrite
+
+# 2) success-only で smoke FT
+bash scripts/train.sh configs/experiments/smolvla_ft_vr_demos_success_smoke.yaml
+./scripts/parc.sh eval -c configs/experiments/subset_eval.yaml
+```
+
+混在直読み（デバッグ用）:
+
 ```yaml
 train:
   backend: lerobot
@@ -67,9 +88,7 @@ train:
 ```
 
 ```bash
-PARC_ROBOT_VENV=/home/kevin/Matsuo/robot/.venv bash scripts/vr_teleop.sh --config configs/vr/quest3_libero_spatial_task0.yaml
 bash scripts/train.sh configs/experiments/smolvla_ft_vr_demos_smoke.yaml
-./scripts/parc.sh eval -c configs/experiments/subset_eval.yaml
 ```
 
 スキーマは [`07_custom_data_and_algos.md`](07_custom_data_and_algos.md) と同じ（front/wrist/state8/action7/task）。
@@ -79,8 +98,35 @@ bash scripts/train.sh configs/experiments/smolvla_ft_vr_demos_smoke.yaml
 1. PC で `parc-vr-teleop` 起動 → Quest 接続 → `hello` / `task_info`
 2. コントローラで EE を動かす（映像パネルで確認）
 3. **A (record)** で録画開始
-4. タスク完了後 **B (save)** でエピソード保存（失敗なら Grip で discard）
-5. Menu で env reset
+4. **B (save)** でエピソード保存（既定は失敗も保存。`require_success: true` で未成功拒否）
+5. Menu で env reset（init_state cycle、または `collection_queue` 消化）
+
+## 品質ゲート
+
+- 既定は **成功/失敗どちらも Save 可**（`success` フラグを必ず記録）。厳格化は `require_success: true` / `--require-success`
+- 形式は **LeRobot Dataset v3.0**（`timestamp` は LeRobot が `frame_index/fps` で自動付与。制御時刻はサイドカー）
+- `meta/collection_info.json` … カメラ名/解像度/座標系・収集メタ（差し替えは `calib_override_path`）
+- `meta/episode_quality.jsonl` … success / task / fps / operator / RTT / category / replay_* 等
+- `meta/episode_timestamps.jsonl` … v3 timestamps + control_timestamps（Approximate Time）
+- YAML 追加: `max_rtt_ms` / `latency_policy`（`degraded`|`refuse`）/ `approx_time_slop_ms` / `collection_queue`
+
+```bash
+uv run parc-verify-demos --root data/datasets/vr_libero_demos
+uv run parc-verify-demos --root data/datasets/vr_libero_demos --require-success-only
+uv run parc-verify-demos --root data/datasets/vr_libero_demos --coverage --require-coverage-min 2
+
+# 成功だけ物理 subset → 学習
+uv run parc-filter-demos --root data/datasets/vr_libero_demos \
+  --output data/datasets/vr_libero_demos_success --success-only --overwrite
+bash scripts/train.sh configs/experiments/smolvla_ft_vr_demos_success_smoke.yaml
+
+# action リプレイ検証（LeRobot 実 DS）
+uv run parc-replay-demos --root data/datasets/vr_libero_demos --episode 0
+uv run parc-verify-demos --root data/datasets/vr_libero_demos --require-replay-success
+```
+
+収集キュー例: [`configs/vr/collection_queue.example.yaml`](../configs/vr/collection_queue.example.yaml)  
+VR YAML で `collection_queue: configs/vr/collection_queue.example.yaml` を指定すると Reset/成功 Save で消化し、Status に `queue_remaining` が出る。
 
 ## action_map 調整
 

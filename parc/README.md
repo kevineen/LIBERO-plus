@@ -109,5 +109,7 @@ uv run parc-list --sweep-id overnight_ft_smoke
 | データセット物理 mix（`parc-mix-datasets`） | MultiLeRobotDataset（現行 LeRobot 無効） |
 | Google Drive ckpt sync（rclone） | |
 | VR teleop サーバ + Unity 薄クライアント（Quest 3） | Quest 実機 E2E・ハンド/実機/3D ビュー（Phase 2） |
+| VR 品質ゲート（success フィルタ・RTT・キュー・replay・Approx Time） | Unity 周期 ping・物理 OOD 摂動エンジン |
+| `parc-filter-demos` / `parc-replay-demos` / `parc-verify-demos --coverage` | |
 
 親ディレクトリの upstream README はベンチマーク本体用です。コンペ作業は **この `parc/` をルート** にしてください。

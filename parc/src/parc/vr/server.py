@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 from parc.vr.action_map import ActionMapConfig
-from parc.vr.env_factory import make_teleop_env
+from parc.vr.env_factory import TeleopEnvBundle, make_teleop_env
 from parc.vr.protocol import (
     ControlMessage,
     ErrorMessage,
@@ -47,6 +48,10 @@ async def _handle_client(
     writer_task = asyncio.create_task(writer())
     try:
         session = session_factory(send_sync)
+    except Exception:
+        writer_task.cancel()
+        raise
+    try:
         await websocket.send(
             encode_message(
                 HelloMessage(
@@ -84,6 +89,11 @@ async def _handle_client(
                 continue
 
             if isinstance(msg, PingMessage):
+                # msg.t = クライアント送信時刻（unix 秒）。片道遅延 ≈ now - t
+                now = time.time()
+                if msg.t > 0:
+                    rtt_ms = max(0.0, (now - float(msg.t)) * 1000.0)
+                    session.record_rtt(rtt_ms)
                 await websocket.send(encode_message(PongMessage(t=msg.t)))
                 continue
 
@@ -113,21 +123,38 @@ def build_session_factory(
     fake: bool,
     create_dataset: bool,
     flip_images: bool,
+    require_success: bool = False,
+    init_state_mode: str = "cycle",
+    task_ids: Sequence[int] | None = None,
+    operator_id: str = "",
+    device_id: str = "",
+    location: str = "",
+    calib_override_path: str = "",
+    max_rtt_ms: float = 150.0,
+    latency_policy: str = "degraded",
+    approx_time_slop_ms: float = 100.0,
+    collection_queue: Sequence[dict[str, Any]] | None = None,
+    min_success_per_category: int = 0,
 ) -> Any:
     """接続ごとに TeleopSession を作るファクトリ。"""
+    ids = list(task_ids) if task_ids else [task_id]
+    queue = [dict(x) for x in collection_queue] if collection_queue else []
 
-    def factory(send_sync: Any) -> TeleopSession:
-        env, language = make_teleop_env(
-            suite,
-            task_id,
+    def remake(suite_name: str, tid: int) -> TeleopEnvBundle:
+        return make_teleop_env(
+            suite_name,
+            tid,
             camera_height=camera_height,
             camera_width=camera_width,
             fake=fake,
         )
+
+    def factory(send_sync: Any) -> TeleopSession:
+        bundle = remake(suite, task_id)
         cfg = TeleopSessionConfig(
             suite=suite,
-            task_id=task_id,
-            language=language,
+            task_id=bundle.task_id,
+            language=bundle.language,
             fps=fps,
             jpeg_quality=jpeg_quality,
             flip_images=flip_images,
@@ -136,8 +163,29 @@ def build_session_factory(
             dataset_root=host_dataset_root,
             repo_id=repo_id,
             create_dataset=create_dataset,
+            require_success=require_success,
+            init_state_mode=init_state_mode,
+            task_ids=ids,
+            camera_height=camera_height,
+            camera_width=camera_width,
+            fake=fake,
+            operator_id=operator_id,
+            device_id=device_id,
+            location=location,
+            calib_override_path=calib_override_path,
+            max_rtt_ms=max_rtt_ms,
+            latency_policy=latency_policy,
+            approx_time_slop_ms=approx_time_slop_ms,
+            collection_queue=queue,
+            min_success_per_category=min_success_per_category,
         )
-        return TeleopSession(env=env, config=cfg, send=send_sync)
+        return TeleopSession(
+            env=bundle.env,
+            config=cfg,
+            send=send_sync,
+            init_states=list(bundle.init_states),
+            remake_env=remake,
+        )
 
     return factory
 
@@ -159,6 +207,18 @@ async def serve_vr_teleop(
     fake: bool = False,
     create_dataset: bool = True,
     flip_images: bool = True,
+    require_success: bool = False,
+    init_state_mode: str = "cycle",
+    task_ids: Sequence[int] | None = None,
+    operator_id: str = "",
+    device_id: str = "",
+    location: str = "",
+    calib_override_path: str = "",
+    max_rtt_ms: float = 150.0,
+    latency_policy: str = "degraded",
+    approx_time_slop_ms: float = 100.0,
+    collection_queue: Sequence[dict[str, Any]] | None = None,
+    min_success_per_category: int = 0,
 ) -> None:
     """WebSocket サーバを起動する（キャンセルまでブロック）。"""
     try:
@@ -180,6 +240,18 @@ async def serve_vr_teleop(
         fake=fake,
         create_dataset=create_dataset,
         flip_images=flip_images,
+        require_success=require_success,
+        init_state_mode=init_state_mode,
+        task_ids=task_ids,
+        operator_id=operator_id,
+        device_id=device_id,
+        location=location,
+        calib_override_path=calib_override_path,
+        max_rtt_ms=max_rtt_ms,
+        latency_policy=latency_policy,
+        approx_time_slop_ms=approx_time_slop_ms,
+        collection_queue=collection_queue,
+        min_success_per_category=min_success_per_category,
     )
 
     async def handler(websocket: Any) -> None:

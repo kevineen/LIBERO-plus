@@ -44,6 +44,7 @@ host: 127.0.0.1
 port: 8765
 suite: libero_spatial
 task_id: 0
+task_ids: [0, 1]
 dataset_root: data/datasets/vr_libero_demos
 repo_id: local/vr_libero_demos
 fps: 20
@@ -52,6 +53,11 @@ camera_height: 128
 camera_width: 128
 image_size: 256
 flip_images: true
+require_success: false
+init_state_mode: cycle
+operator_id: alice
+device_id: quest3
+location: lab_a
 action_map:
   pos_scale: 0.7
   rot_scale: 1.0
@@ -73,6 +79,7 @@ action_map:
             "--jpeg-quality",
             "80",
             "--no-flip-images",
+            "--require-success",
         ]
     )
 
@@ -80,6 +87,11 @@ action_map:
 
     assert runtime["host"] == "0.0.0.0"
     assert runtime["task_id"] == 4
+    assert runtime["task_ids"] == [0, 1]
     assert runtime["jpeg_quality"] == 80
     assert runtime["flip_images"] is False
+    assert runtime["require_success"] is True
+    assert runtime["init_state_mode"] == "cycle"
+    assert runtime["operator_id"] == "alice"
+    assert runtime["device_id"] == "quest3"
     assert runtime["action_map"].pos_scale == 0.7

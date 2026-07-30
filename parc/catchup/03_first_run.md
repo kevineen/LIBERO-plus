@@ -123,6 +123,20 @@ Web UI がある環境では [docs/08_remote_and_ui.md](../docs/08_remote_and_ui
 
 ---
 
+## （任意）Step 6. VR デモ収集の線を触る
+
+Quest が無くてもフェイクでプロトコル確認できます。
+
+```bash
+bash scripts/vr_teleop.sh --config configs/vr/fake_smoke.yaml --fake --no-dataset
+uv run pytest tests/test_vr_*.py tests/test_filter_demos.py tests/test_replay_demos.py -q
+```
+
+本番収集・success-only 学習・リプレイ検証は [docs/12_vr_teleop.md](../docs/12_vr_teleop.md)。  
+進捗は [feature/vr-teleop/STATUS.md](../feature/vr-teleop/STATUS.md)（Quest 実機 E2E はまだ blocked）。
+
+---
+
 ## よくあるつまずき
 
 | 症状 | 確認すること |

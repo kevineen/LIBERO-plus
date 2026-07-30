@@ -100,6 +100,27 @@ def vr_teleop_main(argv: list[str] | None = None) -> None:
     _vr_main(argv)
 
 
+def verify_demos_main(argv: list[str] | None = None) -> None:
+    """VR / 自前デモの品質メタを検証する。"""
+    from parc.data.verify_demos import main as _verify_main
+
+    _verify_main(argv)
+
+
+def filter_demos_main(argv: list[str] | None = None) -> None:
+    """成功エピソードだけの物理 subset を作る。"""
+    from parc.data.filter_demos import main as _filter_main
+
+    _filter_main(argv)
+
+
+def replay_demos_main(argv: list[str] | None = None) -> None:
+    """保存 action を env で再生して品質メタを追記する。"""
+    from parc.data.replay_demos import main as _replay_main
+
+    _replay_main(argv)
+
+
 def mix_datasets_main(argv: list[str] | None = None) -> None:
     """公開 libero_plus と cam 再レンダを物理マージする。"""
     parser = argparse.ArgumentParser(
@@ -1015,7 +1036,7 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         console.print(
             "Usage: python -m parc.cli "
-            "[new|eval|train|list|smoke|enqueue|worker|prune|queue|sync|remote|fleet|mix-datasets|vr-teleop]"
+            "[new|eval|train|list|smoke|enqueue|worker|prune|queue|sync|remote|fleet|mix-datasets|vr-teleop|verify-demos]"
         )
         sys.exit(1)
     cmd = sys.argv[1]
@@ -1035,4 +1056,7 @@ if __name__ == "__main__":
         "fleet": fleet_main,
         "mix-datasets": mix_datasets_main,
         "vr-teleop": vr_teleop_main,
+        "verify-demos": verify_demos_main,
+        "filter-demos": filter_demos_main,
+        "replay-demos": replay_demos_main,
     }.get(cmd, lambda _: sys.exit(1))(rest)

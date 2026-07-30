@@ -37,6 +37,9 @@ parc-remote = "parc.cli:remote_main"
 parc-fleet = "parc.cli:fleet_main"
 parc-mix-datasets = "parc.cli:mix_datasets_main"
 parc-vr-teleop = "parc.cli:vr_teleop_main"
+parc-verify-demos = "parc.cli:verify_demos_main"
+parc-filter-demos = "parc.cli:filter_demos_main"
+parc-replay-demos = "parc.cli:replay_demos_main"
 
 [build-system]
 requires = ["hatchling"]
