@@ -33,12 +33,24 @@
   - thick **0.371** · `q_…8aa312ee` · `20260730T200910Z_thor_a4d14910_…`  
   - Cam deep **0.14** · `q_…3283952d` · `20260730T202113Z_thor_fded971f_…`  
   - → **親 = continue10k 維持** · lr↓ 同軸延長は打ち切り
-- [x] **winpc: mix v2 Phase A**（base120+cam60 · +5k · 1e-5 · from continue10k）— **完了**  
+- [x] **winpc: mix v2 Phase A**（base120+cam60 · +5k · 1e-5 · from continue10k）— **完了・敗北**  
   - job `q_20260730T220954…a908742f` · run `20260730T221003Z_winpc_c9dc1b28_…` · ckpt `005000`  
   - 薄い **SR=0.571**（Cam/Lang **0.000** · 親決め未使用）
-- [ ] **thor: mix v2 厚い + Camera deep** — **投入済**（厚い running · Cam queued）  
-  - thick `q_…c054cdce` · Cam deep `q_…3e13c45d`  
-  - 比較: continue10k 厚い 0.514 / Cam deep 0.20 → 親判定 / 負けなら Phase B
+- [x] **thor: mix v2 厚い + Camera deep** — **完了（親未満）**  
+  - thick **0.400** · `q_…c054cdce` · `20260730T231841Z_thor_907a8bc1_…`  
+  - Cam deep **0.10** · `q_…3e13c45d` · `20260730T233024Z_thor_5ba94471_…`  
+  - → 親維持 · **Phase B（cam 増量）へ**
+- [x] **nuc: continue10k 薄い cross** — 完了 · **SR=0.143**（親決め不使用 · 02 追記）
+- [x] **nuc: unfreeze 薄い**（TdrDelay 後 requeue）— 完了 · **SR=0.571**（winpc/thor 薄と一致）
+- [x] **thor: continue10k Sensor/Language 深掘り** — 完了 · Sensor **0.16** · Language **0.32**
+- [x] **nuc: continue10k 厚い cross** — 完了 · **SR=0.371**（thor 0.514 より低 · 親維持）
+- [ ] **Phase B: cam 増量** — **進行中（再レンダは thor）**  
+  - winpc 再レンダは BSOD `0x7E` で中断（78/120）→ **thor へ移管・resume 中**  
+  - cam: `libero_cam_views_v2`（10×12=120）— thor `cam_rerender_v2_thor.log`  
+  - 完了後: staging を winpc へ rsync → convert → mix v3 → FT enqueue（winpc）  
+  - mix: `libero_plus_cam_mix_v3`（base180+cam120）  
+  - FT: continue10k → +5k · 1e-5 → その後 thor 厚い+Cam  
+  - 親 ckpt: `…cbbf5c8b…/010000`
 ## 直近で打ち切ったもの
 
 - [x] **winpc**: Camera 再レンダ FT（cam-only）  
@@ -46,6 +58,8 @@
   - 判断: **同系の即延長はしない**。mix 方法を作り直さない限り再投入しない
 - [x] **winpc**: lr↓5k（5e-6 · +5k · 同 mix）  
   - 厚い 0.371 / Cam 0.14 < continue10k → **同レシピ延長打ち切り**
+- [x] **mix v2 reweight**（base120+cam60）  
+  - 厚い 0.400 / Cam 0.10 < continue10k → **重み変更だけでは不足**
 
 ## 次にやる（評価・判断）— 優先
 
@@ -67,10 +81,11 @@
 - [x] **thor: continue10k 厚い + Camera deep** — 完了 → **親 = continue10k**
 - [x] **winpc: lr↓ 短 FT**（5e-6 · +5k）— 完了 · 薄い 0.500 · **厚いで敗北**
 - [x] **thor: lr↓5k 厚い + Camera deep** — 完了 · 親維持
-- [x] **mix 再設計 Phase A**（base120+cam60）→ winpc 短 FT — 薄い 0.571
-- [ ] **thor: mix v2 厚い + Camera deep** — **実行中**（親判定）
-- [ ] （負け時）Phase B: cam 量/重み再調整 → 短 FT
-- [ ] （任意・空き埋め）continue10k の Sensor/Language 深掘りを thor で補強
+- [x] **mix 再設計 Phase A**（base120+cam60）— 完了 · 厚い 0.400 / Cam 0.10 · **敗北**
+- [ ] **Phase B: cam 増量再レンダ → mix → 短 FT** — **次の主線**
+- [x] （任意・空き埋め）continue10k の Sensor/Language 深掘りを thor で補強 — Sensor 0.16 · Lang 0.32
+- [x] nuc continue10k 厚い cross — **0.371**（親維持）
+- [ ] **nuc: continue10k Camera deep** — **投入** `q_20260731T060055…5937c732`（vs thor 0.20 · 親決め不使用）
 - [ ] 必要なら winpc cam-only `010000` を Camera deep だけ再評価（優先低）
 
 ## 次の学習候補（レビュー後）
@@ -79,8 +94,9 @@
 
 1. ~~continue10k の thor 結果待ち~~ — 完了 · 親確定
 2. ~~lr↓ 短 FT~~ — **敗北・打ち切り**
-3. **mix v2 厚い判定** — 次。負けなら Phase B（重み/量）
-4. （任意）親 continue10k の弱点深掘りだけ追加
+3. ~~mix v2 reweight~~ — **敗北・打ち切り**
+4. **Phase B cam 増量** — 次（再レンダ → mix → continue10k から短 FT）
+5. （任意）親 continue10k の弱点深掘りだけ追加
 
 やらない（現状）:
 
@@ -89,6 +105,7 @@
 - [ ] ~~同レシピ +15k をもう一本すぐ~~
 - [ ] ~~cam-only rerender FT をそのまま再投入~~（薄い 0.000）
 - [ ] ~~lr↓5k のさらなる延長~~（厚いで親未満）
+- [ ] ~~mix v2 のさらなる同軸延長~~（厚いで親未満）
 - [ ] ~~色 jitter だけの aug を「Camera 対策」と呼ぶ~~（幾何視点が主因）
 
 ## インフラ / Fleet
@@ -164,6 +181,7 @@ Gr00t zero-shot thick SR=____  light-FT thick SR=____  Δ=____
 - [ ] 視点 OOD が残るなら SmolVLA で検証済みの **mix 設計**を本選親に移植（cam-only 禁止）
 - [ ] Cosmo3-Nano 等は **主線にしない**。使うなら合成データ副線のみ（ポリシー差し替えはスパイク成功後）
 - [ ] （条件付き）B-spline Policy — 下記「副指標」節
+- [ ] （参考のみ）WARL — 下記「オプション・参考」節。**主線にしない**
 - [ ] 提出: `pack_submission` · 公式 I/O 一致確認（→ `docs/06_competition.md`）
 
 ### 副指標候補 — B-spline Policy（いまはやらない）
@@ -188,6 +206,22 @@ Gr00t zero-shot thick SR=____  light-FT thick SR=____  Δ=____
 
 - [ ] 条件達成後: DP/ACT スパイク（1 タスク）→ Jerk/時間と SR を 02 に記録
 - [ ] 効果あれば本選副経路。なければ打ち切り
+
+### オプション・参考 — WARL（いまはやらない・移植しない）
+
+出典: [project](https://keitayoneda.github.io/kleiyn-warl/) · IROS 2026（Yoneda et al.）
+
+何をするか: 四足の RL で action に **wrench（力・トルク）** を足し、Switching Curriculum で徐々に消して **joint-only** にする。動的全身運動の探索加速が主目的。
+
+| 向く（概念だけ） | 向かない（このプロジェクト） |
+|------------------|------------------------------|
+| 「補助アクションをカリキュラムで消す」一般論 | **アーム操作 VLA / LIBERO 摂動**へのそのまま適用 |
+| Gate-RL 後の探索補助の発想メモ | 四足・Isaac Gym 系の実装追従 |
+| | Camera / Language OOD・デモ mix より先の実装 |
+
+メモ: 実施形態・タスク空間が違うため **コード移植はしない**。残すのは「補助をフェードアウトするカリキュラム」の参照のみ。着手条件は設けない（主線・副指標のどちらにも入れない）。
+
+- [ ] （任意・読書）サイト / abstract を斜め読みし、GRPO 設計メモに 1 行だけ残す程度
 
 ### その他の中長期
 
