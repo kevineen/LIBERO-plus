@@ -8,6 +8,14 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
+from parc.data.angle_units import (
+    ANGLE_UNITS_META_NAME,
+    assert_joint_dataset_units,
+    check_joint_angle_scale,
+    load_angle_units_meta,
+)
 from parc.paths import PARC_ROOT
 from parc.vr.collection_meta import COLLECTION_INFO_NAME, load_collection_info
 from parc.vr.recorder import QUALITY_JSONL_NAME, TIMESTAMPS_JSONL_NAME
@@ -73,6 +81,104 @@ def coverage_by_category(rows: list[dict[str, Any]]) -> dict[str, dict[str, int]
     }
 
 
+def _load_actions_from_parquet(
+    root: Path,
+    *,
+    max_rows: int = 5000,
+) -> tuple[np.ndarray | None, np.ndarray | None]:
+    """可能なら parquet から action / state をサンプリングする。無ければ (None, None)。"""
+    data_dir = root / "data"
+    if not data_dir.is_dir():
+        return None, None
+    try:
+        import pyarrow.parquet as pq  # type: ignore
+    except ImportError:
+        return None, None
+
+    actions: list[np.ndarray] = []
+    states: list[np.ndarray] = []
+    n = 0
+    for path in sorted(data_dir.rglob("*.parquet")):
+        table = pq.read_table(path)
+        names = set(table.column_names)
+        act_col = "action" if "action" in names else None
+        st_col = (
+            "observation.state"
+            if "observation.state" in names
+            else ("state" if "state" in names else None)
+        )
+        if act_col is None:
+            continue
+        col = table.column(act_col)
+        for i in range(len(col)):
+            val = col[i].as_py()
+            actions.append(np.asarray(val, dtype=np.float64).reshape(-1))
+            n += 1
+            if st_col is not None:
+                states.append(
+                    np.asarray(table.column(st_col)[i].as_py(), dtype=np.float64).reshape(-1)
+                )
+            if n >= max_rows:
+                break
+        if n >= max_rows:
+            break
+    if not actions:
+        return None, None
+    act_arr = np.stack(actions, axis=0)
+    st_arr = np.stack(states, axis=0) if states and len(states) == len(actions) else None
+    return act_arr, st_arr
+
+
+def verify_joint_angle_units(
+    root: Path,
+    *,
+    require_meta: bool = False,
+    check_scale: bool = False,
+    actions: np.ndarray | None = None,
+    states: np.ndarray | None = None,
+) -> dict[str, Any]:
+    """angle_units.json と（任意で）振幅ヒューリスティックを検査する。"""
+    meta = load_angle_units_meta(root)
+    out: dict[str, Any] = {
+        "meta_present": meta is not None,
+        "skipped": False,
+        "ok": True,
+        "errors": [],
+    }
+    if meta is None:
+        if require_meta:
+            raise ValueError(f"missing meta/{ANGLE_UNITS_META_NAME} under {root}")
+        out["skipped"] = True
+        return out
+
+    out["control_mode"] = meta.control_mode
+    out["stored_unit"] = meta.stored_unit
+    if meta.control_mode == "ee_delta":
+        out["skipped"] = True
+        return out
+
+    assert_joint_dataset_units(meta)
+
+    if not check_scale:
+        return out
+
+    act = actions
+    st = states
+    if act is None:
+        act, st = _load_actions_from_parquet(root)
+    if act is None:
+        raise ValueError(
+            "check_joint_angle_units requires action samples "
+            "(parquet under data/ or pass actions=)"
+        )
+    errors = check_joint_angle_scale(act, meta=meta, states=st)
+    out["errors"] = errors
+    if errors:
+        out["ok"] = False
+        raise ValueError("; ".join(errors))
+    return out
+
+
 def verify_demo_dataset(
     root: Path | str,
     *,
@@ -81,8 +187,12 @@ def verify_demo_dataset(
     require_collection_info: bool = True,
     require_replay_success: bool = False,
     require_coverage_min: int = 0,
+    require_angle_units: bool = False,
+    check_joint_angle_units: bool = False,
+    angle_unit_actions: np.ndarray | None = None,
+    angle_unit_states: np.ndarray | None = None,
 ) -> dict[str, Any]:
-    """スキーマ外品質メタと（任意で）info.json / collection_info の整合を検査する。"""
+    """スキーマ外品質メタと（任意で）info.json / collection_info / 角度単位の整合を検査する。"""
     root_path = _resolve_root(root)
     meta = root_path / "meta"
     if not meta.is_dir():
@@ -165,6 +275,14 @@ def verify_demo_dataset(
     if errors:
         raise ValueError("; ".join(errors))
 
+    angle_summary = verify_joint_angle_units(
+        root_path,
+        require_meta=require_angle_units,
+        check_scale=check_joint_angle_units,
+        actions=angle_unit_actions,
+        states=angle_unit_states,
+    )
+
     return {
         "root": str(root_path),
         "n_quality_rows": len(rows),
@@ -177,6 +295,7 @@ def verify_demo_dataset(
         "info_json": info_path.is_file(),
         "collection_info": (meta / COLLECTION_INFO_NAME).is_file(),
         "codebase_version": (info or {}).get("codebase_version"),
+        "angle_units": angle_summary,
         "ok": True,
     }
 
@@ -215,6 +334,16 @@ def build_parser() -> argparse.ArgumentParser:
         default=0,
         help="各 category の success 最低本数（0 で無効）",
     )
+    p.add_argument(
+        "--require-angle-units",
+        action="store_true",
+        help="meta/angle_units.json の欠落をエラーにする",
+    )
+    p.add_argument(
+        "--check-joint-angle-units",
+        action="store_true",
+        help="joint_position データで rad/deg 取り違えの振幅検査を行う",
+    )
     return p
 
 
@@ -234,6 +363,8 @@ def main(argv: list[str] | None = None) -> None:
             require_collection_info=not args.skip_collection_info,
             require_replay_success=args.require_replay_success,
             require_coverage_min=args.require_coverage_min,
+            require_angle_units=args.require_angle_units,
+            check_joint_angle_units=args.check_joint_angle_units,
         )
     except Exception as exc:  # noqa: BLE001
         console.print(f"[red]verify failed[/red]: {exc}")
@@ -243,6 +374,12 @@ def main(argv: list[str] | None = None) -> None:
         f"rows={summary['n_quality_rows']} success={summary['n_success']} "
         f"failed={summary['n_failed']} v={summary.get('codebase_version')}"
     )
+    angle = summary.get("angle_units") or {}
+    if angle.get("meta_present") and not angle.get("skipped"):
+        console.print(
+            f"angle_units: mode={angle.get('control_mode')} "
+            f"stored={angle.get('stored_unit')} ok={angle.get('ok')}"
+        )
     if args.coverage or args.require_coverage_min > 0:
         table = Table(title="category coverage")
         table.add_column("category")

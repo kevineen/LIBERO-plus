@@ -121,6 +121,13 @@ def replay_demos_main(argv: list[str] | None = None) -> None:
     _replay_main(argv)
 
 
+def normalize_angle_units_main(argv: list[str] | None = None) -> None:
+    """関節角単位メタ書き込み・サンプル rad↔deg 変換。"""
+    from parc.data.angle_units import normalize_angle_units_main as _norm_main
+
+    _norm_main(argv)
+
+
 def mix_datasets_main(argv: list[str] | None = None) -> None:
     """公開 libero_plus と cam 再レンダを物理マージする。"""
     parser = argparse.ArgumentParser(
@@ -1041,7 +1048,8 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         console.print(
             "Usage: python -m parc.cli "
-            "[new|eval|train|list|smoke|enqueue|worker|prune|queue|sync|remote|fleet|mix-datasets|vr-teleop|verify-demos]"
+            "[new|eval|train|list|smoke|enqueue|worker|prune|queue|sync|remote|fleet|"
+            "mix-datasets|vr-teleop|verify-demos|normalize-angle-units]"
         )
         sys.exit(1)
     cmd = sys.argv[1]
@@ -1064,4 +1072,5 @@ if __name__ == "__main__":
         "verify-demos": verify_demos_main,
         "filter-demos": filter_demos_main,
         "replay-demos": replay_demos_main,
+        "normalize-angle-units": normalize_angle_units_main,
     }.get(cmd, lambda _: sys.exit(1))(rest)
