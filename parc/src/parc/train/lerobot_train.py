@@ -143,6 +143,19 @@ def run_training(config: dict[str, Any], run_dir: Path) -> dict[str, Any]:
 
         return run_grpo_gspo_training(config, run_dir)
 
+    if backend == "flow_apo":
+        if train_cfg.get("dry_run", False):
+            return {
+                "status": "dry_run",
+                "backend": backend,
+                "hint": "dry_run=true — Flow-APO は未実行",
+                "sidecar": True,
+                "parent_ckpt_eligible": False,
+            }
+        from parc.train.flow_apo import run_flow_apo_training
+
+        return run_flow_apo_training(config, run_dir)
+
     if backend in {"openpi", "openvla", "gr00t"}:
         return {
             "status": "not_implemented",

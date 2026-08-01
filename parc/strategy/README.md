@@ -23,7 +23,8 @@ Cursor: `.cursor/rules/parc-agent.mdc` が alwaysApply で上記を指す。
 | [04_machine_roles.md](04_machine_roles.md) | 役割・**重いジョブ=thor 既定**・速度目安・割り振り表 |
 | [05_decision_rules.md](05_decision_rules.md) | Gate・eval 信頼度・ホスト選定・RL 投入の判断ルール |
 
-最終更新: **2026-07-31**（JST · winpc BSOD→重いジョブ thor 既定 · Phase B 再レンダ thor）
+最終更新: **2026-08-02**（JST · CLAIR/Flow-APO サイドカー実装 · QuantVLA/MolmoAct2 研究サイドカー追記）
 
 関連オペ docs: [10_ops_ui.md](../docs/10_ops_ui.md) · [11_multi_machine.md](../docs/11_multi_machine.md) · [09_autoloop_and_rl.md](../docs/09_autoloop_and_rl.md)  
+研究サイドカー: [CLAIR/APO](../docs/superpowers/specs/2026-08-02-clair-apo-sidecar-design.md) · [MolmoAct2](../docs/superpowers/specs/2026-08-02-molmoact2-spike-design.md) · [QuantVLA](../docs/superpowers/specs/2026-08-01-quantvla-repro-design.md)  
 新規メンバー: [catchup/](../catchup/)

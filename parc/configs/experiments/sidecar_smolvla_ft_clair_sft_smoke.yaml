@@ -1,0 +1,38 @@
+# 研究サイドカー: QST+LoRA+ 付き SFT smoke（Stage B）
+# 親判定外。robot venv + CUDA で dry_run: false。
+name: sidecar_smolvla_ft_clair_sft_smoke
+seed: 42
+tags: [sidecar, clair_apo, train, smolvla, smoke, qst, loraplus]
+
+train:
+  backend: lerobot
+  policy_type: smolvla
+  dataset_repo_id: lerobot/libero_plus
+  policy_repo_id: null
+  load_vlm_weights: true
+  steps: 200
+  batch_size: 1
+  eval_freq: 0
+  eval_n_episodes: 1
+  env_task: libero_spatial
+  dry_run: true
+  # ドキュメント用フラグ（LeRobot extra_args と peft ラッパが解釈）
+  qst: true
+  lora_plus_lr_ratio: 4.0
+  extra_args:
+    - --policy.optimizer_lr=5e-5
+    - --save_freq=200
+    - --log_freq=50
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 1
+  task_ids: [0]
+  max_steps: 50
+  camera_height: 128
+  camera_width: 128
+  save_video: false
+  use_classification: true
+
+policy:
+  type: lerobot_cmd

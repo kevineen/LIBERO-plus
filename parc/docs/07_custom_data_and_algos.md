@@ -373,6 +373,27 @@ train:
 bash scripts/train.sh configs/experiments/grpo_smoke.yaml
 ```
 
+### C7. CLAIR / Flow-APO（研究サイドカー）
+
+親 ckpt 選定には接続しない。正本: [clair-apo design](superpowers/specs/2026-08-02-clair-apo-sidecar-design.md)。
+
+```bash
+# 選好ペア（fake smoke）
+uv run parc-clair-pairs --fake --n-pairs 20 --output data/datasets/clair_libero_pairs_smoke
+
+# Flow-APO（torch が要るため親 robot venv）
+bash scripts/train.sh configs/experiments/sidecar_flow_apo_smoke.yaml
+
+# ckpt 線形マージ（同様に robot venv）
+PYTHONPATH=src:.. ../../.venv/bin/python -m parc.train.merge_ckpts \
+  --a <a.pt> --b <b.pt> --alpha 0.5 --output /tmp/clair_merge
+```
+
+- ペア主源: シミュ合成 near-miss（`source=human_revise` は補助）
+- `train.backend: flow_apo` + AFLoRA / LoRA+ / QST フラグ
+- 評価テンプレ: `configs/experiments/sidecar_clair_apo_async_eval.yaml`（`async_inference: true`）
+- Gate 記録: [baselines/clair_apo](baselines/clair_apo/README.md)
+
 ### C5. 評価駆動の改善サイクル（推奨ワークフロー）
 
 ```text

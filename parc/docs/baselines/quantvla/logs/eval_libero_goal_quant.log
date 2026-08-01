@@ -1,0 +1,165 @@
+[robosuite WARNING] No private macro file found! (__init__.py:7)
+[robosuite WARNING] It is recommended to use a private macro file (__init__.py:8)
+[robosuite WARNING] To setup, run: python /home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/scripts/setup_macros.py (__init__.py:9)
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+[info] using task orders [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+Task suite: libero_goal
+  0%|          | 0/10 [00:00<?, ?it/s]/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/albumentations/__init__.py:13: UserWarning: A new version of Albumentations is available: 2.0.8 (you have 1.4.18). Upgrade using: pip install -U albumentations. To disable automatic update checks, set the environment variable NO_ALBUMENTATIONS_UPDATE to 1.
+  check_for_updates()
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [02:15<00:00, 135.96s/it][A100%|██████████| 1/1 [02:15<00:00, 135.96s/it]
+ 10%|█         | 1/10 [02:27<22:05, 147.23s/it]
+Task: open the middle drawer of the cabinet
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-20_08_36--episode=1--success=True--task=open_the_middle_drawer_of_the_cabinet.mp4
+Success: True
+# episodes completed so far: 1
+# successes: 1 (100.0%)
+Current task success rate: 1.0
+Current total success rate: 1.0
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [06:20<00:00, 380.13s/it][A100%|██████████| 1/1 [06:20<00:00, 380.13s/it]
+ 20%|██        | 2/10 [08:49<38:03, 285.38s/it]
+Task: put the bowl on the stove
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-20_08_36--episode=2--success=False--task=put_the_bowl_on_the_stove.mp4
+Success: False
+# episodes completed so far: 2
+# successes: 1 (50.0%)
+Current task success rate: 0.0
+Current total success rate: 0.5
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [00:50<00:00, 50.81s/it][A100%|██████████| 1/1 [00:50<00:00, 50.81s/it]
+ 30%|███       | 3/10 [09:42<20:53, 179.14s/it]
+Task: put the wine bottle on top of the cabinet
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-20_08_36--episode=3--success=True--task=put_the_wine_bottle_on_top_of_the_cabinet.mp4
+Success: True
+# episodes completed so far: 3
+# successes: 2 (66.7%)
+Current task success rate: 1.0
+Current total success rate: 0.6666666666666666
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [02:03<00:00, 123.22s/it][A100%|██████████| 1/1 [02:03<00:00, 123.22s/it]
+ 40%|████      | 4/10 [11:46<15:46, 157.67s/it]
+Task: open the top drawer and put the bowl inside
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-20_08_36--episode=4--success=True--task=open_the_top_drawer_and_put_the_bowl_inside.mp4
+Success: True
+# episodes completed so far: 4
+# successes: 3 (75.0%)
+Current task success rate: 1.0
+Current total success rate: 0.75
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [06:19<00:00, 379.24s/it][A100%|██████████| 1/1 [06:19<00:00, 379.24s/it]
+ 50%|█████     | 5/10 [18:08<19:51, 238.29s/it]
+Task: put the bowl on top of the cabinet
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-20_08_36--episode=5--success=False--task=put_the_bowl_on_top_of_the_cabinet.mp4
+Success: False
+# episodes completed so far: 5
+# successes: 3 (60.0%)
+Current task success rate: 0.0
+Current total success rate: 0.6
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [01:29<00:00, 89.87s/it][A100%|██████████| 1/1 [01:29<00:00, 89.87s/it]
+ 60%|██████    | 6/10 [19:39<12:33, 188.46s/it]
+Task: push the plate to the front of the stove
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-20_08_36--episode=6--success=True--task=push_the_plate_to_the_front_of_the_stove.mp4
+Success: True
+# episodes completed so far: 6
+# successes: 4 (66.7%)
+Current task success rate: 1.0
+Current total success rate: 0.6666666666666666
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [00:52<00:00, 52.63s/it][A100%|██████████| 1/1 [00:52<00:00, 52.63s/it]
+ 70%|███████   | 7/10 [20:34<07:13, 144.63s/it]
+Task: put the cream cheese in the bowl
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-20_08_36--episode=7--success=True--task=put_the_cream_cheese_in_the_bowl.mp4
+Success: True
+# episodes completed so far: 7
+# successes: 5 (71.4%)
+Current task success rate: 1.0
+Current total success rate: 0.7142857142857143
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [00:57<00:00, 57.59s/it][A100%|██████████| 1/1 [00:57<00:00, 57.59s/it]
+ 80%|████████  | 8/10 [21:37<03:57, 118.67s/it]
+Task: turn on the stove
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-20_08_36--episode=8--success=True--task=turn_on_the_stove.mp4
+Success: True
+# episodes completed so far: 8
+# successes: 6 (75.0%)
+Current task success rate: 1.0
+Current total success rate: 0.75
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [00:55<00:00, 55.02s/it][A100%|██████████| 1/1 [00:55<00:00, 55.02s/it]
+ 90%|█████████ | 9/10 [22:34<01:39, 99.33s/it] 
+Task: put the bowl on the plate
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-20_08_36--episode=9--success=True--task=put_the_bowl_on_the_plate.mp4
+Success: True
+# episodes completed so far: 9
+# successes: 7 (77.8%)
+Current task success rate: 1.0
+Current total success rate: 0.7777777777777778
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [01:59<00:00, 119.65s/it][A100%|██████████| 1/1 [01:59<00:00, 119.65s/it]
+100%|██████████| 10/10 [24:35<00:00, 106.07s/it]100%|██████████| 10/10 [24:35<00:00, 147.52s/it]
+
+Task: put the wine bottle on the rack
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-20_08_36--episode=10--success=True--task=put_the_wine_bottle_on_the_rack.mp4
+Success: True
+# episodes completed so far: 10
+# successes: 8 (80.0%)
+Current task success rate: 1.0
+Current total success rate: 0.8
+Exception ignored in: <function MjRenderContext.__del__ at 0x76340f987c70>
+Traceback (most recent call last):
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/utils/binding_utils.py", line 199, in __del__
+    self.gl_ctx.free()
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/renderers/context/egl_context.py", line 150, in free
+    EGL.eglDestroyContext(EGL_DISPLAY, self._context)
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/OpenGL/error.py", line 230, in glCheckError
+    raise self._errorClass(
+OpenGL.raw.EGL._errors.EGLError: EGLError(
+	err = EGL_NOT_INITIALIZED,
+	baseOperation = eglDestroyContext,
+	cArguments = (
+		<OpenGL._opaque.EGLDisplay_pointer object at 0x76340334c640>,
+		<OpenGL._opaque.EGLContext_pointer object at 0x763402d0d340>,
+	),
+	result = 0
+)
+Exception ignored in: <function EGLGLContext.__del__ at 0x76340f987ac0>
+Traceback (most recent call last):
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/renderers/context/egl_context.py", line 155, in __del__
+    self.free()
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/renderers/context/egl_context.py", line 150, in free
+    EGL.eglDestroyContext(EGL_DISPLAY, self._context)
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/OpenGL/error.py", line 230, in glCheckError
+    raise self._errorClass(
+OpenGL.raw.EGL._errors.EGLError: EGLError(
+	err = EGL_NOT_INITIALIZED,
+	baseOperation = eglDestroyContext,
+	cArguments = (
+		<OpenGL._opaque.EGLDisplay_pointer object at 0x76340334c640>,
+		<OpenGL._opaque.EGLContext_pointer object at 0x763402d0d340>,
+	),
+	result = 0
+)

@@ -49,6 +49,7 @@ bash scripts/start_web.sh
 - ランダム評価: [`docs/baselines/random_subset_eval.md`](docs/baselines/random_subset_eval.md)
 - SmolVLA 200step: [`docs/baselines/smolvla_ft_smoke.md`](docs/baselines/smolvla_ft_smoke.md)
 - SmolVLA ckpt 評価: [`docs/baselines/smolvla_ckpt_smoke_eval.md`](docs/baselines/smolvla_ckpt_smoke_eval.md)
+- CLAIR / Flow-APO サイドカー（親判定外）: [`docs/baselines/clair_apo/`](docs/baselines/clair_apo/README.md)
 
 > **重要:** ランダム評価は `./scripts/parc.sh`（親 `LIBERO-plus/.venv`）、学習・ckpt 評価は `train.sh` / `eval_ckpt.sh`。  
 > `lerobot/libero_plus` 初回は十数 GB。親 venv へ parc を入れるときは `--no-deps`。
@@ -116,5 +117,17 @@ uv run parc-list --sweep-id overnight_ft_smoke
 | VR teleop サーバ + Unity 薄クライアント（Quest 3） | Quest 実機 E2E・ハンド/実機/3D ビュー（Phase 2） |
 | VR 品質ゲート（success フィルタ・RTT・キュー・replay・Approx Time） | Unity 周期 ping・物理 OOD 摂動エンジン |
 | `parc-filter-demos` / `parc-replay-demos` / `parc-verify-demos --coverage` | |
+| CLAIR near-miss ペア + Flow-APO（研究サイドカー） | 親 ckpt 置き換え・提出接続・実 LIBERO 大量ロールアウト |
+
+研究サイドカー（親判定外）の入口:
+
+```bash
+# 選好ペア smoke
+uv run parc-clair-pairs --fake --n-pairs 20 --output data/datasets/clair_libero_pairs_smoke
+# Flow-APO（robot venv）
+bash scripts/train.sh configs/experiments/sidecar_flow_apo_smoke.yaml
+```
+
+詳細: [docs/07 §C7](docs/07_custom_data_and_algos.md) · [設計正本](docs/superpowers/specs/2026-08-02-clair-apo-sidecar-design.md)
 
 親ディレクトリの upstream README はベンチマーク本体用です。コンペ作業は **この `parc/` をルート** にしてください。

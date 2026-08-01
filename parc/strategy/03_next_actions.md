@@ -239,6 +239,49 @@ Gr00t zero-shot thick SR=____  light-FT thick SR=____  Δ=____
 
 - [ ] （任意・読書）サイト / abstract を斜め読みし、GRPO 設計メモに 1 行だけ残す程度
 
+### 研究サイドカー — QuantVLA（低優先・空き GPU 時）
+
+出典: [QuantVLA](https://quantvla.github.io/) · [code](https://github.com/AIoT-MLSys-Lab/QuantVLA) · 正本 [2026-08-01-quantvla-repro-design.md](../docs/superpowers/specs/2026-08-01-quantvla-repro-design.md)
+
+SmolVLA 主線・親判定には接続しない。GR00T N1.5 + 古典 LIBERO 再現 →（到達時）LIBERO-plus 薄い比較。
+
+- [x] QuantVLA サイドカー env（`groot_test` / `libero_test`）— R-Gate1/2（**winpc** · thor ディスク逼迫のため）
+- [x] 古典 LIBERO FP16 vs QuantVLA 表 — R-Gate3 → [libero_classic.md](../docs/baselines/quantvla/libero_classic.md)  
+  - Avg FP16 **0.875** · Quant **0.850**（n=1/task · Goal↑ / Long↓）
+- [x] LIBERO-plus 薄い比較 — R-Gate4 → [libero_plus.md](../docs/baselines/quantvla/libero_plus.md)  
+  - FP16 **0.857** · Quant **0.786**（Camera 両条件 0）
+- [x] 02 に 1 段落要約
+
+やらない: SmolVLA 移植 · parc `uv` 依存追加 · π0.5 · 提出物接続
+
+### 研究サイドカー — MolmoAct2（低優先・空き GPU 時）
+
+出典: [MolmoAct2](https://allenai.org/blog/molmoact2) · [HF LIBERO](https://huggingface.co/allenai/MolmoAct2-LIBERO) · 正本 [2026-08-02-molmoact2-spike-design.md](../docs/superpowers/specs/2026-08-02-molmoact2-spike-design.md)
+
+SmolVLA 主線・親判定には接続しない。現行 robot **LeRobot 0.5.1 に molmoact2 無し** → eval は HF `predict_action` アダプタ。
+
+- [x] 依存調査 + `MolmoAct2HFPolicy` / smoke YAML / 設計メモ
+- [x] G0: `python scripts/molmoact2_infer_smoke.py`（PASS · peak≈11 GiB bf16）
+- [ ] G1: `bash scripts/eval_ckpt.sh configs/experiments/molmoact2_hf_smoke_eval.yaml`
+- [ ] G2: plus 薄いカテゴリ表 → `docs/baselines/molmoact2/`
+- [ ] （任意）LeRobot main 別 venv で短 FT
+
+やらない: 親 ckpt 置き換え · parc `uv` に Molmo 依存追加 · 薄いだけで採用 · Think/depth
+
+### 研究サイドカー — CLAIR / Flow-APO（低優先・空き GPU 時）
+
+出典: TACL 2025 CLAIR+APO · 正本 [2026-08-02-clair-apo-sidecar-design.md](../docs/superpowers/specs/2026-08-02-clair-apo-sidecar-design.md)
+
+SmolVLA 主線・親判定には接続しない。選好ペア主源は **シミュ合成 near-miss**（人間修正は補助）。目的関数は token log-prob ではなく **Flow-APO**。
+
+- [x] 設計正本 + `parc-clair-pairs` / `flow_apo` / AFLoRA / merge CLI
+- [x] P1: fake≥20 ペア（schema + L2 帯）— 実 LIBERO ロールアウトは後続
+- [x] P2: QST+LoRA+ SFT YAML（`sidecar_smolvla_ft_clair_sft*_smoke.yaml` · dry_run 既定）
+- [x] P3: Flow-APO smoke（energy MLP · winpc）— 薄い SR 比較は空き時
+- [x] P4: merge smoke + `async_inference` 配線
+
+やらない: 親 ckpt 置き換え · Quest 人間 CLAIR をブロッカー化 · GRPO 本格化 · 薄いだけで採用
+
 ### その他の中長期
 
 - [ ] suite 拡張（object / goal / libero_10）は spatial で SR 安定後

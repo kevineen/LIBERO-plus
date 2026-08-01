@@ -1,0 +1,165 @@
+[robosuite WARNING] No private macro file found! (__init__.py:7)
+[robosuite WARNING] It is recommended to use a private macro file (__init__.py:8)
+[robosuite WARNING] To setup, run: python /home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/scripts/setup_macros.py (__init__.py:9)
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+[info] using task orders [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+Task suite: libero_object
+  0%|          | 0/10 [00:00<?, ?it/s]/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/albumentations/__init__.py:13: UserWarning: A new version of Albumentations is available: 2.0.8 (you have 1.4.18). Upgrade using: pip install -U albumentations. To disable automatic update checks, set the environment variable NO_ALBUMENTATIONS_UPDATE to 1.
+  check_for_updates()
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [01:25<00:00, 85.55s/it][A100%|██████████| 1/1 [01:25<00:00, 85.55s/it]
+ 10%|█         | 1/10 [01:39<14:56, 99.64s/it]
+Task: pick up the alphabet soup and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-19_47_41--episode=1--success=True--task=pick_up_the_alphabet_soup_and_place_it_in_the_bask.mp4
+Success: True
+# episodes completed so far: 1
+# successes: 1 (100.0%)
+Current task success rate: 1.0
+Current total success rate: 1.0
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [01:09<00:00, 69.57s/it][A100%|██████████| 1/1 [01:09<00:00, 69.57s/it]
+ 20%|██        | 2/10 [02:51<11:05, 83.18s/it]
+Task: pick up the cream cheese and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-19_47_41--episode=2--success=True--task=pick_up_the_cream_cheese_and_place_it_in_the_baske.mp4
+Success: True
+# episodes completed so far: 2
+# successes: 2 (100.0%)
+Current task success rate: 1.0
+Current total success rate: 1.0
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [01:09<00:00, 69.95s/it][A100%|██████████| 1/1 [01:09<00:00, 69.95s/it]
+ 30%|███       | 3/10 [04:03<09:06, 78.07s/it]
+Task: pick up the salad dressing and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-19_47_41--episode=3--success=True--task=pick_up_the_salad_dressing_and_place_it_in_the_bas.mp4
+Success: True
+# episodes completed so far: 3
+# successes: 3 (100.0%)
+Current task success rate: 1.0
+Current total success rate: 1.0
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [02:38<00:00, 158.64s/it][A100%|██████████| 1/1 [02:38<00:00, 158.64s/it]
+ 40%|████      | 4/10 [06:44<11:04, 110.74s/it]
+Task: pick up the bbq sauce and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-19_47_41--episode=4--success=False--task=pick_up_the_bbq_sauce_and_place_it_in_the_basket.mp4
+Success: False
+# episodes completed so far: 4
+# successes: 3 (75.0%)
+Current task success rate: 0.0
+Current total success rate: 0.75
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [01:27<00:00, 87.54s/it][A100%|██████████| 1/1 [01:27<00:00, 87.54s/it]
+ 50%|█████     | 5/10 [08:13<08:35, 103.11s/it]
+Task: pick up the ketchup and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-19_47_41--episode=5--success=True--task=pick_up_the_ketchup_and_place_it_in_the_basket.mp4
+Success: True
+# episodes completed so far: 5
+# successes: 4 (80.0%)
+Current task success rate: 1.0
+Current total success rate: 0.8
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [01:12<00:00, 72.62s/it][A100%|██████████| 1/1 [01:12<00:00, 72.62s/it]
+ 60%|██████    | 6/10 [09:28<06:13, 93.41s/it] 
+Task: pick up the tomato sauce and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-19_47_41--episode=6--success=True--task=pick_up_the_tomato_sauce_and_place_it_in_the_baske.mp4
+Success: True
+# episodes completed so far: 6
+# successes: 5 (83.3%)
+Current task success rate: 1.0
+Current total success rate: 0.8333333333333334
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [02:03<00:00, 123.88s/it][A100%|██████████| 1/1 [02:03<00:00, 123.88s/it]
+ 70%|███████   | 7/10 [11:34<05:12, 104.02s/it]
+Task: pick up the butter and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-19_47_41--episode=7--success=True--task=pick_up_the_butter_and_place_it_in_the_basket.mp4
+Success: True
+# episodes completed so far: 7
+# successes: 6 (85.7%)
+Current task success rate: 1.0
+Current total success rate: 0.8571428571428571
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [01:13<00:00, 73.72s/it][A100%|██████████| 1/1 [01:13<00:00, 73.72s/it]
+ 80%|████████  | 8/10 [12:49<03:09, 94.99s/it] 
+Task: pick up the milk and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-19_47_41--episode=8--success=True--task=pick_up_the_milk_and_place_it_in_the_basket.mp4
+Success: True
+# episodes completed so far: 8
+# successes: 7 (87.5%)
+Current task success rate: 1.0
+Current total success rate: 0.875
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [01:19<00:00, 79.85s/it][A100%|██████████| 1/1 [01:19<00:00, 79.85s/it]
+ 90%|█████████ | 9/10 [14:15<01:31, 91.98s/it]
+Task: pick up the chocolate pudding and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-19_47_41--episode=9--success=True--task=pick_up_the_chocolate_pudding_and_place_it_in_the_.mp4
+Success: True
+# episodes completed so far: 9
+# successes: 8 (88.9%)
+Current task success rate: 1.0
+Current total success rate: 0.8888888888888888
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [01:14<00:00, 74.41s/it][A100%|██████████| 1/1 [01:14<00:00, 74.41s/it]
+100%|██████████| 10/10 [15:31<00:00, 87.17s/it]100%|██████████| 10/10 [15:31<00:00, 93.16s/it]
+
+Task: pick up the orange juice and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-19_47_41--episode=10--success=True--task=pick_up_the_orange_juice_and_place_it_in_the_baske.mp4
+Success: True
+# episodes completed so far: 10
+# successes: 9 (90.0%)
+Current task success rate: 1.0
+Current total success rate: 0.9
+Exception ignored in: <function MjRenderContext.__del__ at 0x7e81cb37fc70>
+Traceback (most recent call last):
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/utils/binding_utils.py", line 199, in __del__
+    self.gl_ctx.free()
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/renderers/context/egl_context.py", line 150, in free
+    EGL.eglDestroyContext(EGL_DISPLAY, self._context)
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/OpenGL/error.py", line 230, in glCheckError
+    raise self._errorClass(
+OpenGL.raw.EGL._errors.EGLError: EGLError(
+	err = EGL_NOT_INITIALIZED,
+	baseOperation = eglDestroyContext,
+	cArguments = (
+		<OpenGL._opaque.EGLDisplay_pointer object at 0x7e81bf7fbe40>,
+		<OpenGL._opaque.EGLContext_pointer object at 0x7e80f2284a40>,
+	),
+	result = 0
+)
+Exception ignored in: <function EGLGLContext.__del__ at 0x7e81cb37fac0>
+Traceback (most recent call last):
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/renderers/context/egl_context.py", line 155, in __del__
+    self.free()
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/renderers/context/egl_context.py", line 150, in free
+    EGL.eglDestroyContext(EGL_DISPLAY, self._context)
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/OpenGL/error.py", line 230, in glCheckError
+    raise self._errorClass(
+OpenGL.raw.EGL._errors.EGLError: EGLError(
+	err = EGL_NOT_INITIALIZED,
+	baseOperation = eglDestroyContext,
+	cArguments = (
+		<OpenGL._opaque.EGLDisplay_pointer object at 0x7e81bf7fbe40>,
+		<OpenGL._opaque.EGLContext_pointer object at 0x7e80f2284a40>,
+	),
+	result = 0
+)

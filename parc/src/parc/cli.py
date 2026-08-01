@@ -128,6 +128,20 @@ def normalize_angle_units_main(argv: list[str] | None = None) -> None:
     _norm_main(argv)
 
 
+def clair_pairs_main(argv: list[str] | None = None) -> None:
+    """CLAIR 風 near-miss 選好ペアを合成する（研究サイドカー）。"""
+    from parc.data.clair_nearmiss import main as _clair_main
+
+    _clair_main(argv)
+
+
+def merge_ckpts_main(argv: list[str] | None = None) -> None:
+    """2 ckpt を線形マージする（研究サイドカー Phase4）。"""
+    from parc.train.merge_ckpts import main as _merge_main
+
+    _merge_main(argv)
+
+
 def mix_datasets_main(argv: list[str] | None = None) -> None:
     """公開 libero_plus と cam 再レンダを物理マージする。"""
     parser = argparse.ArgumentParser(
@@ -1061,7 +1075,7 @@ if __name__ == "__main__":
         console.print(
             "Usage: python -m parc.cli "
             "[new|eval|train|list|smoke|enqueue|worker|prune|queue|sync|remote|fleet|"
-            "mix-datasets|vr-teleop|verify-demos|normalize-angle-units]"
+            "mix-datasets|vr-teleop|verify-demos|normalize-angle-units|clair-pairs|merge-ckpts]"
         )
         sys.exit(1)
     cmd = sys.argv[1]
@@ -1085,4 +1099,6 @@ if __name__ == "__main__":
         "filter-demos": filter_demos_main,
         "replay-demos": replay_demos_main,
         "normalize-angle-units": normalize_angle_units_main,
+        "clair-pairs": clair_pairs_main,
+        "merge-ckpts": merge_ckpts_main,
     }.get(cmd, lambda _: sys.exit(1))(rest)

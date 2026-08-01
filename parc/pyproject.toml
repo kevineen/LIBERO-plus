@@ -47,6 +47,8 @@ parc-verify-demos = "parc.cli:verify_demos_main"
 parc-filter-demos = "parc.cli:filter_demos_main"
 parc-replay-demos = "parc.cli:replay_demos_main"
 parc-normalize-angle-units = "parc.cli:normalize_angle_units_main"
+parc-clair-pairs = "parc.cli:clair_pairs_main"
+parc-merge-ckpts = "parc.cli:merge_ckpts_main"
 
 [build-system]
 requires = ["hatchling"]
