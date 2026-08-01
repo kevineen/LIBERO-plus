@@ -11,6 +11,8 @@ v3.0 注意:
 from __future__ import annotations
 
 import json
+import logging
+import shutil
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -23,6 +25,8 @@ from parc.vr.collection_meta import (
     build_collection_info,
     write_collection_info,
 )
+
+logger = logging.getLogger(__name__)
 
 # 学習互換の user features（DEFAULT_FEATURES は create 時に自動マージ）
 LEROBOT_USER_FEATURES: dict[str, dict[str, Any]] = {
@@ -173,36 +177,7 @@ class EpisodeRecorder:
         }
 
         if self.create_dataset:
-            from lerobot.datasets.lerobot_dataset import LeRobotDataset
-
-            meta = self.root / "meta" / "info.json"
-            if meta.is_file():
-                self._ds = LeRobotDataset(self.repo_id, root=self.root)
-                try:
-                    self._episode_count = int(self._ds.meta.total_episodes)
-                except Exception:
-                    self._episode_count = 0
-                self._assert_v3_metadata()
-            else:
-                # create() は root が未存在であることを要求する
-                if self.root.exists():
-                    # 空ディレクトリなら消して作り直す余地は残すが、安全側でファイルが無ければ OK
-                    leftover = [p for p in self.root.rglob("*") if p.is_file()]
-                    if leftover:
-                        raise FileExistsError(
-                            f"dataset root already has files but no meta/info.json: {self.root}"
-                        )
-                    # 空なら remove して create に任せる
-                    self.root.rmdir()
-                self._ds = LeRobotDataset.create(
-                    repo_id=self.repo_id,
-                    fps=self.fps,
-                    robot_type=self.robot_type,
-                    features=features,
-                    root=self.root,
-                    use_videos=True,
-                )
-                self._assert_v3_metadata()
+            self._open_or_create_lerobot_dataset(features)
 
         info = self.collection_info or build_collection_info(
             fps=self.fps,
@@ -211,6 +186,57 @@ class EpisodeRecorder:
         )
         info.setdefault("lerobot_codebase_version", CODEBASE_VERSION_V3)
         write_collection_info(self.root, info)
+
+    def _open_or_create_lerobot_dataset(self, features: dict[str, Any]) -> None:
+        """既存ローカル DS を resume、無ければ create。不完全な空 DS は作り直す。
+
+        新しめの LeRobot は ``LeRobotDataset(repo_id, root=...)`` が Hub を見に行く。
+        書き込み再開は ``resume()``。create 直後（episodes=0・tasks 無し）だと
+        resume も Hub 404 になるため、空なら root を消して create し直す。
+        """
+        from lerobot.datasets.lerobot_dataset import LeRobotDataset
+
+        meta = self.root / "meta" / "info.json"
+        tasks = self.root / "meta" / "tasks.parquet"
+        if meta.is_file():
+            total = 0
+            try:
+                total = int(json.loads(meta.read_text(encoding="utf-8")).get("total_episodes", 0))
+            except Exception:
+                total = 0
+            # create 直後・未保存のローカル DS は Hub 無しでは resume できない
+            if total == 0 and not tasks.is_file():
+                logger.warning(
+                    "incomplete empty dataset at %s (no tasks.parquet); recreating",
+                    self.root,
+                )
+                shutil.rmtree(self.root)
+            else:
+                self._ds = LeRobotDataset.resume(repo_id=self.repo_id, root=self.root)
+                try:
+                    self._episode_count = int(self._ds.meta.total_episodes)
+                except Exception:
+                    self._episode_count = total
+                self._assert_v3_metadata()
+                return
+
+        if self.root.exists():
+            leftover = [p for p in self.root.rglob("*") if p.is_file()]
+            if leftover:
+                raise FileExistsError(
+                    f"dataset root already has files but no meta/info.json: {self.root}"
+                )
+            self.root.rmdir()
+        self._ds = LeRobotDataset.create(
+            repo_id=self.repo_id,
+            fps=self.fps,
+            robot_type=self.robot_type,
+            features=features,
+            root=self.root,
+            use_videos=True,
+        )
+        self._episode_count = 0
+        self._assert_v3_metadata()
 
     def _assert_v3_metadata(self) -> None:
         """info.json の codebase_version が v3 系であることを確認する。"""

@@ -84,8 +84,14 @@ def make_offscreen_env(
     *,
     camera_heights: int = 128,
     camera_widths: int = 128,
+    ignore_done: bool = True,
 ) -> Any:
-    """OffScreenRenderEnv を生成する（libero が必要）。"""
+    """OffScreenRenderEnv を生成する（libero が必要）。
+
+    VR テレオプは長時間 step するため、既定で ``ignore_done=True``（horizon で
+    robosuite が terminated にしない）。読み込み中に WS に溜まった control を
+    一気に消化しても落ちにくくする。
+    """
     # robosuite 1.4 × MuJoCo 3.10 の mj_fullM 差を吸収
     from parc.env.mujoco_compat import patch_robosuite_mj_fullM
 
@@ -96,4 +102,5 @@ def make_offscreen_env(
         bddl_file_name=bddl_file,
         camera_heights=camera_heights,
         camera_widths=camera_widths,
+        ignore_done=ignore_done,
     )

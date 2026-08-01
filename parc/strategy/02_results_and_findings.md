@@ -8,7 +8,7 @@
 |------|-------|------|-----|------|
 | official_aligned @30k | ≈0.21 | 0.214 | **0.357** | Gate3: nuc でも SR>0。薄い数値はマシン間でばらつく |
 | +30k expert-only continue | — | 0.286 | — | Camera 等は弱いまま |
-| +30k vision unfreeze (lr 2e-5) | **0.571** | **0.571** | — | 薄い eval では最強に見える |
+| +30k vision unfreeze (lr 2e-5) | **0.571** | **0.571** | **0.571** | 薄い eval では最強に見える。nuc も一致 |
 | +30k unfreeze continue (lr 2e-5) | 0.500 | — | — | 薄い eval では低下 |
 
 打ち切り:
@@ -37,7 +37,53 @@ run: `20260728T032038Z_nuc_d9d066c5_…` · job `q_20260727T034627…`
 | **+15k finetune (lr 1e-5, winpc)** | — | **0.371** | **0.343** (cross) | — | 自機厚いより thor でやや低下 |
 | thor unfreeze@30k **クロス** | — | **0.400** | 0.429 (自機) | — | 旧親（mix10k 登場前） |
 | **mix10k**（unfreeze→cam mix · winpc） | — | — | **0.514** | — | 厚い同点候補。Cam deep 0.12 |
-| **mix continue+10k**（mix10k→+10k） | Cam smoke **0.000** | — | **0.514** | — | **現行親**。Cam deep **0.20** で mix10k 上回り |
+| **mix continue+10k**（mix10k→+10k） | Cam smoke **0.000** · nuc thin **0.143** | — | **0.514** | **0.371** | **現行親**。Cam deep **0.20**。nuc 厚いは thor より低（マシン差）。薄い 0.143 は過少 |
+
+### nuc continue10k 薄い cross（2026-07-31）
+
+Job `q_20260730T183023…5b83f890` · run `20260731T025659Z_nuc_5c63c8f8_…` · **SR=0.143**（2/14）
+
+| カテゴリ | SR |
+|----------|---:|
+| Light / Objects | 0.50 |
+| Background / Camera / Language / RobotInit / Sensor | **0.00** |
+
+解釈: thor 厚い 0.514 と乖離大。**薄いばらつき + nuc マシン差**として記録のみ。親は変更しない。
+
+### nuc unfreeze@30k 薄い（2026-07-31 · requeue-stale）
+
+Job `q_20260731T025640…aecfb546` · run `20260731T031851Z_nuc_c9d23a1d_…` · **SR=0.571**（8/14）
+
+| カテゴリ | SR |
+|----------|---:|
+| Light / Objects | 1.00 |
+| Background / Language / RobotInit / Sensor | 0.50 |
+| Camera | **0.00** |
+
+解釈: winpc/thor 薄い 0.571 と一致。再現 OK。厚い親決めには使わない（unfreeze 厚いは thor 0.429 / winpc 0.229）。
+
+### nuc continue10k 厚い cross（2026-07-31）
+
+Job `q_20260731T033606…7f3ca66a` · run `20260731T033639Z_nuc_6a67ca01_…` · **SR=0.371**（13/35）
+
+| カテゴリ | SR |
+|----------|---:|
+| Light | 0.80 |
+| Background / Language / Objects / Sensor | 0.40 |
+| RobotInit | 0.20 |
+| Camera | **0.00** |
+
+vs thor 厚い **0.514**: nuc は低いが薄い 0.143 より大幅改善。Camera は厚いでも 0。**親は thor 厚い基準で維持**。
+
+### continue10k 弱点深掘り（thor · 2026-07-31 空き埋め）
+
+| カテゴリ | SR | n | メモ |
+|----------|---:|--:|------|
+| Sensor | **0.16** | 25 | 1374:0.60 · 1376:0.20 · 他 0。unfreeze 深掘り 0.20 と同程度 |
+| Language | **0.32** | 25 | 985:0.80 · 987/988:0.40 · 984/986=0。unfreeze 0.20 より改善 |
+
+run: Sensor `20260731T033613Z_thor_50f7c836_…` · Language `20260731T035331Z_thor_cf28b03a_…`  
+解釈: Language は親より良い。Sensor は依然弱い。Gate-RL 未達は継続。
 
 ### 親 ckpt 再確定（クロス厚い · 2026-07-29）
 
@@ -96,7 +142,7 @@ vs mix10k: 厚い全体同点。Cam deep **0.20 > 0.12**。Lang/Light↑、Bg/Se
 | steps | +5k · lr **5e-6** · bs=8 · 同 mix |
 | ckpt | `005000`（`last`） |
 | 薄い smoke | tpc=2 · n=14 · **SR=0.500** |
-| 厚い / Cam deep | **未実施**（thor 待ち） |
+| 厚い / Cam deep | 厚い **0.371** · Cam deep **0.14**（親未満） |
 
 薄いカテゴリ: Background **1.00** · Lang/Light/Objects/Robot/Sensor **0.50** · Camera **0.00**  
 解釈: continue 系の薄い Cam smoke 0.000 と同型。**親決めに使わない**。
@@ -110,21 +156,35 @@ vs mix10k: 厚い全体同点。Cam deep **0.20 > 0.12**。Lang/Light↑、Bg/Se
 Cam deep by task: 608:0.10 · 609:0.20 · 610:0.20 · 611:0.10 · 612:0.10  
 vs continue10k: 厚い **0.371 < 0.514** · Cam **0.14 < 0.20** → **親維持・同レシピ延長打ち切り**（05）。
 
-### mix v2 Phase A（2026-07-31 train · 薄いのみ）
+### mix v2 Phase A（2026-07-31 · base120+cam60）
 
 | 項目 | 値 |
 |------|-----|
 | job | `q_20260730T220954…a908742f` |
 | run | `20260730T221003Z_winpc_c9dc1b28_…` |
 | pretrained | continue10k `…cbbf5c8b…/010000` |
-| dataset | `libero_plus_cam_mix_v2`（base120+cam60） |
+| dataset | `libero_plus_cam_mix_v2`（base120+cam60 · 180 eps） |
 | steps | +5k · lr **1e-5** · bs=8 |
 | ckpt | `005000`（`last`） |
-| 薄い smoke | tpc=2 · n=14 · **SR=0.571** |
-| 厚い / Cam deep | **未実施**（thor 待ち · YAML 済） |
+| 薄い smoke | tpc=2 · n=14 · **SR=0.571**（Cam/Lang 0 · 無視） |
+| 厚い (thor) | **0.400** · `20260730T231841Z_thor_907a8bc1_…` |
+| Cam deep (thor) | **0.10** · `20260730T233024Z_thor_5ba94471_…` |
 
-薄いカテゴリ: Bg/Light/Sensor **1.00** · Objects/Robot **0.50** · Camera/Language **0.000**  
-解釈: 全体は薄い unfreeze 並みに見えるが **Cam/Lang=0**。**親決めに使わない**。比較対象は continue10k 厚い 0.514 / Cam deep 0.20。
+厚いカテゴリ: Light 0.80 · Objects 0.60 · Bg/Lang/Robot 0.40 · Sensor 0.20 · Camera **0.00**  
+Cam deep by task: 608:0.30 · 609:0 · 610:0 · 611:0.20 · 612:0  
+vs continue10k: 厚い **0.400 < 0.514** · Cam **0.10 < 0.20** → **Phase A 敗北**。親維持。次は **Phase B（cam 増量）**。
+
+### Phase B mix v3（base180+cam120 · continue10k→+5k · thor · 2026-08-01）
+
+| 項目 | 値 |
+|------|-----|
+| FT | `q_…9a1b9179` · `20260731T104523Z_thor_3fa4d513_…` · ckpt `005000` |
+| 薄い | **0.214**（親決め未使用） |
+| 厚い | **0.143** · `20260731T170913Z_thor_3c7af49e_…` |
+| Cam deep | **0.00** · `20260731T172239Z_thor_908a45cb_…`（608–612×10 全敗） |
+
+厚いカテゴリ: Lang 0.40 · Bg/Light/Sensor 0.20 · Objects/Robot/Camera **0.00**  
+vs continue10k: 厚い **0.143 < 0.514** · Cam **0.00 < 0.20** → **Phase B 敗北**。親維持・同軸打ち切り。
 
 ### カテゴリ別（厚い）
 
@@ -212,14 +272,79 @@ Run: `20260728T082624Z_winpc_8cd84fbf_…` · 薄い **SR=0.000**（Camera 5/5 f
 - 「sim 再レンダ」という方向自体は即否定しないが、**cam-only 短 FT** は現状の有望筋ではない。
 - 次に同軸を触るなら、mix 方法を CLI 対応で作り直すか、データ量/重みを再設計する必要がある。
 
+## Phase C 診断（2026-08-01）
+
+仕様: [2026-08-01-phase-c-cam-diagnosis-design.md](../docs/superpowers/specs/2026-08-01-phase-c-cam-diagnosis-design.md)
+
+### View ギャップ
+
+| 種別 | views | 用途 |
+|------|-------|------|
+| train-safe（DEFAULT_VIEWS） | h∈{5,8,10,12} × v∈{5,10,15}（× scale100）= **12 本** | 再レンダ学習（v1/v2） |
+| eval hard | **11_15 · 13_15 · 14_15**（task 610–612） | 評価のみ（学習から意図的除外） |
+| eval mild | endpoint 微回転系（608/609） | 評価 |
+
+### continue10k Camera deep
+
+| run | SR | メモ |
+|-----|---:|------|
+| `20260730T091211Z_thor_ea7c443f_…` | **0.20** | 親決めに使用した値 |
+| `20260731T073622Z_thor_7bd32280_…` | **0.16** | 再測定。registry 上 n=50 · Camera のみ。episodes は prune 済で task 別再集計不可 |
+
+失敗モード正本は既存レビュー（上記「動画レビュー所見」）を維持:
+
+- mild: 誤ターゲット / 把持ミス（部分成功あり）
+- hard: 視点 OOD → 空間取り違え · 把持前 timeout
+
+Phase B の Cam deep **0.00** は壊れた政策の症状であり、親の失敗モード診断には混ぜない。
+
+### Phase B 失敗の固定文
+
+continue10k から mix v3（base180+cam120 ≈ 60/40）へ +5k · 1e-5 は、Camera 改善の前に **政策全体を破壊**した（thick **0.143** / Cam deep **0.00**）。  
+主因候補は (1) cam 比率過大 (2) 短 FT での分布シフト。wrist AV1 修復は二次的（修復後完走でも評価は惨敗）。  
+次は「もっと cam」ではなく **cam 比率≤15% · steps≤2.5k · 親バー厳守**（Phase A'）。
+
+### Phase A' 結果（2026-08-01）
+
+| 段階 | thick | Cam deep | 判定 |
+|------|------:|---------:|------|
+| continue10k（親） | **0.514** | **0.20** | 維持 |
+| Phase A' mix v4（base240+hard-near20 · +2.5k） | **0.286** | **0.06** | **敗北** |
+
+- FT: `q_…e5d15dcf` · `…b85fca8b…/002500` · 薄い 0.357（無視）
+- thick: `q_…00af5666` · `20260731T203704Z_thor_b86845a9_…`
+- Cam deep: `q_…1c66397a` · `20260731T204944Z_thor_553447d0_…`
+- バー未達（thick 0.286 < 0.514 · Cam 0.06 < 0.20）→ **親維持 · cam 軸短 FT 打ち切り**
+
+### continue10k Language（Phase D1 · 2026-08-01）
+
+指示文（ベンチマーク）と深掘り:
+
+| task | 指示要約 | thor | nuc |
+|------|----------|-----:|----:|
+| 984 | darkhued rounded container / flat dish / glazed ceramic | **0** | **0** |
+| 985 | black bowl…plate…ramekin（丁寧） | **0.80** | 0.20 |
+| 986 | darkcolored rounded container / flat dish for main courses | **0** | **0** |
+| 987 | black bowl…plate…ramekin | 0.40 | 0.60 |
+| 988 | 丁寧だが物体名は標準 | 0.40 | 0.20 |
+
+**仮説:** 失敗は **言い換え語彙 OOD**（bowl/plate が別表現）。動作そのものより言語。  
+**次:** hard deep 動画（`q_…70c96dab`）→ ラベル置換少本数 FT 草案（cam なし・承認後）。
+
+### 空き埋め（親決め禁止）
+
+| 内容 | SR | run |
+|------|---:|-----|
+| nuc Language deep vs thor 0.32 | **0.20** | `20260731T172230Z_nuc_9bcfd033_…` |
+| nuc Sensor deep vs thor 0.16 | **0.24** | `q_…7bbbffb5` · `20260731T180023Z_nuc_cb27a7ad_…`（n=25 · 親決め禁止） |
+
 ## 解釈（短く）
 
-1. **親 = continue10k**（厚い 0.514 · Cam deep 0.20）。mix10k は厚い同点だが Cam 劣後。旧親 unfreeze cross 0.40。
-2. Sensor / Language / RobotInit 深掘りも **0.16–0.20**。Language はタスク二極。Camera hard は未解決だが深掘りは改善傾向。
-3. **lr↓5k は失敗**（厚い 0.371 / Cam 0.14）。同 mix・同軸延長は打ち切り。
-4. **mix v2**（base120+cam60 · +5k）薄い 0.571（Cam/Lang 0）— 厚いで親判定待ち。
-5. Gate-RL 未達。GRPO しない。
-6. nuc Gate3 厚い 0.257。再現は確定。nuc 現在不通。
+1. **親 = continue10k**（厚い 0.514 · Cam deep **0.20** / 再測定 **0.16**）。mix10k は厚い同点だが Cam 劣後。旧親 unfreeze cross 0.40。
+2. Sensor / Language / RobotInit 深掘りも **0.16–0.32**。Language は nuc **0.20** < thor **0.32**。Sensor は nuc **0.24** > thor **0.16**（クロス分散・親決め禁止）。
+3. **lr↓5k / mix v2 / Phase B / Phase A' いずれも敗北**。**cam 軸短 FT は Phase D で禁止**。親 = continue10k 凍結。次は非 cam。
+4. Gate-RL 未達。GRPO しない。
+5. nuc Gate3 aligned 厚い 0.257。continue10k 薄い 0.143 / 厚い **0.371**（thor 0.514 より低・親維持）。
 
 ## 主要 Run ID（参照用）
 
@@ -256,7 +381,19 @@ Run: `20260728T082624Z_winpc_8cd84fbf_…` · 薄い **SR=0.000**（Camera 5/5 f
 | winpc mix continue+10k train（Cam smoke 0.000） | `20260730T071018Z_winpc_cbbf5c8b_…` |
 | thor thick continue10k（**0.514** · **現行親**） | `20260730T090125Z_thor_2798bc08_…` |
 | thor camera deep continue10k（**0.20**） | `20260730T091211Z_thor_ea7c443f_…` |
+| thor camera deep continue10k 再測定（**0.16**） | `20260731T073622Z_thor_7bd32280_…` |
 | winpc lr↓5k train（薄い **0.500**） | `20260730T184742Z_winpc_c7e7c8f2_…` |
 | thor thick lr↓5k（**0.371** · 親未満） | `20260730T200910Z_thor_a4d14910_…` |
 | thor camera deep lr↓5k（**0.14**） | `20260730T202113Z_thor_fded971f_…` |
-| winpc mix v2 +5k train（薄い **0.571**） | `20260730T221003Z_winpc_c9dc1b28_…` |
+| winpc mix v2 train（薄い **0.571**） | `20260730T221003Z_winpc_c9dc1b28_…` |
+| thor thick mix v2（**0.400** · Phase A 敗北） | `20260730T231841Z_thor_907a8bc1_…` |
+| thor camera deep mix v2（**0.10**） | `20260730T233024Z_thor_5ba94471_…` |
+| nuc thin continue10k cross（**0.143**） | `20260731T025659Z_nuc_5c63c8f8_…` |
+| nuc thin unfreeze@30k（**0.571**） | `20260731T031851Z_nuc_c9d23a1d_…` |
+| nuc thick continue10k（**0.371**） | `20260731T033639Z_nuc_6a67ca01_…` |
+| thor sensor deep continue10k（**0.16**） | `20260731T033613Z_thor_50f7c836_…` |
+| thor language deep continue10k（**0.32**） | `20260731T035331Z_thor_cf28b03a_…` |
+| thor Phase B mix v3 FT（薄い **0.214** · 親決め未使用） | `20260731T104523Z_thor_3fa4d513_…` |
+| thor thick mix v3（**0.143** · Phase B 敗北） | `20260731T170913Z_thor_3c7af49e_…` |
+| thor camera deep mix v3（**0.00** · 608–612 全敗） | `20260731T172239Z_thor_908a45cb_…` |
+| nuc language deep continue10k（**0.20**） | `20260731T172230Z_nuc_9bcfd033_…` |

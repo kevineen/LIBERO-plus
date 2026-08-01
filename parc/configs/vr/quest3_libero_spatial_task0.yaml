@@ -6,9 +6,9 @@ task_ids: [0]
 dataset_root: data/datasets/vr_libero_demos
 repo_id: local/vr_libero_demos
 fps: 20
-jpeg_quality: 65
-camera_height: 128
-camera_width: 128
+jpeg_quality: 80
+camera_height: 256
+camera_width: 256
 image_size: 256
 flip_images: true
 require_success: false

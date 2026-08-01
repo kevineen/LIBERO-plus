@@ -90,11 +90,14 @@ class FakeLiberoEnv:
     def _obs(self) -> dict[str, Any]:
         """学習互換キーを持つ偽観測。"""
         h, w = self.height, self.width
-        # 時間で色が変わるのでストリーム確認しやすい
+        # 時間で色が変わるのでストリーム確認しやすい。
+        # t=0 でも黒にしない（接続直後の1枚目が見えるようにする）
         front = np.zeros((h, w, 3), dtype=np.uint8)
         wrist = np.zeros((h, w, 3), dtype=np.uint8)
-        front[:, :, 0] = (self._t * 7) % 255
-        wrist[:, :, 1] = (self._t * 11) % 255
+        front[:, :, 0] = (64 + self._t * 7) % 255
+        wrist[:, :, 1] = (64 + self._t * 11) % 255
+        front[:, :, 2] = 32
+        wrist[:, :, 2] = 32
         x_off = 0.01 * float(self._init_index)
         return {
             "agentview_image": front,
@@ -177,6 +180,7 @@ class TeleopSession:
     recording: bool = False
     _obs: dict[str, Any] | None = None
     _closed: bool = False
+    _env_done: bool = False
     _episode_success: bool = False
     _init_state_index: int = 0
     _task_index: int = 0
@@ -289,6 +293,9 @@ class TeleopSession:
 
     def handle_control(self, msg: ControlMessage) -> None:
         """制御メッセージ 1 通を処理する。"""
+        # robosuite は done 後の step で落ちる。Save/Reset で init し直した直後の
+        # 同一メッセージでも追加 step しない（auto-reset ループ防止）。
+        was_done = self._env_done
         rising = self.edges.update(msg.buttons)
         if rising.reset:
             self._handle_reset()
@@ -298,6 +305,9 @@ class TeleopSession:
             self._discard()
         if rising.save:
             self._save()
+
+        if was_done:
+            return
 
         # Approximate Time: 録画中の古い / 重複 uplink は step・frame を落とす
         control_t: float | None = None
@@ -312,9 +322,31 @@ class TeleopSession:
                 self.recorder.stats.dropped_stale_controls += 1
             return
 
+        if self._env_done:
+            return
+
         action = self.mapper.map(msg.pose, msg.gripper)
         assert self._obs is not None
-        next_obs, reward, done, info = self.env.step(action.tolist())
+        try:
+            next_obs, reward, done, info = self.env.step(action.tolist())
+        except ValueError as exc:
+            # robosuite: horizon 到達後も LIBERO は done=success だけ返すことがあり、
+            # 内部 self.done=True のまま次 step で落ちる。読み込み中に溜まった
+            # control バーストでも同様。
+            if "terminated episode" not in str(exc):
+                raise
+            self._env_done = True
+            if self.recording:
+                self.emit_status("env terminated — Save (B) or Reset (Menu)")
+            else:
+                self._obs = self._apply_current_init()
+                self.mapper.reset()
+                self.emit_status("env terminated — auto reset")
+            return
+
+        # LIBERO は success のみを done に載せ、horizon の self.done を隠すことがある
+        inner_done = bool(getattr(getattr(self.env, "env", None), "done", False))
+        done = bool(done) or inner_done
 
         if self.recording and self.recorder is not None:
             frame = obs_to_frame_dict(
@@ -342,6 +374,16 @@ class TeleopSession:
         if self.recording:
             self._episode_ee.append(_ee_pos(next_obs))
 
+        if done:
+            self._env_done = True
+            if self.recording:
+                self.emit_status("env done — Save (B) or Reset (Menu)")
+            else:
+                # 自由操作中は同じ init で自動復帰（接続を落とさない）
+                self._obs = self._apply_current_init()
+                self.mapper.reset()
+                self.emit_status("env done — auto reset")
+
     def _should_drop_control(self, control_t: float) -> bool:
         """許容窓外・重複の control を落とすか判定する。"""
         slop_s = max(0.0, float(self.config.approx_time_slop_ms) / 1000.0)
@@ -363,16 +405,37 @@ class TeleopSession:
         return False
 
     def emit_video(self) -> None:
-        """現在観測の JPEG を send する。"""
+        """現在観測の RGB フレームを send する。"""
         if self._obs is None:
             return
         # ストリームは学習 flip 前の生視点の方が操作しやすい → flip=False
         front, wrist = extract_front_wrist(self._obs, flip_images=False)
-        from parc.vr.protocol import CAMERA_FRONT, CAMERA_WRIST, pack_jpeg_frame
+        from parc.vr.protocol import (
+            CAMERA_FRONT_RGB,
+            CAMERA_WRIST_RGB,
+            pack_rgb_frame,
+        )
 
-        q = self.config.jpeg_quality
-        self.send(pack_jpeg_frame(CAMERA_FRONT, rgb_to_jpeg(front, quality=q)))
-        self.send(pack_jpeg_frame(CAMERA_WRIST, rgb_to_jpeg(wrist, quality=q)))
+        # JPEG 経由だと Quest/一部クライアントで破損→テレビノイズになる事例あり。
+        # LAN 向けに非圧縮 RGB24 を送る（256²×2×20Hz でも数 MB/s）。
+        fh, fw = int(front.shape[0]), int(front.shape[1])
+        wh, ww = int(wrist.shape[0]), int(wrist.shape[1])
+        self.send(
+            pack_rgb_frame(
+                CAMERA_FRONT_RGB,
+                np.ascontiguousarray(front, dtype=np.uint8).tobytes(),
+                width=fw,
+                height=fh,
+            )
+        )
+        self.send(
+            pack_rgb_frame(
+                CAMERA_WRIST_RGB,
+                np.ascontiguousarray(wrist, dtype=np.uint8).tobytes(),
+                width=ww,
+                height=wh,
+            )
+        )
 
     def emit_status(self, message: str = "") -> None:
         """status JSON を送る。"""
@@ -596,6 +659,7 @@ class TeleopSession:
 
     def _apply_current_init(self) -> Any:
         """現在の init_state_index を env に適用する。"""
+        self._env_done = False
         if not self.init_states:
             return self.env.reset()
         i = self._init_state_index % len(self.init_states)

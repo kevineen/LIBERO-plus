@@ -179,6 +179,11 @@ def mix_datasets_main(argv: list[str] | None = None) -> None:
         default=0,
         help="cam から使う本数（0=全件）",
     )
+    parser.add_argument(
+        "--cam-episode-indices",
+        default="",
+        help="カンマ区切りの cam episode index（指定時は --cam-episodes より優先）",
+    )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument(
         "--dry-run",
@@ -202,6 +207,12 @@ def mix_datasets_main(argv: list[str] | None = None) -> None:
         out = (PARC_ROOT / out).resolve()
 
     cam_eps = None if int(args.cam_episodes) <= 0 else int(args.cam_episodes)
+    cam_idx_raw = str(args.cam_episode_indices or "").strip()
+    cam_idx = (
+        [int(x) for x in cam_idx_raw.split(",") if x.strip() != ""]
+        if cam_idx_raw
+        else None
+    )
     result = mix_lerobot_datasets(
         base_repo_id=args.base_repo_id,
         base_root=base_root,
@@ -211,6 +222,7 @@ def mix_datasets_main(argv: list[str] | None = None) -> None:
         output_root=out,
         base_episodes=int(args.base_episodes),
         cam_episodes=cam_eps,
+        cam_episode_indices=cam_idx,
         seed=int(args.seed),
         dry_run=bool(args.dry_run),
         overwrite=bool(args.overwrite),

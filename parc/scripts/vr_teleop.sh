@@ -10,6 +10,9 @@ ROBOT_ROOT="$(cd "$PARC/../.." && pwd)"
 
 cd "$PARC"
 
+# WSL ヘッドレス描画。未設定だと MuJoCo がゴミ画素を返しテレビノイズになることがある
+export MUJOCO_GL="${MUJOCO_GL:-egl}"
+
 if [[ "${USE_LIBERO_VENV:-0}" == "1" ]]; then
   # shellcheck disable=SC1091
   source "$LIBERO_PLUS/.venv/bin/activate"

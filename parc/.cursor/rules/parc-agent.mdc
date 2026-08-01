@@ -16,6 +16,7 @@ alwaysApply: true
 - 実行は `uv run …`（`uv run python` 禁止）
 - ジョブはキュー経由。長い train / GRPO はユーザー確認なしで積まない
 - 薄い eval だけで親 ckpt・長い FT・RL を決めない
+- **重いジョブ（長時間 GPU / EGL 再レンダ / 厚い・深掘り）は thor 既定**。winpc・nuc（WSL）で長時間 EGL 再レンダしない（`04_machine_roles.md`）
 - 完了後は `strategy/01`–`03` を更新（playbook `after_job_done` / `update_strategy_docs`）
 - winpc SSH は Port 2222（`04_machine_roles.md`）
 - `.env.local` / webhook / 鍵をコミット・ログに出さない

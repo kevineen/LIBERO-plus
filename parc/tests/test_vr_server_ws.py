@@ -7,13 +7,13 @@ import json
 
 import pytest
 
-from parc.vr.protocol import CAMERA_FRONT, unpack_jpeg_frame
+from parc.vr.protocol import CAMERA_FRONT_RGB, unpack_rgb_frame
 from parc.vr.server import serve_vr_teleop
 
 
 @pytest.mark.asyncio
 async def test_ws_hello_and_video_on_control(tmp_path):
-    """接続 → hello → control → JPEG バイナリが返る。"""
+    """接続 → hello → control → RGB バイナリが返る。"""
     websockets = pytest.importorskip("websockets")
 
     host = "127.0.0.1"
@@ -44,9 +44,10 @@ async def test_ws_hello_and_video_on_control(tmp_path):
             front = await asyncio.wait_for(ws.recv(), timeout=2)
             wrist = await asyncio.wait_for(ws.recv(), timeout=2)
             assert isinstance(front, (bytes, bytearray))
-            cam, jpeg = unpack_jpeg_frame(bytes(front))
-            assert cam == CAMERA_FRONT
-            assert jpeg[:2] == b"\xff\xd8"
+            cam, w, h, rgb = unpack_rgb_frame(bytes(front))
+            assert cam == CAMERA_FRONT_RGB
+            assert (w, h) == (32, 32)
+            assert len(rgb) == 32 * 32 * 3
             assert isinstance(wrist, (bytes, bytearray))
 
             await ws.send(

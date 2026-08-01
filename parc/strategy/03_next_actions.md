@@ -44,13 +44,25 @@
 - [x] **nuc: unfreeze 薄い**（TdrDelay 後 requeue）— 完了 · **SR=0.571**（winpc/thor 薄と一致）
 - [x] **thor: continue10k Sensor/Language 深掘り** — 完了 · Sensor **0.16** · Language **0.32**
 - [x] **nuc: continue10k 厚い cross** — 完了 · **SR=0.371**（thor 0.514 より低 · 親維持）
-- [ ] **Phase B: cam 増量** — **進行中（再レンダは thor）**  
-  - winpc 再レンダは BSOD `0x7E` で中断（78/120）→ **thor へ移管・resume 中**  
-  - cam: `libero_cam_views_v2`（10×12=120）— thor `cam_rerender_v2_thor.log`  
-  - 完了後: staging を winpc へ rsync → convert → mix v3 → FT enqueue（winpc）  
-  - mix: `libero_plus_cam_mix_v3`（base180+cam120）  
-  - FT: continue10k → +5k · 1e-5 → その後 thor 厚い+Cam  
-  - 親 ckpt: `…cbbf5c8b…/010000`
+- [x] **Phase C: Camera 診断 + 空き埋め** — C1/C2 完了  
+  - 仕様: [2026-08-01-phase-c-cam-diagnosis-design.md](../docs/superpowers/specs/2026-08-01-phase-c-cam-diagnosis-design.md)  
+  - C2: Language deep **0.20** · Sensor deep **0.24**（`q_…7bbbffb5` · 親決め禁止）  
+- [x] **Phase A' FT on thor** — **敗北 · 親維持**  
+  - thick **0.286** · Cam deep **0.06** → **cam 軸短 FT 打ち切り**
+- [ ] **Phase D: 軸転換** — **D1+D3 並行中**  
+  - 正本: [phase-d design](../docs/superpowers/specs/2026-08-01-phase-d-axis-pivot-design.md) · [D1/D3 plan](../docs/superpowers/plans/2026-08-01-phase-d1-language-d3-vr.md)  
+  - **D1 thor:** Language hard deep **running** `q_…70c96dab`（984/986/988）· 語彙 OOD 診断済  
+  - **D3 mainpc:** VR Quest E2E 準備（Unity/Quest 手作業）  
+  - cam FT **禁止**
+- [x] **Phase B: cam 増量** — **完了・敗北（親維持）**  
+  - 再レンダ / convert / mix / 短 FT 完了 · ckpt `…3fa4d513…/005000`  
+  - 薄い 0.214（親決め未使用）  
+  - 厚い **0.143** · `q_…47040774` · `20260731T170913Z_thor_3c7af49e_…`  
+  - Cam deep **0.00** · `q_…175e0e55` · `20260731T172239Z_thor_908a45cb_…`（608–612 全敗）  
+  - vs continue10k 0.514 / 0.20 → **同軸延長打ち切り**  
+  - 1回目 FT は wrist AV1 破損で failed@3527 → 修復後再走で完走
+- [x] **nuc: Language deep クロス（空き埋め）** — **SR=0.20** · `q_…feddce52` · `20260731T172230Z_nuc_9bcfd033_…`（thor 0.32）
+
 ## 直近で打ち切ったもの
 
 - [x] **winpc**: Camera 再レンダ FT（cam-only）  
@@ -60,6 +72,8 @@
   - 厚い 0.371 / Cam 0.14 < continue10k → **同レシピ延長打ち切り**
 - [x] **mix v2 reweight**（base120+cam60）  
   - 厚い 0.400 / Cam 0.10 < continue10k → **重み変更だけでは不足**
+- [x] **Phase B cam×120 mix v3 短 FT**  
+  - 厚い 0.143 / Cam deep 0.00 < continue10k → **cam 増量短 FT 打ち切り**
 
 ## 次にやる（評価・判断）— 優先
 
@@ -95,8 +109,9 @@
 1. ~~continue10k の thor 結果待ち~~ — 完了 · 親確定
 2. ~~lr↓ 短 FT~~ — **敗北・打ち切り**
 3. ~~mix v2 reweight~~ — **敗北・打ち切り**
-4. **Phase B cam 増量** — 次（再レンダ → mix → continue10k から短 FT）
-5. （任意）親 continue10k の弱点深掘りだけ追加
+4. **~~Phase B cam 増量~~** — **敗北・打ち切り**（thick 0.143 / Cam 0.00）
+5. （要相談）親 continue10k のまま **別軸**（aug / 別 mix 設計 / 弱点カテゴリ以外のデータ）
+6. （任意）親 continue10k の弱点深掘りだけ追加
 
 やらない（現状）:
 
@@ -106,6 +121,7 @@
 - [ ] ~~cam-only rerender FT をそのまま再投入~~（薄い 0.000）
 - [ ] ~~lr↓5k のさらなる延長~~（厚いで親未満）
 - [ ] ~~mix v2 のさらなる同軸延長~~（厚いで親未満）
+- [ ] ~~Phase B mix v3 のさらなる同軸延長~~（厚いで親未満 · Cam 全敗）
 - [ ] ~~色 jitter だけの aug を「Camera 対策」と呼ぶ~~（幾何視点が主因）
 
 ## インフラ / Fleet

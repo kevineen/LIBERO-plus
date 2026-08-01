@@ -118,12 +118,17 @@ def mix_lerobot_datasets(
     output_root: Path,
     base_episodes: int,
     cam_episodes: int | None = None,
+    cam_episode_indices: list[int] | None = None,
     seed: int = 42,
     dry_run: bool = False,
     overwrite: bool = False,
     work_dir: Path | None = None,  # 互換のため残置（未使用）
 ) -> MixResult:
-    """base から N ep を抽出し cam とマージして ``output_root`` に書く。"""
+    """base から N ep を抽出し cam とマージして ``output_root`` に書く。
+
+    ``cam_episode_indices`` 指定時はランダムではなくその index を使う
+    （Phase A' hard-near など）。``cam_episodes`` より優先。
+    """
     try:
         from lerobot.datasets.dataset_metadata import LeRobotDatasetMetadata
         from lerobot.datasets.dataset_tools import merge_datasets
@@ -152,16 +157,24 @@ def mix_lerobot_datasets(
 
     n_base = int(base_meta.total_episodes)
     n_cam = int(cam_meta.total_episodes)
-    cam_keep = n_cam if cam_episodes is None else int(cam_episodes)
-    if cam_keep <= 0 or cam_keep > n_cam:
-        raise ValueError(f"cam_episodes={cam_keep} out of range (1..{n_cam})")
 
     base_idx = _sample_episode_indices(n_base, int(base_episodes), seed=seed)
-    cam_idx = (
-        list(range(n_cam))
-        if cam_keep == n_cam
-        else _sample_episode_indices(n_cam, cam_keep, seed=seed + 1)
-    )
+    if cam_episode_indices is not None:
+        cam_idx = sorted({int(i) for i in cam_episode_indices})
+        if not cam_idx:
+            raise ValueError("cam_episode_indices is empty")
+        bad = [i for i in cam_idx if i < 0 or i >= n_cam]
+        if bad:
+            raise ValueError(f"cam_episode_indices out of range (0..{n_cam - 1}): {bad[:8]}")
+    else:
+        cam_keep = n_cam if cam_episodes is None else int(cam_episodes)
+        if cam_keep <= 0 or cam_keep > n_cam:
+            raise ValueError(f"cam_episodes={cam_keep} out of range (1..{n_cam})")
+        cam_idx = (
+            list(range(n_cam))
+            if cam_keep == n_cam
+            else _sample_episode_indices(n_cam, cam_keep, seed=seed + 1)
+        )
 
     def _frames_for(meta: LeRobotDatasetMetadata, indices: list[int]) -> int:
         return sum(int(meta.episodes[i]["length"]) for i in indices)

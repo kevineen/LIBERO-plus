@@ -85,3 +85,14 @@ def test_button_rising_edge_only_once():
 
 def test_wrist_camera_id():
     assert unpack_jpeg_frame(pack_jpeg_frame(CAMERA_WRIST, b"ab"))[0] == CAMERA_WRIST
+
+
+def test_pack_unpack_rgb():
+    from parc.vr.protocol import CAMERA_FRONT_RGB, pack_rgb_frame, unpack_rgb_frame
+
+    rgb = bytes([10, 20, 30] * (4 * 4))
+    payload = pack_rgb_frame(CAMERA_FRONT_RGB, rgb, width=4, height=4)
+    cam, w, h, out = unpack_rgb_frame(payload)
+    assert cam == CAMERA_FRONT_RGB
+    assert (w, h) == (4, 4)
+    assert out == rgb

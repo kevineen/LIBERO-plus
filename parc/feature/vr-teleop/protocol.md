@@ -107,12 +107,15 @@ Default endpoint: `ws://<host>:8765/vr`
 
 各バイナリフレーム先頭 1 バイトがカメラ ID:
 
-| Byte0 | Camera |
-|-------|--------|
-| `0x01` | front (agentview) |
-| `0x02` | wrist |
+| Byte0 | Camera | Payload |
+|-------|--------|---------|
+| `0x01` | front | JPEG（旧） |
+| `0x02` | wrist | JPEG（旧） |
+| `0x11` | front | `w_u16le` `h_u16le` + RGB24 raw（現行） |
+| `0x12` | wrist | 同上 |
 
-残りは JPEG バイト列。
+現行サーバは **RGB24 raw（0x11/0x12）** を送る。JPEG 経由で Quest/Editor にテレビノイズが出る事例への対策。
+Unity `VrTeleopClient` は両方を解釈する。
 
 ## Button semantics
 

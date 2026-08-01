@@ -53,13 +53,14 @@ YAML 追加キー: `require_success`（既定 false）、`init_state_mode: cycle
 
 ## Quest クライアント
 
-手順は [`unity/VrTeleop/README.md`](../unity/VrTeleop/README.md)。
+**セットアップ正本（Quest 本体〜Unity〜WSL portproxy）:** [`13_quest3_setup.md`](13_quest3_setup.md)  
+Unity 短メモ: [`unity/VrTeleop/README.md`](../unity/VrTeleop/README.md)
 
 要点:
 
 1. Windows で Unity プロジェクトを作成し `Assets/Scripts` をコピー
-2. NativeWebSocket + OpenXR (Meta Quest)
-3. `Server Url` = `ws://<PCのLAN IP>:8765`（`localhost` 不可）
+2. NativeWebSocket + OpenXR (Meta Quest) + Define `NATIVE_WEBSOCKET`
+3. `Server Url` = `ws://<WindowsのLAN IP>:8765`（`localhost` 不可。WSL サーバ時は portproxy）
 4. A=Record / B=Save / Grip=Discard / Menu=Reset / Trigger=Gripper
 
 ## 学習への接続

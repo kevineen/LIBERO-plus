@@ -294,7 +294,9 @@ def main() -> None:
 
 if __name__ == "__main__":
     # ensure libero is importable when launched from parc/
+    # Only add repo root: `import libero` → outer package, `libero.libero` → inner.
+    # Do NOT add repo/libero (that makes `libero` resolve to the inner package and
+    # breaks `from libero.libero import …` on some hosts, e.g. thor).
     repo = Path(__file__).resolve().parents[2]
     sys.path.insert(0, str(repo))
-    sys.path.insert(0, str(repo / "libero"))
     main()

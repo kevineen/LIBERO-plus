@@ -14,6 +14,9 @@ PROTOCOL_VERSION = 1
 # Binary video: first byte = camera id
 CAMERA_FRONT = 0x01
 CAMERA_WRIST = 0x02
+# Raw RGB24 frames（JPEG 破損対策。Quest/Editor でテレビノイズになるのを避ける）
+CAMERA_FRONT_RGB = 0x11
+CAMERA_WRIST_RGB = 0x12
 
 
 @dataclass(frozen=True)
@@ -218,6 +221,31 @@ def unpack_jpeg_frame(payload: bytes) -> tuple[int, bytes]:
     if len(payload) < 2:
         raise ValueError("video frame too short")
     return int(payload[0]), payload[1:]
+
+
+def pack_rgb_frame(camera_id: int, rgb: bytes, *, width: int, height: int) -> bytes:
+    """カメラ ID + サイズ + RGB24 をバイナリフレームに詰める。"""
+    if camera_id not in (CAMERA_FRONT_RGB, CAMERA_WRIST_RGB):
+        raise ValueError(f"invalid rgb camera_id: {camera_id}")
+    w = int(width)
+    h = int(height)
+    expect = w * h * 3
+    if len(rgb) != expect:
+        raise ValueError(f"rgb size {len(rgb)} != {expect} for {w}x{h}")
+    return bytes([camera_id, w & 0xFF, (w >> 8) & 0xFF, h & 0xFF, (h >> 8) & 0xFF]) + rgb
+
+
+def unpack_rgb_frame(payload: bytes) -> tuple[int, int, int, bytes]:
+    """バイナリを (camera_id, width, height, rgb) に分解する。"""
+    if len(payload) < 5:
+        raise ValueError("rgb frame too short")
+    cam = int(payload[0])
+    w = int(payload[1]) | (int(payload[2]) << 8)
+    h = int(payload[3]) | (int(payload[4]) << 8)
+    rgb = payload[5:]
+    if len(rgb) != w * h * 3:
+        raise ValueError(f"rgb payload {len(rgb)} != {w * h * 3}")
+    return cam, w, h, rgb
 
 
 @dataclass
