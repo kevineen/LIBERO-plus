@@ -180,6 +180,35 @@ ds.finalize()
 
 - **言語指示**は摂動カテゴリ「Language Instructions」対策にも効くので、言い換えバリエーションを入れる価値が高い  
 - アクション空間が絶対姿勢や関節角なら、学習前に **LIBERO 相対 7D へ変換**するか、評価側の制御モードを合わせる  
+- **SO-100/101 関節角:** LeRobot ドライバは **degrees** 前提が多い。生ログが radians のときは変換時に deg へ統一する  
+
+```bash
+# 例: radians ログ → degrees 正本 + meta/angle_units.json
+python scripts/examples/convert_demo_to_lerobot.py \
+  --out data/datasets/my_so100_demos \
+  --repo-id local/my_so100_demos \
+  --robot-type so100 \
+  --control-mode joint_position \
+  --source-angle-unit radians \
+  --overwrite
+
+# メタだけ書く / サンプル変換確認
+uv run parc-normalize-angle-units \
+  --root data/datasets/my_so100_demos \
+  --control-mode joint_position \
+  --source-angle-unit radians \
+  --sample 0,1.5708
+
+# rad/deg 取り違え（微動・異常振幅）を検査
+uv run parc-verify-demos \
+  --root data/datasets/my_so100_demos \
+  --skip-collection-info \
+  --require-angle-units \
+  --check-joint-angle-units
+```
+
+  - `meta/angle_units.json` に `control_mode` / `source_unit` / `stored_unit=degrees` を記録（joint 必須）  
+  - 現行 VR/LIBERO の `ee_delta` は単位検査対象外（スキップ）  
 - 失敗デモを混ぜるかは仮説次第（**まずは成功のみで baseline**）。VR 収集は失敗も混在 DS に残し、学習前に `parc-filter-demos --success-only` で subset を切る（[12](12_vr_teleop.md)）
 
 ### B4. 複数データセットの混合（物理マージ）
@@ -409,11 +438,27 @@ bash scripts/eval_ckpt.sh configs/experiments/smolvla_ckpt_smoke_eval.yaml
 
 ---
 
+## D2. ベンチ追加手順（汎用枠）
+
+PARC 本戦は LIBERO 固定。研究用に第2ベンチ（例: Meta-World MT50）を足す場合:
+
+1. **`BenchmarkBackend` を実装** — [`parc/src/parc/benchmarks/base.py`](../src/parc/benchmarks/base.py) の契約（`list_task_ids` / `make_env` / `reset_episode` / `success` / `dataset_spec`）
+2. **`@register_benchmark`** — 同ディレクトリにモジュールを置き、`registry.get_benchmark` の遅延 import 一覧へ追加
+3. **評価 YAML** — `eval.backend: <name>` + `task_ids`（例: [`configs/experiments/mt50_smoke_random.yaml`](../configs/experiments/mt50_smoke_random.yaml)）
+4. **DatasetSpec** — `backend.dataset_spec()` で LeRobot 向け features / `action_dim` を宣言
+5. **学習骨格** — `benchmark.backend` を YAML に書く。現状非 LIBERO は `parc-train` が `not_implemented` + skeleton meta を返す（[`benchmark_dataset.py`](../src/parc/data/benchmark_dataset.py)）
+6. **デモ変換（後続）** — `EpisodeConverter` を実装して raw → LeRobot root
+
+MT50 依存は optional: `parc[metaworld]`（**別 venv 推奨**、[01_setup.md](01_setup.md) §5b）。VR テレオプは第1弾対象外。
+
+---
+
 ## E. チェックリスト
 
 **データ追加**
 
 - [ ] front / wrist / state(8) / action(7) / task が揃っている  
+- [ ] 関節角データなら `meta/angle_units.json`（`stored_unit=degrees`）と `parc-verify-demos --check-joint-angle-units`  
 - [ ] 評価の `flip_images` とデータ慣習が一致  
 - [ ] `dataset_root` または Hub `repo_id` が YAML に書かれている  
 - [ ] 1 エピソードだけの overfit smoke で loss が下がることを確認  

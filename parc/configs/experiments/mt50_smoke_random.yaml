@@ -1,0 +1,18 @@
+# Meta-World MT50 スモーク（random / 数タスク）
+# 要: optional 依存 `parc[metaworld]`（別 venv 推奨。docs/01_setup.md）
+name: mt50_smoke_random
+seed: 0
+tags: [smoke, random, metaworld, mt50]
+
+eval:
+  backend: metaworld_mt50
+  suite: mt50
+  num_trials_per_task: 1
+  task_ids: [0, 1, 2]
+  max_steps: 50
+  save_video: false
+  save_frames: false
+
+policy:
+  type: random
+  action_dim: 4

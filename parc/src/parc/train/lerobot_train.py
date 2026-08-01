@@ -90,6 +90,16 @@ def build_lerobot_train_cmd(
 
 def run_training(config: dict[str, Any], run_dir: Path) -> dict[str, Any]:
     """設定に従い学習を起動（または dry-run）。"""
+    from parc.data.benchmark_dataset import ensure_train_benchmark_supported
+
+    # 非 LIBERO ベンチは第1弾で本学習未接続 → 明確な結果を返す
+    blocked = ensure_train_benchmark_supported(config)
+    if blocked is not None:
+        (run_dir / "logs" / "train_benchmark.json").write_text(
+            __import__("json").dumps(blocked, indent=2, ensure_ascii=False) + "\n"
+        )
+        return blocked
+
     train_cfg = config.get("train") or {}
     backend = train_cfg.get("backend", "lerobot")
     seed = int(config.get("seed", 0))

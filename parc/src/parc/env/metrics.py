@@ -34,6 +34,8 @@ class EvalSummary:
     success_rate: float = 0.0
     mean_steps: float = 0.0
     by_category: dict[str, dict[str, float]] = field(default_factory=dict)
+    # MT50 などタスク名単位の集計（LIBERO でも埋める）
+    by_task: dict[str, dict[str, float]] = field(default_factory=dict)
     episodes: list[dict[str, Any]] = field(default_factory=list)
 
 
@@ -83,31 +85,39 @@ def finalize_episode(
     )
 
 
+def _group_rates(
+    episodes: list[EpisodeMetrics],
+    key_fn,
+) -> dict[str, dict[str, float]]:
+    """キー別 success_rate / mean_steps。"""
+    by_succ: dict[str, list[float]] = defaultdict(list)
+    by_steps: dict[str, list[float]] = defaultdict(list)
+    for e in episodes:
+        k = str(key_fn(e))
+        by_succ[k].append(float(e.success))
+        by_steps[k].append(float(e.steps))
+    return {
+        k: {
+            "n": float(len(vals)),
+            "success_rate": float(np.mean(vals)),
+            "mean_steps": float(np.mean(by_steps[k])),
+        }
+        for k, vals in sorted(by_succ.items())
+    }
+
+
 def aggregate(episodes: list[EpisodeMetrics]) -> EvalSummary:
-    """カテゴリ別成功率などを集計する。"""
+    """カテゴリ別・タスク別成功率などを集計する。"""
     if not episodes:
         return EvalSummary()
 
     succ = [float(e.success) for e in episodes]
     steps = [float(e.steps) for e in episodes]
-    by_cat_succ: dict[str, list[float]] = defaultdict(list)
-    by_cat_steps: dict[str, list[float]] = defaultdict(list)
-    for e in episodes:
-        by_cat_succ[e.category].append(float(e.success))
-        by_cat_steps[e.category].append(float(e.steps))
-
-    by_category = {
-        cat: {
-            "n": float(len(vals)),
-            "success_rate": float(np.mean(vals)),
-            "mean_steps": float(np.mean(by_cat_steps[cat])),
-        }
-        for cat, vals in sorted(by_cat_succ.items())
-    }
     return EvalSummary(
         n_episodes=len(episodes),
         success_rate=float(np.mean(succ)),
         mean_steps=float(np.mean(steps)),
-        by_category=by_category,
+        by_category=_group_rates(episodes, lambda e: e.category),
+        by_task=_group_rates(episodes, lambda e: e.task_name),
         episodes=[asdict(e) for e in episodes],
     )

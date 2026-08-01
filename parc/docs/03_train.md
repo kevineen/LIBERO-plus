@@ -80,3 +80,9 @@ lerobot-train \
 
 - `configs/experiments/smolvla_ft_custom_data.yaml`
 - `scripts/examples/convert_demo_to_lerobot.py`
+
+## 6. 他ベンチ（MT50）の学習骨格
+
+`benchmark.backend: metaworld_mt50` を書いた YAML（例: `configs/experiments/mt50_ft_skeleton.yaml`）では、  
+`parc-train` は本学習せず `status: not_implemented` と DatasetSpec / skeleton meta を返します。  
+評価は `eval.backend: metaworld_mt50` + 別 venv（[01_setup.md](01_setup.md) §5b）。デモ変換は未実装（[07](07_custom_data_and_algos.md) D2）。

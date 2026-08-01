@@ -21,6 +21,12 @@ dependencies = [
 train = [
     "huggingface-hub>=0.24",
 ]
+# Meta-World MT50（別 venv 推奨。LIBERO 親 venv の gym==0.25.2 と衝突しやすい）
+metaworld = [
+    "metaworld>=3.0.0",
+    "gymnasium>=1.0.0",
+    "mujoco>=3.1.0",
+]
 
 [project.scripts]
 parc-new = "parc.cli:new_experiment"

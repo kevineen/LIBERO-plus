@@ -108,6 +108,29 @@ uv run parc-smoke --skip-env   # import / パス
 
 シミュレータが立ち上がり、`experiments/<run_id>/metrics.json` ができればセットアップ完了です。
 
+## 5b. Meta-World MT50（研究用・optional）
+
+PARC 本戦の評価対象は **LIBERO / LIBERO-Plus** のままです。MT50 は汎用ベンチ枠の第2バックエンドで、**別 venv 推奨**です（親 `.venv` の `gym==0.25.2` / robosuite と Gymnasium が衝突しやすいため）。
+
+```bash
+# 例: MT50 専用 venv
+cd /home/kevin/Matsuo/robot/LIBERO-plus/parc
+uv venv .venv-metaworld
+uv pip install --python .venv-metaworld/bin/python -e ".[metaworld]" --no-deps
+uv pip install --python .venv-metaworld/bin/python \
+  'numpy>=1.22,<2' pyyaml rich tqdm pillow imageio imageio-ffmpeg \
+  'metaworld>=3.0' 'gymnasium>=1.0' 'mujoco>=3.1'
+# libero は import 経路用に editable（MT50 評価だけなら必須ではないが parc パッケージには含まれる）
+uv pip install --python .venv-metaworld/bin/python -e ../ --no-deps
+
+export MUJOCO_GL=egl
+.venv-metaworld/bin/parc-eval -c configs/experiments/mt50_smoke_random.yaml
+```
+
+または `uv sync --extra metaworld`（既存 LIBERO venv への混在は非推奨）。
+
+学習は骨格のみ: `configs/experiments/mt50_ft_skeleton.yaml`（`parc-train` は `not_implemented` + DatasetSpec を返す）。手順の詳細は [07_custom_data_and_algos.md](07_custom_data_and_algos.md) の「ベンチ追加手順」。
+
 ### よくある失敗
 
 | 症状 | 対処 |
@@ -124,3 +147,5 @@ uv run parc-smoke --skip-env   # import / パス
 | `mj_fullM(): incompatible` | robosuite 1.4 と MuJoCo 3.x の API 差。`parc.env.mujoco_compat` が自動パッチ（旧: `mujoco==3.1.1` ピン） |
 | NumPy が突然 2.x に | 親 `.venv` へ `pip install -e parc` するとき必ず `--no-deps` |
 | WSL で rclone `127.0.0.1` 空レス | Windows で `rclone authorize` → WSL に token 貼付。または既存 remote（例: `matsuo-gdrive`）を使う |
+| MT50 で `ImportError: metaworld` | `parc[metaworld]` を **別 venv** に入れる（§5b）。LIBERO 親 venv へ無理に混在しない |
+| MT50 評価で gym / gymnasium 衝突 | LIBERO（`gym==0.25.2`）と Meta-World（Gymnasium）を同一 venv に入れない |

@@ -24,6 +24,9 @@ PARC2026 はシミュレーション上で VLA（Vision-Language-Action）を鍛
 | trial | 同一タスクの繰り返し。LIBERO-plus 公式は **1** |
 | category | カメラ・初期姿勢・言語・光・背景・ノイズ・レイアウトの 7 摂動 |
 | run | `experiments/<run_id>/` に設定・ログ・metrics を保存した 1 実験 |
+| backend | 評価ベンチの実装（`eval.backend`）。省略時 `libero`。研究用に `metaworld_mt50` 可 |
+
+本選の公式評価は **LIBERO / LIBERO-Plus** のみ。Meta-World MT50 は汎用枠の第2バックエンド（[01_setup.md](01_setup.md) §5b・[07](07_custom_data_and_algos.md) ベンチ追加手順）。
 
 ## 推奨ワークフロー
 
@@ -35,7 +38,7 @@ setup_env → smoke → (データ取得 / 自前変換) → train → eval_ckpt
 別 PC からの Web / Jupyter は [08_remote_and_ui.md](08_remote_and_ui.md)。  
 **複数 PC / Fleet 横断**は [11_multi_machine.md](11_multi_machine.md)
 （git 共有・ローカルデータ・machine_id・GDrive・`parc-remote` / `parc-fleet`）。  
-**Quest 3 VR デモ収集**は [12_vr_teleop.md](12_vr_teleop.md)（設計・進捗は [feature/vr-teleop/](../feature/vr-teleop/)）。
+**Quest 3 VR デモ収集**は [12_vr_teleop.md](12_vr_teleop.md)。**初回セットアップ**は [13_quest3_setup.md](13_quest3_setup.md)（設計・進捗は [feature/vr-teleop/](../feature/vr-teleop/)）。
 
 ```mermaid
 flowchart LR

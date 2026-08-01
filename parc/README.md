@@ -19,6 +19,9 @@ uv run parc-list
 ./scripts/parc.sh eval -c configs/experiments/smoke_random.yaml
 ./scripts/parc.sh eval -c configs/experiments/subset_eval.yaml
 
+# Meta-World MT50（研究用・別 venv。docs/01_setup.md §5b）
+# .venv-metaworld/bin/parc-eval -c configs/experiments/mt50_smoke_random.yaml
+
 # SmolVLA 実学習（親 Matsuo/robot venv + CUDA）
 bash scripts/train.sh configs/experiments/smolvla_ft_smoke.yaml
 
@@ -71,15 +74,16 @@ parc/
 | [docs/01_setup.md](docs/01_setup.md) | 環境構築・assets・libero パス |
 | [docs/02_data.md](docs/02_data.md) | 学習データ |
 | [docs/03_train.md](docs/03_train.md) | ファインチューニング |
-| [docs/04_eval.md](docs/04_eval.md) | ローカル評価 |
+| [docs/04_eval.md](docs/04_eval.md) | ローカル評価（`eval.backend` / LIBERO・MT50） |
 | [docs/05_experiments.md](docs/05_experiments.md) | 実験管理 |
 | [docs/06_competition.md](docs/06_competition.md) | PARC2026 準備チェックリスト |
-| [docs/07_custom_data_and_algos.md](docs/07_custom_data_and_algos.md) | 独自データ追加・学習改善 |
+| [docs/07_custom_data_and_algos.md](docs/07_custom_data_and_algos.md) | 独自データ・学習改善・**ベンチ追加手順** |
 | [docs/08_remote_and_ui.md](docs/08_remote_and_ui.md) | リモート Web / Jupyter / プレビュー |
 | [docs/09_autoloop_and_rl.md](docs/09_autoloop_and_rl.md) | 無人キュー・スイープ・prune・GRPO/GSPO |
 | [docs/10_ops_ui.md](docs/10_ops_ui.md) | Web UI 操作・再開・進捗 |
 | [docs/11_multi_machine.md](docs/11_multi_machine.md) | 複数 PC・Fleet 横断・GDrive |
 | [docs/12_vr_teleop.md](docs/12_vr_teleop.md) | Quest 3 VR テレオプ・デモ収集 |
+| [docs/13_quest3_setup.md](docs/13_quest3_setup.md) | Quest 3 初回セットアップ（本体・Unity・WSL） |
 | [feature/vr-teleop/](feature/vr-teleop/) | VR 機能の設計・計画・STATUS |
 
 ## 無人実験ループ（一晩回す）
@@ -99,6 +103,7 @@ uv run parc-list --sweep-id overnight_ft_smoke
 |--------|--------------------------|
 | LIBERO-plus でローカル評価ループ | 公式提出 zip 形式 |
 | 摂動カテゴリ別成功率集計 | 重み付き最終スコアの再現 |
+| 汎用ベンチ枠（`eval.backend`）+ MT50 評価スモーク | MT50 デモ変換・本学習・VR（研究用・本戦外） |
 | 実験 run の作成・一覧・metrics 保存 | Pi0 / Gr00t 公式学習コード接続 |
 | LeRobot SmolVLA FT + checkpoint 評価 | 本番 I/O 完全一致の保証 |
 | キュー / スイープ / ディスク prune | ライブ 3D シミュ操作 UI |
