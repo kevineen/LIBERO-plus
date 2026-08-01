@@ -69,6 +69,7 @@ configs/experiments/*.yaml
 |----|------|------|
 | 評価ループ・Fleet・metrics | **モデル非依存で完成** | `Policy` さえあれば同じ尺で比較できる |
 | `policy.type=checkpoint` | **LeRobot ckpt 接続済** | SmolVLA 等の `pretrained_model` |
+| `policy.type=molmoact2` | **HF 直呼びスパイク** | `allenai/MolmoAct2-LIBERO`（LeRobot 0.5.1 には未収録） |
 | `train.backend=lerobot` | **接続済** | `policy_type` で LeRobot 内アーキを指定 |
 | `policy.type=openpi/openvla` | **NotImplementedError の差し込み口のみ** | 配布コード待ち |
 | `train.backend=openpi/gr00t/openvla` | **`not_implemented` 返却のみ** | 同上 |

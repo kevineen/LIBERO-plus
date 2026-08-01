@@ -74,6 +74,7 @@ def build_policy(cfg: dict[str, Any], seed: int = 0) -> Policy:
             action_dim=action_dim,
             flip_images=bool((cfg or {}).get("flip_images", True)),
             default_task=str((cfg or {}).get("default_task", "")),
+            async_inference=bool((cfg or {}).get("async_inference", False)),
         )
     if ptype in {"grpo_gaussian", "gaussian", "gspo_gaussian"}:
         path = (cfg or {}).get("path")
@@ -86,6 +87,24 @@ def build_policy(cfg: dict[str, Any], seed: int = 0) -> Policy:
             hidden=int((cfg or {}).get("hidden", 128)),
             device=(cfg or {}).get("device"),
             deterministic=bool((cfg or {}).get("deterministic", True)),
+        )
+    if ptype in {"molmoact2", "molmoact2_hf"}:
+        # HF transformers 直呼び（LeRobot 0.5.1 に molmoact2 が無いため）。
+        # robot venv + eval_ckpt.sh。詳細: docs/superpowers/specs/2026-08-02-molmoact2-spike-design.md
+        path = (cfg or {}).get("path") or "allenai/MolmoAct2-LIBERO"
+        from parc.policies.molmoact2 import MolmoAct2HFPolicy
+
+        return MolmoAct2HFPolicy(
+            path,
+            device=(cfg or {}).get("device"),
+            action_dim=action_dim,
+            flip_images=bool((cfg or {}).get("flip_images", True)),
+            default_task=str((cfg or {}).get("default_task", "")),
+            dtype=str((cfg or {}).get("dtype", "bfloat16")),
+            norm_tag=str((cfg or {}).get("norm_tag", "libero")),
+            num_steps=int((cfg or {}).get("num_steps", 10)),
+            enable_cuda_graph=bool((cfg or {}).get("enable_cuda_graph", False)),
+            normalize_language=bool((cfg or {}).get("normalize_language", True)),
         )
     if ptype in {"openpi", "openvla", "lerobot_cmd"}:
         # 本選配布・独自ラッパ差し込み用

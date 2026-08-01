@@ -1,0 +1,42 @@
+# 研究サイドカー: 公開データでの物理事前学習（Stage A）
+# 親 ckpt 選定には接続しない。実行前に parc-mix-datasets で単一 root を用意すること。
+name: sidecar_smolvla_pretrain_physics
+seed: 42
+tags: [sidecar, clair_apo, train, smolvla, pretrain]
+
+train:
+  backend: lerobot
+  policy_type: smolvla
+  # mix 後の単一 repo を指定（例）
+  dataset_repo_id: local/clair_physics_mix
+  dataset_root: data/datasets/clair_physics_mix
+  policy_repo_id: null
+  load_vlm_weights: true
+  steps: 10000
+  batch_size: 2
+  eval_freq: 0
+  eval_n_episodes: 1
+  env_task: libero_spatial
+  dry_run: true
+  # QST = VLM 4bit + adapter（robot venv に bitsandbytes/peft があるとき）
+  # LoRA+ = A/B 非対称 LR
+  extra_args:
+    - --policy.optimizer_lr=1e-4
+    - --save_freq=2000
+    - --log_freq=100
+    # 以下は LeRobot 版依存。未対応ならコメントアウトして QST/LoRA を peft ラッパで
+    # - --policy.use_qlora=true
+    # - --policy.lora_lr_ratio_b=4.0
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 1
+  task_ids: [0]
+  max_steps: 50
+  camera_height: 128
+  camera_width: 128
+  save_video: false
+  use_classification: true
+
+policy:
+  type: lerobot_cmd

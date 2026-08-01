@@ -1,0 +1,342 @@
+========================================
+GR00T DuQuant W4A8 Full Quantization
+LLM + DiT ALL Linear Layers
+========================================
+Task suite: libero_object
+Model: youliangtan/gr00t-n1.5-libero-object-posttrain
+
+DuQuant Config (Full LLM + DiT W4A8):
+  SCOPE: 
+  INCLUDE: .*(backbone\.eagle_model\.language_model\..*\.(q_proj|k_proj|v_proj|o_proj|gate_proj|up_proj|down_proj)|action_head\.model\.transformer_blocks\.\d+\.ff\.net\.(0\.proj|2)).*
+  EXCLUDE: (?:^|\.)(vision|radio|norm|ln|layernorm|embed|lm_head|attn1)(?:\.|$)
+  WBITS=4
+  ABITS=8
+  BLOCK=64
+  PERMUTE=0
+  ROW_ROT=restore
+  ACT_PCT=99.9
+  CALIB_STEPS=32
+  LS=0.15
+  PACKDIR=/home/kevin/Matsuo/robot/QuantVLA/duquant_packed_full_llm_dit_mlp_w4a8_b64c32ls015_object_0
+  DENOISING_STEPS= (CRITICAL for full quantization)
+
+⚡ QUANTIZATION TARGET:
+  ✅ LLM (Eagle VLM) ALL linear layers (~84 layers)
+  ✅ DiT (Action Head) ALL attention + MLP layers (~186 layers)
+  ❌ Vision Tower (RADIO/SigLIP) - NOT quantized
+  ❌ Embeddings & Encoders - NOT quantized
+  ❌ Normalization layers - NOT quantized
+
+⚡ FEATURES:
+  ✅ W4A8 fake quantization
+  ✅ Input permutation enabled
+  ✅ Row rotation with output restoration
+  ✅ Increased denoising steps () to compensate quantization noise
+  ❌ torch.compile DISABLED (for stability)
+
+⚠️  WARNING: Full quantization may cause accuracy drop!
+    Recommended to increase GR00T_DENOISING_STEPS to 24-32 if accuracy drops
+
+========================================
+
+🔍 DRY RUN: Scanning layers to quantize...
+
+2026-08-01 19:42:28.791871: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:9261] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+2026-08-01 19:42:28.791987: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:607] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2026-08-01 19:42:28.793708: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1515] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2026-08-01 19:42:28.800866: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2026-08-01 19:42:29.714548: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/home/kevin/miniconda3/envs/groot_test/lib/python3.10/site-packages/albumentations/__init__.py:13: UserWarning: A new version of Albumentations is available: 2.0.8 (you have 1.4.18). Upgrade using: pip install -U albumentations. To disable automatic update checks, set the environment variable NO_ALBUMENTATIONS_UPDATE to 1.
+  check_for_updates()
+`use_fast` is set to `True` but the image processor class does not have a fast version.  Falling back to the slow version.
+Loading model for DuQuant dry-run...
+Loading external config: examples.Libero.custom_data_config.LiberoDataConfig
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 935.27it/s]
+Loading pretrained dual brain from /mnt/b/hf/hub/models--youliangtan--gr00t-n1.5-libero-object-posttrain/snapshots/f422266b016fd917127d3a0348062a5cd750df43
+Tune backbone vision tower: True
+Tune backbone LLM: False
+Tune action head projector: True
+Tune action head DiT: True
+Model not found or avail in the huggingface hub. Loading from local path: /mnt/b/hf/hub/models--youliangtan--gr00t-n1.5-libero-object-posttrain/snapshots/f422266b016fd917127d3a0348062a5cd750df43
+Tune backbone llm: False
+Tune backbone visual: True
+Total number of DiT parameters:  550386688
+Total number of SelfAttentionTransformer parameters:  201433088
+Tune action head projector: True
+Tune action head diffusion model: True
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:17<00:17, 17.20s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:45<00:00, 23.74s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:45<00:00, 22.76s/it]
+Tune backbone llm: False
+Tune backbone visual: True
+Tune action head projector: True
+Tune action head diffusion model: True
+[GR00T-DUQUANT] SCOPE filter: ''
+[GR00T-DUQUANT] Matched Linear layers: 116
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.0.self_attn.q_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.0.self_attn.k_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.0.self_attn.v_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.0.self_attn.o_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.0.mlp.gate_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.0.mlp.up_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.0.mlp.down_proj: Linear(6144->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.1.self_attn.q_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.1.self_attn.k_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.1.self_attn.v_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.1.self_attn.o_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.1.mlp.gate_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.1.mlp.up_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.1.mlp.down_proj: Linear(6144->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.2.self_attn.q_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.2.self_attn.k_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.2.self_attn.v_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.2.self_attn.o_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.2.mlp.gate_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.2.mlp.up_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.2.mlp.down_proj: Linear(6144->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.3.self_attn.q_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.3.self_attn.k_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.3.self_attn.v_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.3.self_attn.o_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.3.mlp.gate_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.3.mlp.up_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.3.mlp.down_proj: Linear(6144->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.4.self_attn.q_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.4.self_attn.k_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.4.self_attn.v_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.4.self_attn.o_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.4.mlp.gate_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.4.mlp.up_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.4.mlp.down_proj: Linear(6144->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.5.self_attn.q_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.5.self_attn.k_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.5.self_attn.v_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.5.self_attn.o_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.5.mlp.gate_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.5.mlp.up_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.5.mlp.down_proj: Linear(6144->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.6.self_attn.q_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.6.self_attn.k_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.6.self_attn.v_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.6.self_attn.o_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.6.mlp.gate_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.6.mlp.up_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.6.mlp.down_proj: Linear(6144->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.7.self_attn.q_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.7.self_attn.k_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.7.self_attn.v_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.7.self_attn.o_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.7.mlp.gate_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.7.mlp.up_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.7.mlp.down_proj: Linear(6144->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.8.self_attn.q_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.8.self_attn.k_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.8.self_attn.v_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.8.self_attn.o_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.8.mlp.gate_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.8.mlp.up_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.8.mlp.down_proj: Linear(6144->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.9.self_attn.q_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.9.self_attn.k_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.9.self_attn.v_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.9.self_attn.o_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.9.mlp.gate_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.9.mlp.up_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.9.mlp.down_proj: Linear(6144->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.10.self_attn.q_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.10.self_attn.k_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.10.self_attn.v_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.10.self_attn.o_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.10.mlp.gate_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.10.mlp.up_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.10.mlp.down_proj: Linear(6144->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.11.self_attn.q_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.11.self_attn.k_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.11.self_attn.v_proj: Linear(2048->1024) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.11.self_attn.o_proj: Linear(2048->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.11.mlp.gate_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.11.mlp.up_proj: Linear(2048->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] backbone.eagle_model.language_model.model.layers.11.mlp.down_proj: Linear(6144->2048) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.0.ff.net.0.proj: Linear(1536->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.0.ff.net.2: Linear(6144->1536) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.1.ff.net.0.proj: Linear(1536->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.1.ff.net.2: Linear(6144->1536) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.2.ff.net.0.proj: Linear(1536->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.2.ff.net.2: Linear(6144->1536) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.3.ff.net.0.proj: Linear(1536->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.3.ff.net.2: Linear(6144->1536) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.4.ff.net.0.proj: Linear(1536->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.4.ff.net.2: Linear(6144->1536) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.5.ff.net.0.proj: Linear(1536->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.5.ff.net.2: Linear(6144->1536) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.6.ff.net.0.proj: Linear(1536->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.6.ff.net.2: Linear(6144->1536) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.7.ff.net.0.proj: Linear(1536->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.7.ff.net.2: Linear(6144->1536) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.8.ff.net.0.proj: Linear(1536->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.8.ff.net.2: Linear(6144->1536) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.9.ff.net.0.proj: Linear(1536->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.9.ff.net.2: Linear(6144->1536) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.10.ff.net.0.proj: Linear(1536->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.10.ff.net.2: Linear(6144->1536) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.11.ff.net.0.proj: Linear(1536->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.11.ff.net.2: Linear(6144->1536) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.12.ff.net.0.proj: Linear(1536->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.12.ff.net.2: Linear(6144->1536) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.13.ff.net.0.proj: Linear(1536->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.13.ff.net.2: Linear(6144->1536) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.14.ff.net.0.proj: Linear(1536->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.14.ff.net.2: Linear(6144->1536) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.15.ff.net.0.proj: Linear(1536->6144) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][DRYRUN] action_head.model.transformer_blocks.15.ff.net.2: Linear(6144->1536) W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT] Dry-run total layers listed: 116
+[GR00T-ATM] ATM enabled for 16 layers (512 heads) using /home/kevin/Matsuo/robot/QuantVLA/atm_alpha_beta_object.json
+[GR00T-ATM] OHB enabled for 16 layers using /home/kevin/Matsuo/robot/QuantVLA/atm_alpha_beta_object.json
+Set action denoising steps to 8
+
+✅ DuQuant dry-run complete!
+
+
+========================================
+Dry run complete. Review the layers above.
+
+Expected layers:
+  - LLM: ~84 layers (12 layers × 7 linear each)
+  - DiT: ~186 layers (varies by model)
+  - Total: ~270 layers
+
+Press Enter to continue with actual quantization, or Ctrl+C to cancel...
+(non-interactive) continuing...
+
+🚀 Starting fully quantized inference server...
+
+⚠️  IMPORTANT NOTES:
+  1. First startup will be SLOW (~5-10 min) due to quantization preprocessing
+  2. Subsequent runs will be faster using cached pack directory
+  3. Monitor GPU memory - full quantization uses ~40% less memory than FP16
+  4. If accuracy drops significantly, increase GR00T_DENOISING_STEPS to 24-32
+
+==========================================
+Starting GR00T inference server for libero_object
+Model: youliangtan/gr00t-n1.5-libero-object-posttrain
+Data Config: examples.Libero.custom_data_config:LiberoDataConfig
+Port: 5556
+Denoising Steps: 8
+==========================================
+/home/kevin/miniconda3/envs/groot_test/lib/python3.10/site-packages/albumentations/__init__.py:13: UserWarning: A new version of Albumentations is available: 2.0.8 (you have 1.4.18). Upgrade using: pip install -U albumentations. To disable automatic update checks, set the environment variable NO_ALBUMENTATIONS_UPDATE to 1.
+  check_for_updates()
+2026-08-01 19:44:49.633373: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:9261] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+2026-08-01 19:44:49.633489: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:607] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2026-08-01 19:44:49.635370: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1515] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2026-08-01 19:44:49.644344: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2026-08-01 19:44:50.434983: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+`use_fast` is set to `True` but the image processor class does not have a fast version.  Falling back to the slow version.
+/home/kevin/miniconda3/envs/groot_test/lib/python3.10/site-packages/tyro/_parsers.py:347: UserWarning: The field `api-token` is annotated with type `<class 'str'>`, but the default value `None` has type `<class 'NoneType'>`. We'll try to handle this gracefully, but it may cause unexpected behavior.
+  warnings.warn(message)
+Loading external config: examples.Libero.custom_data_config.LiberoDataConfig
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 707.18it/s]
+Loading pretrained dual brain from /mnt/b/hf/hub/models--youliangtan--gr00t-n1.5-libero-object-posttrain/snapshots/f422266b016fd917127d3a0348062a5cd750df43
+Tune backbone vision tower: True
+Tune backbone LLM: False
+Tune action head projector: True
+Tune action head DiT: True
+Model not found or avail in the huggingface hub. Loading from local path: /mnt/b/hf/hub/models--youliangtan--gr00t-n1.5-libero-object-posttrain/snapshots/f422266b016fd917127d3a0348062a5cd750df43
+Tune backbone llm: False
+Tune backbone visual: True
+Total number of DiT parameters:  550386688
+Total number of SelfAttentionTransformer parameters:  201433088
+Tune action head projector: True
+Tune action head diffusion model: True
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:06<00:06,  6.09s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:14<00:00,  7.47s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:14<00:00,  7.26s/it]
+Tune backbone llm: False
+Tune backbone visual: True
+Tune action head projector: True
+Tune action head diffusion model: True
+[GR00T-DUQUANT] SCOPE filter: ''
+[GR00T-DUQUANT] Matched Linear layers: 116
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.0.self_attn.q_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.0.self_attn.k_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.0.self_attn.v_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.0.self_attn.o_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.0.mlp.gate_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.0.mlp.up_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.0.mlp.down_proj: Linear(6144->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.1.self_attn.q_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.1.self_attn.k_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.1.self_attn.v_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.1.self_attn.o_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.1.mlp.gate_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.1.mlp.up_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.1.mlp.down_proj: Linear(6144->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.2.self_attn.q_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.2.self_attn.k_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.2.self_attn.v_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.2.self_attn.o_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.2.mlp.gate_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.2.mlp.up_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.2.mlp.down_proj: Linear(6144->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.3.self_attn.q_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.3.self_attn.k_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.3.self_attn.v_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.3.self_attn.o_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.3.mlp.gate_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.3.mlp.up_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.3.mlp.down_proj: Linear(6144->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.4.self_attn.q_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.4.self_attn.k_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.4.self_attn.v_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.4.self_attn.o_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.4.mlp.gate_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.4.mlp.up_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.4.mlp.down_proj: Linear(6144->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.5.self_attn.q_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.5.self_attn.k_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.5.self_attn.v_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.5.self_attn.o_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.5.mlp.gate_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.5.mlp.up_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.5.mlp.down_proj: Linear(6144->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.6.self_attn.q_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.6.self_attn.k_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.6.self_attn.v_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.6.self_attn.o_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.6.mlp.gate_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.6.mlp.up_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.6.mlp.down_proj: Linear(6144->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.7.self_attn.q_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.7.self_attn.k_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.7.self_attn.v_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.7.self_attn.o_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.7.mlp.gate_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.7.mlp.up_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.7.mlp.down_proj: Linear(6144->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.8.self_attn.q_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.8.self_attn.k_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.8.self_attn.v_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.8.self_attn.o_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.8.mlp.gate_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.8.mlp.up_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.8.mlp.down_proj: Linear(6144->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.9.self_attn.q_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.9.self_attn.k_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.9.self_attn.v_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.9.self_attn.o_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.9.mlp.gate_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.9.mlp.up_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.9.mlp.down_proj: Linear(6144->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.10.self_attn.q_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.10.self_attn.k_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.10.self_attn.v_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.10.self_attn.o_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.10.mlp.gate_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.10.mlp.up_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.10.mlp.down_proj: Linear(6144->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.11.self_attn.q_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.11.self_attn.k_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.11.self_attn.v_proj: Linear(2048->1024) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.11.self_attn.o_proj: Linear(2048->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.11.mlp.gate_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.11.mlp.up_proj: Linear(2048->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] backbone.eagle_model.language_model.model.layers.11.mlp.down_proj: Linear(6144->2048) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+[GR00T-DUQUANT][REPLACED] action_head.model.transformer_blocks.0.ff.net.0.proj: Linear(1536->6144) -> DuQuantLinear W4 A8 perm=False block_in=64 block_out=64 row_rot=restore
+Terminated

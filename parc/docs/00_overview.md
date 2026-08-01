@@ -38,7 +38,8 @@ setup_env → smoke → (データ取得 / 自前変換) → train → eval_ckpt
 別 PC からの Web / Jupyter は [08_remote_and_ui.md](08_remote_and_ui.md)。  
 **複数 PC / Fleet 横断**は [11_multi_machine.md](11_multi_machine.md)
 （git 共有・ローカルデータ・machine_id・GDrive・`parc-remote` / `parc-fleet`）。  
-**Quest 3 VR デモ収集**は [12_vr_teleop.md](12_vr_teleop.md)。**初回セットアップ**は [13_quest3_setup.md](13_quest3_setup.md)（設計・進捗は [feature/vr-teleop/](../feature/vr-teleop/)）。
+**Quest 3 VR デモ収集**は [12_vr_teleop.md](12_vr_teleop.md)。**初回セットアップ**は [13_quest3_setup.md](13_quest3_setup.md)（設計・進捗は [feature/vr-teleop/](../feature/vr-teleop/)）。  
+**研究サイドカー CLAIR / Flow-APO**（親 ckpt 非接続）は [07 §C7](07_custom_data_and_algos.md) と [設計正本](superpowers/specs/2026-08-02-clair-apo-sidecar-design.md)。
 
 ```mermaid
 flowchart LR

@@ -1,0 +1,22 @@
+# 研究サイドカー: 非同期推論フラグ付き評価テンプレ（Phase 4）
+# policy.path をマージ後 or Flow-APO 後の pretrained_model に差し替える。
+name: sidecar_clair_apo_async_eval
+seed: 42
+tags: [sidecar, clair_apo, eval, async]
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 1
+  task_ids: [0]
+  max_steps: 50
+  camera_height: 128
+  camera_width: 128
+  save_video: false
+  use_classification: true
+
+policy:
+  type: checkpoint
+  # 例: experiments/<run>/train_output/pretrained_model
+  path: null
+  flip_images: true
+  async_inference: true

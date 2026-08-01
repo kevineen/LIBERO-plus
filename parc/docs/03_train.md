@@ -81,6 +81,17 @@ lerobot-train \
 - `configs/experiments/smolvla_ft_custom_data.yaml`
 - `scripts/examples/convert_demo_to_lerobot.py`
 
+### 5b. CLAIR / Flow-APO（研究サイドカー）
+
+親 ckpt 選定には使わない。`train.backend: flow_apo` と選好ペア合成 CLI がある。
+
+```bash
+uv run parc-clair-pairs --fake --n-pairs 20 --output data/datasets/clair_libero_pairs_smoke
+bash scripts/train.sh configs/experiments/sidecar_flow_apo_smoke.yaml
+```
+
+正本: [2026-08-02-clair-apo-sidecar-design.md](superpowers/specs/2026-08-02-clair-apo-sidecar-design.md) · Gate 表: [baselines/clair_apo](baselines/clair_apo/README.md) · 手順: [07 §C7](07_custom_data_and_algos.md)
+
 ## 6. 他ベンチ（MT50）の学習骨格
 
 `benchmark.backend: metaworld_mt50` を書いた YAML（例: `configs/experiments/mt50_ft_skeleton.yaml`）では、  

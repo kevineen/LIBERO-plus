@@ -1,0 +1,34 @@
+==========================================
+Starting GR00T inference server for libero_spatial
+Model: youliangtan/gr00t-n1.5-libero-spatial-posttrain
+Data Config: examples.Libero.custom_data_config:LiberoDataConfig
+Port: 5556
+Denoising Steps: 8
+==========================================
+/home/kevin/miniconda3/envs/groot_test/lib/python3.10/site-packages/albumentations/__init__.py:13: UserWarning: A new version of Albumentations is available: 2.0.8 (you have 1.4.18). Upgrade using: pip install -U albumentations. To disable automatic update checks, set the environment variable NO_ALBUMENTATIONS_UPDATE to 1.
+  check_for_updates()
+2026-08-02 03:11:56.797472: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:9261] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+2026-08-02 03:11:56.797929: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:607] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2026-08-02 03:11:57.108824: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1515] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2026-08-02 03:11:58.093092: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2026-08-02 03:12:04.610731: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+`use_fast` is set to `True` but the image processor class does not have a fast version.  Falling back to the slow version.
+/home/kevin/miniconda3/envs/groot_test/lib/python3.10/site-packages/tyro/_parsers.py:347: UserWarning: The field `api-token` is annotated with type `<class 'str'>`, but the default value `None` has type `<class 'NoneType'>`. We'll try to handle this gracefully, but it may cause unexpected behavior.
+  warnings.warn(message)
+Loading external config: examples.Libero.custom_data_config.LiberoDataConfig
+Fetching 8 files:   0%|          | 0/8 [00:00<?, ?it/s]Fetching 8 files: 100%|██████████| 8/8 [00:00<00:00, 829.24it/s]
+Loading pretrained dual brain from /mnt/b/hf/hub/models--youliangtan--gr00t-n1.5-libero-spatial-posttrain/snapshots/03294ae3de7d4870be8ae6e27cbdeffcb46b6425
+Tune backbone vision tower: True
+Tune backbone LLM: False
+Tune action head projector: True
+Tune action head DiT: True
+Model not found or avail in the huggingface hub. Loading from local path: /mnt/b/hf/hub/models--youliangtan--gr00t-n1.5-libero-spatial-posttrain/snapshots/03294ae3de7d4870be8ae6e27cbdeffcb46b6425
+Tune backbone llm: False
+Tune backbone visual: True
+Total number of DiT parameters:  550386688
+Total number of SelfAttentionTransformer parameters:  201433088
+Tune action head projector: True
+Tune action head diffusion model: True
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:20<00:20, 20.88s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:49<00:00, 25.50s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:49<00:00, 24.81s/it]
+Terminated

@@ -1,0 +1,192 @@
+====================================================================================================
+GR00T DuQuant Memory Calculator - Complete Model Memory Breakdown
+====================================================================================================
+
+GR00T N1.5 Architecture (5B Total):
+  Vision (RADIO + SigLIP): 2.50B params = 4.66 GB (4768 MB) (NOT quantized)
+  LLM (Qwen2.5-2B):        0.63B params = 1.17 GB (1200 MB)
+  DiT (16 blocks):         0.45B params = 864.42 MB
+  ─────────────────────────────────────────────────────────────
+  Total Model:             3.58B params = 6.67 GB (6833 MB) (FP16)
+
+DuQuant Configuration: W4 block=64 row_rot=restore
+
+====================================================================================================
+
+📊 Scenario: LLM Only
+----------------------------------------------------------------------------------------------------
+  Quantized layers: 84 (84 LLM + 0 DiT)
+  Quantized params: 0.63B
+
+  📦 LLM + DiT Memory (Vision NOT included):
+
+  LLM (Qwen2.5-2B):
+    Original (FP16):        1.17 GB (1200 MB)
+    Quantized portion:      1.17 GB (1200 MB) → 417.49 MB (2.87x)
+    Unquantized portion:    0.00 MB
+    After quantization:     417.49 MB
+    Savings:                782.51 MB (65.2%)
+
+  DiT (16 blocks):
+    Original (FP16):        864.42 MB
+    Quantized portion:      None (keeping FP16)
+    After quantization:     864.42 MB
+    Savings:                0.00 MB (0.0%)
+
+  ─────────────────────────────────────────────────────────────
+  LLM + DiT Total:
+    Original (FP16):        2.02 GB (2064 MB)
+    After quantization:     1.25 GB (1282 MB)
+    Total savings:          782.51 MB (37.9%)
+    Compression ratio:      1.61x
+
+====================================================================================================
+
+📊 Scenario: DiT MLP Only
+----------------------------------------------------------------------------------------------------
+  Quantized layers: 32 (0 LLM + 32 DiT)
+  Quantized params: 0.30B
+
+  📦 LLM + DiT Memory (Vision NOT included):
+
+  LLM (Qwen2.5-2B):
+    Original (FP16):        1.17 GB (1200 MB)
+    Quantized portion:      None (keeping FP16)
+    After quantization:     1.17 GB (1200 MB)
+    Savings:                0.00 MB (0.0%)
+
+  DiT (16 blocks):
+    Original (FP16):        864.42 MB
+    Quantized portion:      576.23 MB → 204.47 MB (2.82x)
+    Unquantized portion:    288.19 MB
+    After quantization:     492.66 MB
+    Savings:                371.77 MB (43.0%)
+
+  ─────────────────────────────────────────────────────────────
+  LLM + DiT Total:
+    Original (FP16):        2.02 GB (2064 MB)
+    After quantization:     1.65 GB (1693 MB)
+    Total savings:          371.77 MB (18.0%)
+    Compression ratio:      1.22x
+
+====================================================================================================
+
+📊 Scenario: DiT Attention Only
+----------------------------------------------------------------------------------------------------
+  Quantized layers: 64 (0 LLM + 64 DiT)
+  Quantized params: 0.15B
+
+  📦 LLM + DiT Memory (Vision NOT included):
+
+  LLM (Qwen2.5-2B):
+    Original (FP16):        1.17 GB (1200 MB)
+    Quantized portion:      None (keeping FP16)
+    After quantization:     1.17 GB (1200 MB)
+    Savings:                0.00 MB (0.0%)
+
+  DiT (16 blocks):
+    Original (FP16):        864.42 MB
+    Quantized portion:      288.19 MB → 120.38 MB (2.39x)
+    Unquantized portion:    576.23 MB
+    After quantization:     696.61 MB
+    Savings:                167.81 MB (19.4%)
+
+  ─────────────────────────────────────────────────────────────
+  LLM + DiT Total:
+    Original (FP16):        2.02 GB (2064 MB)
+    After quantization:     1.85 GB (1897 MB)
+    Total savings:          167.81 MB (8.1%)
+    Compression ratio:      1.09x
+
+====================================================================================================
+
+📊 Scenario: DiT Full (Attn + MLP)
+----------------------------------------------------------------------------------------------------
+  Quantized layers: 96 (0 LLM + 96 DiT)
+  Quantized params: 0.45B
+
+  📦 LLM + DiT Memory (Vision NOT included):
+
+  LLM (Qwen2.5-2B):
+    Original (FP16):        1.17 GB (1200 MB)
+    Quantized portion:      None (keeping FP16)
+    After quantization:     1.17 GB (1200 MB)
+    Savings:                0.00 MB (0.0%)
+
+  DiT (16 blocks):
+    Original (FP16):        864.42 MB
+    Quantized portion:      864.42 MB → 324.84 MB (2.66x)
+    Unquantized portion:    0.00 MB
+    After quantization:     324.84 MB
+    Savings:                539.58 MB (62.4%)
+
+  ─────────────────────────────────────────────────────────────
+  LLM + DiT Total:
+    Original (FP16):        2.02 GB (2064 MB)
+    After quantization:     1.49 GB (1525 MB)
+    Total savings:          539.58 MB (26.1%)
+    Compression ratio:      1.35x
+
+====================================================================================================
+
+📊 Scenario: LLM + DiT MLP (current)
+----------------------------------------------------------------------------------------------------
+  Quantized layers: 116 (84 LLM + 32 DiT)
+  Quantized params: 0.93B
+
+  📦 LLM + DiT Memory (Vision NOT included):
+
+  LLM (Qwen2.5-2B):
+    Original (FP16):        1.17 GB (1200 MB)
+    Quantized portion:      1.17 GB (1200 MB) → 417.49 MB (2.87x)
+    Unquantized portion:    0.00 MB
+    After quantization:     417.49 MB
+    Savings:                782.51 MB (65.2%)
+
+  DiT (16 blocks):
+    Original (FP16):        864.42 MB
+    Quantized portion:      576.23 MB → 204.47 MB (2.82x)
+    Unquantized portion:    288.19 MB
+    After quantization:     492.66 MB
+    Savings:                371.77 MB (43.0%)
+
+  ─────────────────────────────────────────────────────────────
+  LLM + DiT Total:
+    Original (FP16):        2.02 GB (2064 MB)
+    After quantization:     910.15 MB
+    Total savings:          1.13 GB (1154 MB) (55.9%)
+    Compression ratio:      2.27x
+
+====================================================================================================
+
+📊 Scenario: LLM + DiT Full
+----------------------------------------------------------------------------------------------------
+  Quantized layers: 180 (84 LLM + 96 DiT)
+  Quantized params: 1.08B
+
+  📦 LLM + DiT Memory (Vision NOT included):
+
+  LLM (Qwen2.5-2B):
+    Original (FP16):        1.17 GB (1200 MB)
+    Quantized portion:      1.17 GB (1200 MB) → 417.49 MB (2.87x)
+    Unquantized portion:    0.00 MB
+    After quantization:     417.49 MB
+    Savings:                782.51 MB (65.2%)
+
+  DiT (16 blocks):
+    Original (FP16):        864.42 MB
+    Quantized portion:      864.42 MB → 324.84 MB (2.66x)
+    Unquantized portion:    0.00 MB
+    After quantization:     324.84 MB
+    Savings:                539.58 MB (62.4%)
+
+  ─────────────────────────────────────────────────────────────
+  LLM + DiT Total:
+    Original (FP16):        2.02 GB (2064 MB)
+    After quantization:     742.34 MB
+    Total savings:          1.29 GB (1322 MB) (64.0%)
+    Compression ratio:      2.78x
+
+====================================================================================================
+
+✓ Memory calculation complete!

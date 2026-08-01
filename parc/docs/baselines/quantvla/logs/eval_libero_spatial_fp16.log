@@ -1,0 +1,171 @@
+[robosuite WARNING] No private macro file found! (__init__.py:7)
+[robosuite WARNING] It is recommended to use a private macro file (__init__.py:8)
+[robosuite WARNING] To setup, run: python /home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/scripts/setup_macros.py (__init__.py:9)
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+[info] using task orders [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+Task suite: libero_spatial
+  0%|          | 0/10 [00:00<?, ?it/s]/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/albumentations/__init__.py:13: UserWarning: A new version of Albumentations is available: 2.0.8 (you have 1.4.18). Upgrade using: pip install -U albumentations. To disable automatic update checks, set the environment variable NO_ALBUMENTATIONS_UPDATE to 1.
+  check_for_updates()
+[Warning]: datasets path /home/kevin/Matsuo/robot/LIBERO-classic/datasets does not exist!
+[Warning]: datasets path /home/kevin/Matsuo/robot/LIBERO-classic/datasets does not exist!
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [00:38<00:00, 38.09s/it][A100%|██████████| 1/1 [00:38<00:00, 38.09s/it]
+ 10%|█         | 1/10 [00:51<07:46, 51.88s/it]
+Task: pick up the black bowl between the plate and the ramekin and place it on the plate
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-17_49_44--episode=1--success=True--task=pick_up_the_black_bowl_between_the_plate_and_the_r.mp4
+Success: True
+# episodes completed so far: 1
+# successes: 1 (100.0%)
+Current task success rate: 1.0
+Current total success rate: 1.0
+[Warning]: datasets path /home/kevin/Matsuo/robot/LIBERO-classic/datasets does not exist!
+[Warning]: datasets path /home/kevin/Matsuo/robot/LIBERO-classic/datasets does not exist!
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [00:44<00:00, 44.54s/it][A100%|██████████| 1/1 [00:44<00:00, 44.54s/it]
+ 20%|██        | 2/10 [01:38<06:29, 48.69s/it]
+Task: pick up the black bowl next to the ramekin and place it on the plate
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-17_49_44--episode=2--success=True--task=pick_up_the_black_bowl_next_to_the_ramekin_and_pla.mp4
+Success: True
+# episodes completed so far: 2
+# successes: 2 (100.0%)
+Current task success rate: 1.0
+Current total success rate: 1.0
+[Warning]: datasets path /home/kevin/Matsuo/robot/LIBERO-classic/datasets does not exist!
+[Warning]: datasets path /home/kevin/Matsuo/robot/LIBERO-classic/datasets does not exist!
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [00:49<00:00, 49.52s/it][A100%|██████████| 1/1 [00:49<00:00, 49.52s/it]
+ 30%|███       | 3/10 [02:29<05:48, 49.85s/it]
+Task: pick up the black bowl from table center and place it on the plate
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-17_49_44--episode=3--success=True--task=pick_up_the_black_bowl_from_table_center_and_place.mp4
+Success: True
+# episodes completed so far: 3
+# successes: 3 (100.0%)
+Current task success rate: 1.0
+Current total success rate: 1.0
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [00:36<00:00, 36.56s/it][A100%|██████████| 1/1 [00:36<00:00, 36.56s/it]
+ 40%|████      | 4/10 [03:08<04:32, 45.46s/it]
+Task: pick up the black bowl on the cookie box and place it on the plate
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-17_49_44--episode=4--success=True--task=pick_up_the_black_bowl_on_the_cookie_box_and_place.mp4
+Success: True
+# episodes completed so far: 4
+# successes: 4 (100.0%)
+Current task success rate: 1.0
+Current total success rate: 1.0
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [00:46<00:00, 46.13s/it][A100%|██████████| 1/1 [00:46<00:00, 46.13s/it]
+ 50%|█████     | 5/10 [03:56<03:52, 46.48s/it]
+Task: pick up the black bowl in the top drawer of the wooden cabinet and place it on the plate
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-17_49_44--episode=5--success=True--task=pick_up_the_black_bowl_in_the_top_drawer_of_the_wo.mp4
+Success: True
+# episodes completed so far: 5
+# successes: 5 (100.0%)
+Current task success rate: 1.0
+Current total success rate: 1.0
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [00:41<00:00, 41.99s/it][A100%|██████████| 1/1 [00:41<00:00, 41.99s/it]
+ 60%|██████    | 6/10 [04:40<03:02, 45.63s/it]
+Task: pick up the black bowl on the ramekin and place it on the plate
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-17_49_44--episode=6--success=True--task=pick_up_the_black_bowl_on_the_ramekin_and_place_it.mp4
+Success: True
+# episodes completed so far: 6
+# successes: 6 (100.0%)
+Current task success rate: 1.0
+Current total success rate: 1.0
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [00:46<00:00, 46.49s/it][A100%|██████████| 1/1 [00:46<00:00, 46.49s/it]
+ 70%|███████   | 7/10 [05:29<02:19, 46.59s/it]
+Task: pick up the black bowl next to the cookie box and place it on the plate
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-17_49_44--episode=7--success=True--task=pick_up_the_black_bowl_next_to_the_cookie_box_and_.mp4
+Success: True
+# episodes completed so far: 7
+# successes: 7 (100.0%)
+Current task success rate: 1.0
+Current total success rate: 1.0
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [00:46<00:00, 46.84s/it][A100%|██████████| 1/1 [00:46<00:00, 46.84s/it]
+ 80%|████████  | 8/10 [06:17<01:34, 47.28s/it]
+Task: pick up the black bowl on the stove and place it on the plate
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-17_49_44--episode=8--success=True--task=pick_up_the_black_bowl_on_the_stove_and_place_it_o.mp4
+Success: True
+# episodes completed so far: 8
+# successes: 8 (100.0%)
+Current task success rate: 1.0
+Current total success rate: 1.0
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [00:41<00:00, 41.39s/it][A100%|██████████| 1/1 [00:41<00:00, 41.39s/it]
+ 90%|█████████ | 9/10 [07:01<00:46, 46.06s/it]
+Task: pick up the black bowl next to the plate and place it on the plate
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-17_49_44--episode=9--success=True--task=pick_up_the_black_bowl_next_to_the_plate_and_place.mp4
+Success: True
+# episodes completed so far: 9
+# successes: 9 (100.0%)
+Current task success rate: 1.0
+Current total success rate: 1.0
+
+  0%|          | 0/1 [00:00<?, ?it/s][A
+100%|██████████| 1/1 [00:49<00:00, 49.95s/it][A100%|██████████| 1/1 [00:49<00:00, 49.95s/it]
+100%|██████████| 10/10 [07:53<00:00, 47.89s/it]100%|██████████| 10/10 [07:53<00:00, 47.33s/it]
+
+Task: pick up the black bowl on the wooden cabinet and place it on the plate
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_01/2026_08_01-17_49_44--episode=10--success=True--task=pick_up_the_black_bowl_on_the_wooden_cabinet_and_p.mp4
+Success: True
+# episodes completed so far: 10
+# successes: 10 (100.0%)
+Current task success rate: 1.0
+Current total success rate: 1.0
+Exception ignored in: <function MjRenderContext.__del__ at 0x73e25a787c70>
+Traceback (most recent call last):
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/utils/binding_utils.py", line 199, in __del__
+    self.gl_ctx.free()
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/renderers/context/egl_context.py", line 150, in free
+    EGL.eglDestroyContext(EGL_DISPLAY, self._context)
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/OpenGL/error.py", line 230, in glCheckError
+    raise self._errorClass(
+OpenGL.raw.EGL._errors.EGLError: EGLError(
+	err = EGL_NOT_INITIALIZED,
+	baseOperation = eglDestroyContext,
+	cArguments = (
+		<OpenGL._opaque.EGLDisplay_pointer object at 0x73e24e1544c0>,
+		<OpenGL._opaque.EGLContext_pointer object at 0x73e24d979740>,
+	),
+	result = 0
+)
+Exception ignored in: <function EGLGLContext.__del__ at 0x73e25a787ac0>
+Traceback (most recent call last):
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/renderers/context/egl_context.py", line 155, in __del__
+    self.free()
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/renderers/context/egl_context.py", line 150, in free
+    EGL.eglDestroyContext(EGL_DISPLAY, self._context)
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/OpenGL/error.py", line 230, in glCheckError
+    raise self._errorClass(
+OpenGL.raw.EGL._errors.EGLError: EGLError(
+	err = EGL_NOT_INITIALIZED,
+	baseOperation = eglDestroyContext,
+	cArguments = (
+		<OpenGL._opaque.EGLDisplay_pointer object at 0x73e24e1544c0>,
+		<OpenGL._opaque.EGLContext_pointer object at 0x73e24d979740>,
+	),
+	result = 0
+)

@@ -99,6 +99,7 @@ class LeRobotCheckpointPolicy(Policy):
         action_dim: int = 7,
         flip_images: bool = True,
         default_task: str = "",
+        async_inference: bool = False,
     ):
         import torch
         from lerobot.policies.factory import make_pre_post_processors
@@ -106,6 +107,8 @@ class LeRobotCheckpointPolicy(Policy):
 
         self.action_dim = action_dim
         self.flip_images = flip_images
+        # SmolVLA 非同期推論スタック（LeRobot 側フラグがあれば有効化）
+        self.async_inference = bool(async_inference)
         self._task = default_task
         self.ckpt_dir = _resolve_ckpt_dir(path)
 
@@ -118,6 +121,11 @@ class LeRobotCheckpointPolicy(Policy):
         self.policy.to(self.device)
         self.policy.eval()
         self.policy.config.device = self.device
+        # 存在すれば config に配線（未対応版では無視）
+        if self.async_inference:
+            for key in ("async_inference", "use_async_inference", "async_mode"):
+                if hasattr(self.policy.config, key):
+                    setattr(self.policy.config, key, True)
 
         preprocessor_overrides = {
             "device_processor": {"device": self.device},

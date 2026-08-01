@@ -1,0 +1,36 @@
+# 研究サイドカー: Flow-APO smoke（Phase 3）
+# 事前に: uv run parc-clair-pairs --fake --n-pairs 20 --output data/datasets/clair_libero_pairs_smoke
+name: sidecar_flow_apo_smoke
+seed: 42
+tags: [sidecar, clair_apo, train, flow_apo, smoke, aflora]
+
+train:
+  backend: flow_apo
+  pairs_root: data/datasets/clair_libero_pairs_smoke
+  steps: 40
+  batch_size: 4
+  chunk_size: 16
+  lr: 1.0e-3
+  beta: 0.1
+  anchor_coef: 0.05
+  lora_plus_lr_ratio: 4.0
+  qst: true
+  constrain_early_chunk: true
+  aflora_freeze_after: 20
+  aflora_eval_every: 10
+  aflora_freeze_frac: 0.3
+  squeeze_alert_threshold: 5.0
+  device: cpu
+  dry_run: false
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 1
+  task_ids: [0]
+  max_steps: 50
+  camera_height: 128
+  camera_width: 128
+  save_video: false
+
+policy:
+  type: zero

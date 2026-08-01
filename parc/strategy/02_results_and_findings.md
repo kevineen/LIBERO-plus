@@ -397,3 +397,19 @@ continue10k から mix v3（base180+cam120 ≈ 60/40）へ +5k · 1e-5 は、Cam
 | thor thick mix v3（**0.143** · Phase B 敗北） | `20260731T170913Z_thor_3c7af49e_…` |
 | thor camera deep mix v3（**0.00** · 608–612 全敗） | `20260731T172239Z_thor_908a45cb_…` |
 | nuc language deep continue10k（**0.20**） | `20260731T172230Z_nuc_9bcfd033_…` |
+
+## QuantVLA サイドカー再現（2026-08-01〜02 · winpc · 研究用・親判定外）
+
+GR00T N1.5 + [QuantVLA](https://quantvla.github.io/) PTQ。正本: [design](../docs/superpowers/specs/2026-08-01-quantvla-repro-design.md) · 表: [libero_classic.md](../docs/baselines/quantvla/libero_classic.md) · [libero_plus.md](../docs/baselines/quantvla/libero_plus.md)。
+
+- 古典 LIBERO（n=1/task）: FP16 Avg **0.875** · Quant **0.850**（Spatial/Object 同点 · Goal Quant↑ · Long Quant↓）。論文 GR00T 表（多 trial）の近傍だが薄いプロトコルのため順位主張はしない。
+- LIBERO-plus 薄い（tpc=2 · n=14）: FP16 **0.857** · Quant **0.786**。両条件とも **Camera 0/2**。SmolVLA 主線・親 ckpt には接続しない。
+
+## CLAIR / Flow-APO サイドカー（2026-08-02 · 研究用・親判定外）
+
+正本: [design](../docs/superpowers/specs/2026-08-02-clair-apo-sidecar-design.md) · 表: [clair_apo/README.md](../docs/baselines/clair_apo/README.md)。
+
+- 選好ペア主源: **シミュ合成 near-miss**（人間修正は `source=human_revise` 補助のみ）。
+- 実装: `parc-clair-pairs` / `train.backend=flow_apo` / AFLoRA / LoRA+ param groups / `parc-merge-ckpts` / `policy.async_inference`。
+- Gate: P1 fake 20 pairs pass · P3 Flow-APO smoke pass（winpc · `…6fc79de7_sidecar_flow_apo_smoke`）· P4 merge smoke pass（robot venv）。P2 実 SFT は dry_run YAML のみ。**親 ckpt 選定・提出には使わない**。thor 厚い比較は未実施。
+
