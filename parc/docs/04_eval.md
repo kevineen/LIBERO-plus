@@ -35,6 +35,8 @@ bash scripts/eval_ckpt.sh configs/experiments/smolvla_ckpt_smoke_eval.yaml
 
 ```yaml
 eval:
+  # 省略時は libero。研究用 MT50 は backend: metaworld_mt50（別 venv・01_setup §5b）
+  # backend: libero
   suite: libero_spatial
   num_trials_per_task: 1
   task_ids: [0, 1, 2]          # または
@@ -52,10 +54,11 @@ policy:
 
 現時点で集計しているもの:
 
-- **success_rate**（全体・カテゴリ別）
+- **success_rate**（全体・カテゴリ別・タスク別 `by_task`）
 - **mean_steps**
 - **path_length** / **jerk**（アクション差分の簡易代理。PARC 公式定義が出たら差し替え）
 - **collision**（プレースホルダ）
+- **backend**（`metrics.json` に評価バックエンド名）
 
 説明会の最終スコアは「重み付け正規化（重み非公開）」なので、  
 ローカルでは **カテゴリ別成功率の改善** を主指標にするのが安全です。

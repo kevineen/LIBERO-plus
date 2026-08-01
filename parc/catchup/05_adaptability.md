@@ -10,18 +10,21 @@
 |--------------|--------------|------------|
 | **同一スキーマの学習データ**（Hub / ローカル / mix / VR success-only） | **高い** | YAML 差し替え ± mix CLI |
 | **評価プロトコル**（suite / task_ids / 厚い・薄い / Camera deep） | **高い** | 実験 YAML のみ |
+| **評価ベンチそのもの**（LIBERO → MT50 等） | **中**（枠あり・本戦は LIBERO） | `BenchmarkBackend` + `eval.backend` + 別 venv |
 | **LeRobot 内の別 policy_type**（act / diffusion 等） | **中** | YAML + 評価ラッパ確認 |
 | **本選配布 Pi0 / Gr00t / OpenVLA** | **低い（差し込み口のみ）** | アダプタ実装が必要 |
 | **観測・行動の次元やキー名そのもの** | **低い〜中** | 学習・評価・変換を同期改修 |
 
-設計思想は「**評価・実験管理は固定、学習 backend / Policy アダプタだけ差し替える**」。
+設計思想は「**評価・実験管理は固定、学習 backend / Policy アダプタだけ差し替える**」。  
+研究用にベンチを増やすときは同思想で **`eval.backend` / `BenchmarkBackend`** を差し替える（[07 §D2](../docs/07_custom_data_and_algos.md)）。
 
 ```text
 configs/experiments/*.yaml
         │
-        ├─ eval  → parc-eval / eval_ckpt.sh  → Policy.act()   ← モデル差し替え点
-        └─ train → train.backend / policy_type / dataset_*    ← データ・学習差し替え点
-                    → experiments/<run_id>/metrics.json       ← 比較尺は共通
+        ├─ eval.backend → parc.benchmarks registry → parc-eval  ← ベンチ差し替え点
+        ├─ eval  → Policy.act()                                 ← モデル差し替え点
+        └─ train → train.backend / policy_type / dataset_*      ← データ・学習差し替え点
+                    → experiments/<run_id>/metrics.json         ← 比較尺は共通
 ```
 
 ---

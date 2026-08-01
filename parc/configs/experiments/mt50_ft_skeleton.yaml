@@ -1,0 +1,31 @@
+# Meta-World MT50 学習レシピ骨格（デモ未用意・変換未実装）
+# parc-train は benchmark を検知して明確なエラー / dry_run ヒントを出す
+name: mt50_ft_skeleton
+seed: 42
+tags: [train, skeleton, metaworld, mt50]
+
+benchmark:
+  backend: metaworld_mt50
+
+train:
+  backend: lerobot
+  # MT50 は LeRobot 本線未接続。dry_run のまま次ステップを確認する
+  dry_run: true
+  policy_type: smolvla
+  dataset_repo_id: local/metaworld_mt50_demos
+  dataset_root: data/datasets/metaworld_mt50_demos
+  steps: 200
+  batch_size: 1
+  eval_freq: 0
+  env_task: mt50
+
+eval:
+  backend: metaworld_mt50
+  suite: mt50
+  num_trials_per_task: 1
+  task_ids: [0]
+  max_steps: 50
+
+policy:
+  type: random
+  action_dim: 4

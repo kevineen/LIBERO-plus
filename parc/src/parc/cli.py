@@ -232,7 +232,12 @@ def train_main(argv: list[str] | None = None) -> None:
         (run_dir / "logs" / "train_result.json").write_text(
             json.dumps(result, indent=2, ensure_ascii=False)
         )
-        status = "finished" if result.get("status") in {"dry_run", "finished"} else "failed"
+        # not_implemented = ベンチ骨格確認（MT50 等）。失敗ではなく完了扱い。
+        status = (
+            "finished"
+            if result.get("status") in {"dry_run", "finished", "not_implemented"}
+            else "failed"
+        )
         update_run_meta(run_dir, status=status, metrics=result)
         console.print_json(json.dumps({"run_dir": str(run_dir), **result}, ensure_ascii=False))
         if status == "failed":

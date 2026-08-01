@@ -62,7 +62,8 @@ PY
 
 - Weights & Biases: `logs/` に加えて `wandb.init` を `cli.py` に足す  
 - SQLite: `registry.jsonl` を後で移行  
-- マルチ suite: `eval.suites: [...]` を runner に追加
+- マルチ suite: `eval.suites: [...]` を runner に追加  
+- 他ベンチ: `eval.backend: metaworld_mt50` 等（[04_eval.md](04_eval.md) / [01_setup.md](01_setup.md) §5b）
 
 ## 無人ループ・スイープ・prune
 

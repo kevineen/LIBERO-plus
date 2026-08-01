@@ -1,4 +1,4 @@
-"""LIBERO-plus ローカル評価ランナー。"""
+"""ベンチ非依存のローカル評価ランナー。"""
 
 from __future__ import annotations
 
@@ -10,13 +10,9 @@ from typing import Any
 import numpy as np
 from tqdm import tqdm
 
-from parc.env.make_env import (
-    category_for_task,
-    make_offscreen_env,
-    select_task_ids,
-)
+from parc.benchmarks import get_benchmark
+from parc.benchmarks.base import BenchmarkBackend
 from parc.env.metrics import EpisodeMetrics, aggregate, finalize_episode
-from parc.env.success import is_libero_success
 from parc.eval.media import extract_rgb, save_episode_media
 from parc.policies.base import Policy, build_policy
 
@@ -32,26 +28,32 @@ def _ee_pos(obs: dict[str, Any]) -> np.ndarray:
 def run_episode(
     env: Any,
     policy: Policy,
-    init_state: np.ndarray,
+    backend: BenchmarkBackend,
     *,
     max_steps: int,
     task_language: str = "",
     capture_frames: bool = False,
     frame_stride: int = 5,
+    initial_obs: dict[str, Any] | None = None,
 ) -> tuple[bool, int, list[np.ndarray], list[np.ndarray], list[np.ndarray]]:
     """1 エピソードを実行する。
+
+    ``initial_obs`` が無ければ ``env.reset()`` のみ（後方互換・テスト用）。
+    通常は ``backend.reset_episode`` の結果を渡す。
 
     Returns:
         success, steps, actions, ee_positions, frames(RGB list)
     """
-    # VLA 系は言語指示が必要
     set_task = getattr(policy, "set_task", None)
     if callable(set_task) and task_language:
         set_task(task_language)
 
     policy.reset()
-    env.reset()
-    obs = env.set_init_state(init_state)
+    if initial_obs is not None:
+        obs = dict(initial_obs)
+    else:
+        reset_out = env.reset()
+        obs = dict(reset_out) if isinstance(reset_out, dict) else {"state": reset_out}
 
     actions: list[np.ndarray] = []
     ee_positions: list[np.ndarray] = [_ee_pos(obs)]
@@ -71,59 +73,56 @@ def run_episode(
     _maybe_capture(obs, 0)
 
     for t in range(max_steps):
-        # 観測に言語を載せておく（checkpoint 方策が読む）
         if task_language:
             obs = dict(obs)
             obs["task"] = task_language
         action = policy.act(obs)
-        obs, reward, done, info = env.step(action.tolist())
+        step_out = env.step(action.tolist() if hasattr(action, "tolist") else action)
+        obs, reward, done, info = step_out
+        obs = dict(obs) if isinstance(obs, dict) else {"state": obs}
         actions.append(np.asarray(action, dtype=np.float64))
         ee_positions.append(_ee_pos(obs))
         steps = t + 1
         _maybe_capture(obs, t + 1)
-        if is_libero_success(reward, done, info, env):
+        if backend.success(obs, float(reward), bool(done), info, env):
             success = True
             break
 
     return success, steps, actions, ee_positions, frames
 
 
+def _resolve_backend_name(eval_cfg: dict[str, Any]) -> str:
+    """YAML の backend / suite からレジストリ名を決める。"""
+    explicit = eval_cfg.get("backend")
+    if explicit:
+        return str(explicit).lower().strip()
+    suite = str(eval_cfg.get("suite", "libero_spatial")).lower()
+    if suite in {"mt50", "metaworld_mt50", "metaworld"}:
+        return "metaworld_mt50"
+    return "libero"
+
+
 def evaluate(config: dict[str, Any], run_dir: Path | None = None) -> dict[str, Any]:
     """実験設定に従い評価し、metrics dict を返す。"""
-    import torch
-    from libero.libero import benchmark
+    eval_cfg = dict(config.get("eval") or {})
+    seed = int(config.get("seed", 0))
+    eval_cfg["_seed"] = seed
 
-    # PyTorch>=2.6 は torch.load の weights_only 既定が True。
-    # LIBERO 公式 init_states は信頼できるローカル .pruned_init なので False で読む。
-    _orig_load = torch.load
+    backend_name = _resolve_backend_name(eval_cfg)
+    backend_cls = get_benchmark(backend_name)
+    backend = backend_cls()
 
-    def _load_trusted(*args: Any, **kwargs: Any) -> Any:
-        kwargs.setdefault("weights_only", False)
-        return _orig_load(*args, **kwargs)
-
-    torch.load = _load_trusted  # type: ignore[assignment]
-
-    eval_cfg = config.get("eval") or {}
-    suite = str(eval_cfg.get("suite", "libero_spatial"))
+    suite = str(eval_cfg.get("suite", backend_name))
     num_trials = int(eval_cfg.get("num_trials_per_task", 1))
     max_steps = int(eval_cfg.get("max_steps", 280))
-    cam_h = int(eval_cfg.get("camera_height", 128))
-    cam_w = int(eval_cfg.get("camera_width", 128))
-    seed = int(config.get("seed", 0))
 
-    task_ids = eval_cfg.get("task_ids")
-    tasks_per_category = eval_cfg.get("tasks_per_category")
-    selected = select_task_ids(
-        suite,
-        task_ids=list(task_ids) if task_ids is not None else None,
-        tasks_per_category=int(tasks_per_category)
-        if tasks_per_category is not None
-        else None,
-    )
+    selected = backend.list_task_ids(eval_cfg)
 
-    policy = build_policy(config.get("policy") or {}, seed=seed)
-    bench_cls = benchmark.get_benchmark(suite)
-    bench = bench_cls()
+    policy_cfg = dict(config.get("policy") or {})
+    # YAML 未指定時は backend の action_dim を使う
+    if "action_dim" not in policy_cfg:
+        policy_cfg["action_dim"] = backend.action_dim
+    policy = build_policy(policy_cfg, seed=seed)
 
     save_video = bool(eval_cfg.get("save_video", False))
     save_frames = bool(eval_cfg.get("save_frames", False))
@@ -133,65 +132,65 @@ def evaluate(config: dict[str, Any], run_dir: Path | None = None) -> dict[str, A
     media_manifest: list[dict[str, Any]] = []
 
     episodes: list[EpisodeMetrics] = []
-    pbar = tqdm(selected, desc=f"eval:{suite}")
-    try:
-        for task_id in pbar:
-            task = bench.get_task(task_id)
-            bddl = bench.get_task_bddl_file_path(task_id)
-            init_states = bench.get_task_init_states(task_id)
-            category = (
-                category_for_task(suite, task_id)
-                if eval_cfg.get("use_classification", True)
-                else "Unknown"
-            )
+    pbar = tqdm(selected, desc=f"eval:{backend_name}:{suite}")
+    for task_id in pbar:
+        task_name = backend.task_name(task_id)
+        language = backend.task_language(task_id)
+        category = backend.category_for_task(task_id, eval_cfg)
 
-            env = make_offscreen_env(bddl, camera_heights=cam_h, camera_widths=cam_w)
-            try:
-                for trial in range(num_trials):
-                    init = init_states[trial % len(init_states)]
-                    success, steps, actions, ee_positions, frames = run_episode(
-                        env,
-                        policy,
-                        init,
-                        max_steps=max_steps,
-                        task_language=str(getattr(task, "language", "") or ""),
-                        capture_frames=capture,
-                        frame_stride=frame_stride,
-                    )
-                    if capture and run_dir is not None:
-                        videos_dir = run_dir / "videos"
-                        stem = f"task{task_id:04d}_trial{trial:02d}"
-                        media_manifest.append(
-                            save_episode_media(
-                                videos_dir,
-                                frames=frames,
-                                stem=stem,
-                                save_video=save_video,
-                                save_frames=save_frames,
-                                frame_stride=1,  # 既に stride 済み
-                                max_frames=max_save_frames,
-                            )
+        env = backend.make_env(task_id, eval_cfg)
+        try:
+            for trial in range(num_trials):
+                initial_obs = backend.reset_episode(
+                    env,
+                    task_id=task_id,
+                    trial=trial,
+                    seed=seed,
+                    eval_cfg=eval_cfg,
+                )
+                success, steps, actions, ee_positions, frames = run_episode(
+                    env,
+                    policy,
+                    backend,
+                    max_steps=max_steps,
+                    task_language=language,
+                    capture_frames=capture,
+                    frame_stride=frame_stride,
+                    initial_obs=initial_obs,
+                )
+                if capture and run_dir is not None:
+                    videos_dir = run_dir / "videos"
+                    stem = f"task{task_id:04d}_trial{trial:02d}"
+                    media_manifest.append(
+                        save_episode_media(
+                            videos_dir,
+                            frames=frames,
+                            stem=stem,
+                            save_video=save_video,
+                            save_frames=save_frames,
+                            frame_stride=1,
+                            max_frames=max_save_frames,
                         )
-                    ep = finalize_episode(
-                        suite=suite,
-                        task_id=task_id,
-                        task_name=task.name,
-                        category=category,
-                        trial=trial,
-                        success=success,
-                        steps=steps,
-                        actions=actions,
-                        ee_positions=ee_positions,
                     )
-                    episodes.append(ep)
-                    pbar.set_postfix(sr=f"{np.mean([e.success for e in episodes]):.2f}")
-            finally:
-                env.close()
-    finally:
-        torch.load = _orig_load  # type: ignore[assignment]
+                ep = finalize_episode(
+                    suite=suite,
+                    task_id=task_id,
+                    task_name=task_name,
+                    category=category,
+                    trial=trial,
+                    success=success,
+                    steps=steps,
+                    actions=actions,
+                    ee_positions=ee_positions,
+                )
+                episodes.append(ep)
+                pbar.set_postfix(sr=f"{np.mean([e.success for e in episodes]):.2f}")
+        finally:
+            env.close()
 
     summary = aggregate(episodes)
     result = asdict(summary)
+    result["backend"] = backend_name
     if media_manifest:
         result["media"] = media_manifest
 

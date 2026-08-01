@@ -227,6 +227,7 @@ Gr00t zero-shot thick SR=____  light-FT thick SR=____  Δ=____
 
 - [ ] suite 拡張（object / goal / libero_10）は spatial で SR 安定後
 - [ ] 公式提出テンプレ到着後: I/O アダプタ・`pack_submission`
+- [ ] （研究用・本戦外）Meta-World MT50: 評価枠は `eval.backend=metaworld_mt50` 済み。デモ変換・本学習・VR は未着手
 
 ## 完了後の更新手順
 

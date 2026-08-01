@@ -9,7 +9,7 @@ import numpy as np
 
 
 class Policy(ABC):
-    """観測 dict → 7次元アクションを返す方策。"""
+    """観測 dict → アクションを返す方策（次元は backend / YAML の action_dim）。"""
 
     action_dim: int = 7
 
