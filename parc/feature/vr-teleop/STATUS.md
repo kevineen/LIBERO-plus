@@ -1,11 +1,11 @@
 # STATUS: VR Teleop
 
-**Updated:** 2026-07-31
+**Updated:** 2026-08-01
 
 ## Current phase
 
-**Data quality M1–M4（ソフト）完了。** Phase 1 + 品質ゲートは実装済み。  
-**M0 Quest 実機 E2E は環境依存で継続 blocked**（手順の正本は [next-sprint-plan.md](next-sprint-plan.md)）。
+**Phase D3 並行（mainpc）:** M0 Quest 実機 E2E を mainpc（Windows + WSL）で再開。  
+ソフト M1–M4 は完了。cam 軸 FT とは独立。
 
 ## Checklist
 
@@ -17,79 +17,27 @@
 | JPEG WebSocket server | done（`parc-vr-teleop`） |
 | Unity thin client scripts | done（`unity/VrTeleop/`） |
 | docs/12 + README update | done |
-| **success save gate** (`require_success`) | done（既定は失敗も保存） |
-| **init_state / task_ids diversity** | done |
-| **episode_quality.jsonl + collection_stats** | done |
-| **collection_info + calib override** | done |
-| **LeRobot Dataset v3.0 準拠書き込み** | done（timestamp 自動付与・finalize） |
-| **parc-verify-demos** | done（`--coverage` / `--require-replay-success`） |
-| **parc-filter-demos** success-only | done |
-| **RTT / latency gate** | done（`max_rtt_ms` / `latency_policy`） |
-| **collection_queue + category** | done |
-| **parc-replay-demos** | done |
-| **Approximate Time stale drop** | done（`approx_time_slop_ms`） |
-| Quest hardware E2E | pending（Windows + Headset） |
-| LeRobot disk write on robot venv | pending（実機/venv で確認） |
+| success save gate / diversity / quality / verify / filter / RTT / queue / replay / Approx Time | done |
+| Quest hardware E2E | **in progress on mainpc**（Windows Unity + Headset） |
+| LeRobot disk write on robot venv | pending（実機で確認） |
+
+## mainpc で今やること（手作業）
+
+**手順の正本:** [docs/13_quest3_setup.md](../../docs/13_quest3_setup.md)
+
+1. Quest 開発者モード → Unity プロジェクト → APK（§2–5）
+2. WSL portproxy + FW（§6）→ `--fake` で接続確認（§7–8）
+3. 本番 1 ep Save → `uv run parc-verify-demos --root data/datasets/vr_libero_demos` → 本ファイルに結果追記
 
 ## Sprint C acceptance
 
 - [ ] Quest 実機で 1 episode saved
 - [ ] `meta/info.json` を確認
 - [ ] `smolvla_ft_vr_demos_smoke.yaml` が起動
-- [x] 操作感パラメータを YAML で調整
-- [x] 未成功 Save 拒否（単体テスト）
-- [x] quality jsonl + verify CLI（単体テスト）
+- [x] 操作感 / Save 拒否 / quality+verify（ソフト）
 
 ## Sprint C result
 
-- Quest E2E result: blocked
-- Host machine: local WSL（Quest / Windows 側は未接続）
-- Dataset root checked: `data/datasets/vr_libero_demos`（設定・コード上で整備、実機保存は未確認）
-- Smoke FT run_id: not run
-- Quality gates: fake / pytest で検証済み（M1–M4 含む）
-- Next blocker: Quest 実機接続と `PARC_ROBOT_VENV` 付き保存確認が未実施
-
-## How to verify now
-
-```bash
-cd parc
-uv run pytest tests/test_vr_*.py tests/test_filter_demos.py tests/test_replay_demos.py -q
-bash scripts/vr_teleop.sh --config configs/vr/fake_smoke.yaml --fake --no-dataset
-PARC_ROBOT_VENV=/home/kevin/Matsuo/robot/.venv \
-  bash scripts/vr_teleop.sh --fake-episode --config configs/vr/fake_smoke.yaml
-# 品質メタ検証（保存後）
-# uv run parc-verify-demos --root data/datasets/vr_libero_demos --coverage
-# success-only 学習 subset
-# uv run parc-filter-demos --root data/datasets/vr_libero_demos \
-#   --output data/datasets/vr_libero_demos_success --success-only --overwrite
-# Quest: PARC_ROBOT_VENV=... bash scripts/vr_teleop.sh --config configs/vr/quest3_libero_spatial_task0.yaml
-```
-
-## Blockers
-
-- Quest E2E: Windows Unity ビルド + 同一 LAN
-- LeRobot 永続化: `PARC_ROBOT_VENV`（lerobot 入り）または薄 venv への追加導入
-
-## Backlog (Phase 2+)
-
-データ品質・スケーリングの優先計画は **[roadmap-data-quality.md](roadmap-data-quality.md)** を正本とする。
-
-### ロードマップ（要約）
-
-- [ ] **M0** Quest 実機 E2E（#1）— **blocked**（Windows + Unity + Headset 未接続）
-- [x] **M1** 学習時 success-only フィルタ（#3）
-- [x] **M2** RTT / 遅延ゲート（#2）
-- [x] **M3** 摂動・カテゴリ多様化キュー（#4）
-- [x] **M4** 物理リプレイ検証 + Approximate Time 同期器（#5 #6）
-- [ ] **M5** verify 統計監査 → exclusion log — **deferred**（M0 完了・承認後。順は固定）
-
-詳細・講義由来の次候補: [roadmap-data-quality.md](roadmap-data-quality.md)。
-
-### その他
-
-- [ ] ハンドトラッキング入力モード
-- [ ] Unity 3D シーン同期ビュー
-- [ ] 実機 Franka テレオプバックエンド
-- [ ] パススルー人間動作 → ロボット軌道変換
-- [ ] WebRTC 低遅延映像（必要なら）
-- [ ] Unity クライアントからの周期 `ping`（RTT 実測）
+- Quest E2E: **mainpc で再開中**
+- Host: winpc（`PARC_MACHINE_ID=winpc`）
+- Next blocker: Quest 接続と Windows↔WSL `:8765` 到達

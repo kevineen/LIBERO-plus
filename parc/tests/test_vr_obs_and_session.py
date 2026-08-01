@@ -122,3 +122,64 @@ def test_run_fake_episode_emits_saved_status_summary(tmp_path: Path) -> None:
         if isinstance(item, str) and json.loads(item).get("type") == "status"
     ]
     assert statuses[-1]["message"].startswith("saved meta=True episodes=1")
+
+
+def test_handle_control_skips_step_after_env_done(tmp_path: Path) -> None:
+    """robosuite 相当: done 後の step は例外。セッションは落とさずスキップする。"""
+    from parc.vr.protocol import Buttons, ControlMessage, Pose
+    from parc.vr.session import TeleopSession, TeleopSessionConfig
+
+    class _DoneEnv:
+        def __init__(self) -> None:
+            self.steps = 0
+            self.done = False
+
+        def reset(self):
+            self.done = False
+            self.steps = 0
+            return _fake_obs(8, 8)
+
+        def step(self, action):
+            del action
+            if self.done:
+                raise ValueError("executing action in terminated episode")
+            self.steps += 1
+            self.done = True
+            return _fake_obs(8, 8), 1.0, True, {"success": True}
+
+        def check_success(self) -> bool:
+            return True
+
+        def close(self) -> None:
+            return None
+
+    sent: list[str | bytes] = []
+    session = TeleopSession(
+        env=_DoneEnv(),
+        config=TeleopSessionConfig(
+            dataset_root=tmp_path,
+            create_dataset=False,
+            image_size=(8, 8),
+            camera_height=8,
+            camera_width=8,
+        ),
+        send=sent.append,
+        init_states=[],
+    )
+    # 自由操作: 1 step で done → auto reset（例外にしない・steps は reset で 0 に戻る）
+    session.handle_control(ControlMessage(t=0.0, pose=Pose(), gripper=0.0, buttons=Buttons()))
+    assert session._env_done is False
+    assert session.env.steps == 0
+    session.handle_control(ControlMessage(t=0.1, pose=Pose(), gripper=0.0, buttons=Buttons()))
+    assert session._env_done is False
+
+    # 録画中: done 後も例外なく、追加 step しない
+    session.handle_control(
+        ControlMessage(t=1.0, pose=Pose(), gripper=0.0, buttons=Buttons(record=True))
+    )
+    assert session._env_done is True
+    steps_at_done = session.env.steps
+    assert steps_at_done >= 1
+    session.handle_control(ControlMessage(t=1.1, pose=Pose(), gripper=0.0, buttons=Buttons()))
+    assert session.env.steps == steps_at_done
+    session.close()

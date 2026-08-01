@@ -3,6 +3,8 @@
 コード・実験 YAML は git で共有し、**大容量データと実験成果物は各 PC ローカル**に置きます。  
 同じ NFS に複数 `parc-worker` を当てて同時書き込みしないでください。
 
+ホスト役割・**重いジョブは thor 既定**（WSL 再レンダ禁止）は [strategy/04_machine_roles.md](../strategy/04_machine_roles.md) が正本。
+
 ## 方針
 
 | 共有（git） | 共有しない（ローカル） |

@@ -29,6 +29,9 @@
 - Python 実行は `uv run …`（`uv run python …` は使わない）
 - ジョブ投入は原則キュー経由（`parc-enqueue` / `parc-fleet enqueue`）。ワーカーが無いと消化されない
 - **薄い eval だけで長い FT / RL を決めない**（→ `05`）
+- **重いジョブ（長時間 GPU / MuJoCo EGL 再レンダ / 厚い・深掘り連続 / 短 FT 含む）の既定ホストは thor**（→ `04_machine_roles.md`）
+  - winpc・nuc（WSL）で長時間 EGL 再レンダを起動しない（2026-07-31 BSOD: `dxgmms2` + `vmmem`）
+  - 短 FT も原則 **thor**（ユーザー方針 2026-07-31）。winpc は承認後の例外のみ
 - 旧 `from_official_*`（width 未整合）や SR0 の `continue_unfreeze50k` 延長を再利用しない
 - Resume より **pretrained_path を書いた新規 YAML**
 - Discord の実行マシンは表示名 `PARC · <machine>` と本文 `machine=` を見る（Hub 名と混同しない）
@@ -46,7 +49,7 @@
 | ジョブを投げて | [playbooks/enqueue_job.md](playbooks/enqueue_job.md) |
 | DONE 通知が来た | [playbooks/after_job_done.md](playbooks/after_job_done.md) |
 | strategy を更新して | [playbooks/update_strategy_docs.md](playbooks/update_strategy_docs.md) |
-| thor / winpc に何を？ | `03` + `05` を読んで提案。投入は確認後 |
+| thor / winpc / nuc に何を？ | `03` + `04` + `05`。重いものは **thor 既定**。投入は確認後 |
 
 ## 完了報告の型
 

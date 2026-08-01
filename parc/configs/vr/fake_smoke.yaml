@@ -1,4 +1,6 @@
-host: 127.0.0.1
+# ローカル単体スモーク用。Quest 実機接続テストでは host を 0.0.0.0 にする
+# （127.0.0.1 だと WSL 外・Quest から届かない）
+host: 0.0.0.0
 port: 8765
 suite: libero_spatial
 task_id: 0
@@ -6,10 +8,10 @@ task_ids: [0]
 dataset_root: /tmp/vr_smoke
 repo_id: local/vr_libero_demos
 fps: 20
-jpeg_quality: 70
-camera_height: 64
-camera_width: 64
-image_size: 64
+jpeg_quality: 80
+camera_height: 256
+camera_width: 256
+image_size: 256
 flip_images: true
 require_success: false
 init_state_mode: cycle

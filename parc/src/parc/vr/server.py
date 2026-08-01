@@ -35,24 +35,34 @@ async def _handle_client(
     loop = asyncio.get_running_loop()
     outbound: asyncio.Queue[str | bytes] = asyncio.Queue()
 
-    def send_sync(payload: str | bytes) -> None:
-        """スレッド／同期側から送信用キューへ積む。"""
+    def _enqueue(payload: str | bytes) -> None:
+        """イベントループスレッド上でキューへ積む。"""
         outbound.put_nowait(payload)
 
+    def send_sync(payload: str | bytes) -> None:
+        """任意スレッドから送信用キューへ積む（WS 送信は writer のみ）。
+
+        直接 websocket.send と並行するとフレームが壊れ、Quest でテレビノイズになる。
+        """
+        loop.call_soon_threadsafe(_enqueue, payload)
+
     async def writer() -> None:
-        """キューから WebSocket へ送る。"""
+        """キューから WebSocket へ送る（唯一の送信者）。"""
         while True:
             payload = await outbound.get()
             await websocket.send(payload)
 
     writer_task = asyncio.create_task(writer())
     try:
-        session = session_factory(send_sync)
+        # 接続直後に loading を送り、LIBERO 初期化中の keepalive 切断を避ける
+        send_sync('{"type":"status","recording":false,"frame_count":0,"message":"loading env"}')
+        # LIBERO 生成は数十秒ブロックし得る → イベントループを止めない
+        session = await loop.run_in_executor(None, session_factory, send_sync)
     except Exception:
         writer_task.cancel()
         raise
     try:
-        await websocket.send(
+        send_sync(
             encode_message(
                 HelloMessage(
                     fps=session.config.fps,
@@ -60,7 +70,7 @@ async def _handle_client(
                 )
             )
         )
-        await websocket.send(
+        send_sync(
             encode_message(
                 TaskInfoMessage(
                     suite=session.config.suite,
@@ -72,35 +82,46 @@ async def _handle_client(
         session.emit_status("ready")
         session.emit_video()
 
-        async for raw in websocket:
-            if isinstance(raw, bytes):
-                await websocket.send(
-                    encode_message(
-                        ErrorMessage(code="unexpected_binary", message="client binary not supported")
+        try:
+            async for raw in websocket:
+                if isinstance(raw, bytes):
+                    send_sync(
+                        encode_message(
+                            ErrorMessage(
+                                code="unexpected_binary",
+                                message="client binary not supported",
+                            )
+                        )
                     )
-                )
-                continue
-            try:
-                msg = parse_client_message(raw)
-            except Exception as exc:  # noqa: BLE001 — クライアント入力は雑多
-                await websocket.send(
-                    encode_message(ErrorMessage(code="bad_message", message=str(exc)))
-                )
-                continue
+                    continue
+                try:
+                    msg = parse_client_message(raw)
+                except Exception as exc:  # noqa: BLE001 — クライアント入力は雑多
+                    send_sync(
+                        encode_message(ErrorMessage(code="bad_message", message=str(exc)))
+                    )
+                    continue
 
-            if isinstance(msg, PingMessage):
-                # msg.t = クライアント送信時刻（unix 秒）。片道遅延 ≈ now - t
-                now = time.time()
-                if msg.t > 0:
-                    rtt_ms = max(0.0, (now - float(msg.t)) * 1000.0)
-                    session.record_rtt(rtt_ms)
-                await websocket.send(encode_message(PongMessage(t=msg.t)))
-                continue
+                if isinstance(msg, PingMessage):
+                    # msg.t = クライアント送信時刻（unix 秒）。片道遅延 ≈ now - t
+                    now = time.time()
+                    if msg.t > 0:
+                        rtt_ms = max(0.0, (now - float(msg.t)) * 1000.0)
+                        session.record_rtt(rtt_ms)
+                    send_sync(encode_message(PongMessage(t=msg.t)))
+                    continue
 
-            if isinstance(msg, ControlMessage):
-                # env.step はブロッキングし得るので executor へ
-                await loop.run_in_executor(None, session.handle_control, msg)
-                await loop.run_in_executor(None, session.emit_video)
+                if isinstance(msg, ControlMessage):
+                    # env.step / JPEG エンコードはブロッキングし得るので executor へ。
+                    # 送信自体は send_sync → writer のみ（並行 send 禁止）。
+                    await loop.run_in_executor(None, session.handle_control, msg)
+                    await loop.run_in_executor(None, session.emit_video)
+        except Exception as exc:
+            # Quest 切断時は close frame 無しが多く、ハンドラ失敗ログを抑える
+            if type(exc).__name__ in {"ConnectionClosed", "ConnectionClosedError", "ConnectionClosedOK"}:
+                logger.info("VR client disconnected: %s", exc)
+            else:
+                raise
 
     finally:
         writer_task.cancel()
@@ -258,5 +279,7 @@ async def serve_vr_teleop(
         await _handle_client(websocket, session_factory=factory)
 
     logger.info("VR teleop listening on ws://%s:%s/vr (path ignored)", host, port)
-    async with serve(handler, host, port):
+    # LIBERO env 初期化が 20s 超えると既定 ping_timeout で 1011 ServerError になる。
+    # テレオプはアプリ層 control で生存確認するため、WS keepalive は無効化。
+    async with serve(handler, host, port, ping_interval=None, ping_timeout=None):
         await asyncio.Future()  # run forever

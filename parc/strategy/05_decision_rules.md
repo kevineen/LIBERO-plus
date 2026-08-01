@@ -25,7 +25,14 @@
 | Gate3 | 別マシンで同レシピ再現 | 偶然でない |
 | Gate-RL | 厚い eval で全体 SR に余裕 + 最悪カテゴリが極端ゼロでない | GRPO 等を開始してよい |
 
-現状（2026-07-31）: Gate2/3 OK。**親 = continue10k**（厚い 0.514 · Cam deep **0.20**）。lr↓5k 敗北。mix v2 薄い 0.571（Cam/Lang 0）→ **thor 厚いで親判定待ち**。**Gate-RL 未達**。cam-only 禁止は維持。
+現状（2026-08-01）: Gate2/3 OK。**親 = continue10k**（厚い 0.514 · Cam deep **0.20**）。lr↓5k / mix v2 / Phase B / **Phase A'** はいずれも敗北 → **親維持**。**Gate-RL 未達**。
+
+### cam 軸（再レンダ短 FT）— 禁止
+
+continue10k からの cam mix 短 FT（比率高低・hard-near 含む）は **全体 forgetting** が再現した。  
+**Phase D 以降、cam 再レンダ系の学習投入はしない**（cam-only / mix v2–v4 延長 / exact hard リーク実験も当面禁止）。  
+Camera は親の現状天井として記録し、改善は **非 cam 軸**（Language / Sensor / VR 新データ / 将来 Pi0）に限定する。
+
 
 ## 学習レシピ
 
@@ -37,7 +44,9 @@
 ## 投入のしかた
 
 - 1 マシンに同時に重い train を複数積まない（eval ならキュー直列で可）
-- 空きマシンには **再現 or 厚い eval** を先に載せ、勝ち筋延長は主マシン（winpc）
+- **重いジョブ（長時間 GPU / EGL 再レンダ / 厚い・深掘り）の既定は thor**（ネイティブ GPU）。詳細は `04`
+- winpc（WSL）・nuc（WSL）で長時間 EGL 再レンダをしない（BSOD `dxgmms2`/`vmmem` 実績あり）
+- 空き埋め: nuc/thor に **再現 or 厚い/深掘り eval**。短 FT は winpc（承認後）
 - 完了通知を見るときは Discord の **`PARC · <machine>`** と `machine=` を信じる（旧通知の表示名事故に注意）
 
 ## 親 ckpt の更新条件

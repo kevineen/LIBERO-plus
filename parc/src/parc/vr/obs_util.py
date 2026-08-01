@@ -14,7 +14,14 @@ def _as_hwc_uint8(img: Any) -> np.ndarray:
         raise ValueError(f"expected HWC image, got shape {arr.shape}")
     if arr.shape[-1] == 4:
         arr = arr[..., :3]
-    if arr.dtype != np.uint8:
+    if np.issubdtype(arr.dtype, np.floating):
+        # robosuite 系は [0,1] float のことがある。そのまま uint8 化すると真っ暗ノイズになる
+        amax = float(np.nanmax(arr)) if arr.size else 0.0
+        if amax <= 1.0 + 1e-3:
+            arr = (np.clip(arr, 0.0, 1.0) * 255.0).astype(np.uint8)
+        else:
+            arr = np.clip(arr, 0.0, 255.0).astype(np.uint8)
+    elif arr.dtype != np.uint8:
         arr = np.clip(arr, 0, 255).astype(np.uint8)
     return arr
 

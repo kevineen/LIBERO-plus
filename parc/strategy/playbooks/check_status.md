@@ -57,4 +57,5 @@ thor の experiments は多くが `/mnt/sda/parc_libero_plus/experiments/`。
 | Fleet に winpc が無い | Hub 側 `hosts.yaml` 未登録。`04_machine_roles.md` |
 | Discord が「thor」なのに winpc の話 | 旧通知。`machine=` 行と run_id 内の machine を見る |
 | `gpu_dead` / NVML N/A（SSH は生きてる） | WSL2 GPU パススルー死。nuc は `auto_reboot` で Windows 再起動可（`docs/10_ops_ui.md`） |
+| winpc/nuc で `rerender_camera_demos` 長時間 | **方針違反**。止めて thor へ（`04` · BSOD `dxgmms2`/`vmmem`） |
 | イベントログを見る | `experiments/gpu_watch_events.jsonl`（hub） |

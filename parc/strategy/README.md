@@ -20,10 +20,10 @@ Cursor: `.cursor/rules/parc-agent.mdc` が alwaysApply で上記を指す。
 | [01_current_status.md](01_current_status.md) | 各マシンのキュー・走行中ジョブ（時点スナップショット） |
 | [02_results_and_findings.md](02_results_and_findings.md) | 結果表・解釈・勝ち筋 / 負け筋 |
 | [03_next_actions.md](03_next_actions.md) | 今後やるべきこと（優先順バックログ・将来/本選リスト） |
-| [04_machine_roles.md](04_machine_roles.md) | winpc / thor / nuc の役割・速度目安・現在/将来の割り振り表 |
-| [05_decision_rules.md](05_decision_rules.md) | Gate・eval 信頼度・RL 投入の判断ルール |
+| [04_machine_roles.md](04_machine_roles.md) | 役割・**重いジョブ=thor 既定**・速度目安・割り振り表 |
+| [05_decision_rules.md](05_decision_rules.md) | Gate・eval 信頼度・ホスト選定・RL 投入の判断ルール |
 
-最終更新: **2026-07-31**（JST · mix v2 薄い 0.571 · thor 厚い+Cam 実行中 · 親判定待ち）
+最終更新: **2026-07-31**（JST · winpc BSOD→重いジョブ thor 既定 · Phase B 再レンダ thor）
 
 関連オペ docs: [10_ops_ui.md](../docs/10_ops_ui.md) · [11_multi_machine.md](../docs/11_multi_machine.md) · [09_autoloop_and_rl.md](../docs/09_autoloop_and_rl.md)  
 新規メンバー: [catchup/](../catchup/)

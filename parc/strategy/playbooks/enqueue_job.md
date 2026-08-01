@@ -4,6 +4,10 @@
 
 - [ ] [03_next_actions.md](../03_next_actions.md) の優先と矛盾しない
 - [ ] [05_decision_rules.md](../05_decision_rules.md) に抵触しない（薄い eval だけで長い FT / GRPO 禁止）
+- [ ] **ホスト選定が [04_machine_roles.md](../04_machine_roles.md) に合う**
+  - 長時間 GPU / MuJoCo EGL 再レンダ / 厚い・深掘り → **thor**
+  - 短い FT → winpc（承認後）
+  - クロス再現・空き埋め eval → nuc 可（長時間 EGL 再レンダは不可）
 - [ ] 対象ホストのキューを確認（重い train が既に running なら原則積まない。eval 直列は可）
 - [ ] ckpt path が **そのホスト上で実在**する（winpc パスを thor に書かない）
 - [ ] YAML を対象ホストへ SCP 済み（fleet enqueue は remote のファイルを読む）
@@ -82,3 +86,4 @@ uv run parc-queue status --limit 5
 - 薄い SR だけで unfreeze +30k 再延長
 - 他マシンの experiments パスをそのまま書いた YAML
 - worker 停止中の「投げ得」放置（起動するかユーザーに伝える）
+- **winpc / nuc で長時間 `MUJOCO_GL=egl` 再レンダ**（`rerender_camera_demos.py` 等）— thor へ回す
