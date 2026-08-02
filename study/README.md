@@ -45,7 +45,19 @@ Phase 0 前提 → 1 経路概念 → 2 TurboVLA → 3 Evo-1 → 4 Upstream smok
 | [`notebook/turbovla_evo1_smoke_checklist.ipynb`](notebook/turbovla_evo1_smoke_checklist.ipynb) | Phase 4 smoke 記録（追跡対象） |
 | [`parc/catchup/`](../parc/catchup/) | PARC 本線（SmolVLA FT → eval）の最短パス |
 | [`parc/docs/00_research/turbovla_evo1.md`](../parc/docs/00_research/turbovla_evo1.md) | チーム向け調査メモ（借りる優先度） |
-| [`parc/docs/baselines/evo1/`](../parc/docs/baselines/evo1/) | Evo-1 ベースライン記録枠 |
+| [`parc/docs/baselines/evo1/`](../parc/docs/baselines/evo1/) | Evo-1 ベースライン記録（Lang hard thin SR=0 · 2026-08-03） |
+
+## チーム実測メモ（2026-08-03）
+
+学習者が自分で smoke する前に参照してよい事実メモ（親判定外）:
+
+| 項目 | 結果 |
+|------|------|
+| Evo-1 Language hard thin（984/986/988×1 · winpc） | **SR=0.000** |
+| SmolVLA Stage1 expert-only（continue10k→5k · thor）同スライス | **SR=0.000** |
+| Molmo Language hard ×10（参照） | **SR=1.000** |
+
+詳細: [`strategy/02`](../parc/strategy/02_results_and_findings.md) · [`baselines/evo1`](../parc/docs/baselines/evo1/libero_plus.md)
 
 ## 上流リポジトリ
 

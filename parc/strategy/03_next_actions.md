@@ -49,9 +49,14 @@
   - C2: Language deep **0.20** · Sensor deep **0.24**（`q_…7bbbffb5` · 親決め禁止）  
 - [x] **Phase A' FT on thor** — **敗北 · 親維持**  
   - thick **0.286** · Cam deep **0.06** → **cam 軸短 FT 打ち切り**
-- [ ] **Phase D: 軸転換** — **D1+D3 並行中**  
+- [ ] **Phase D: 軸転換** — **D1 診断完了 · D2 Sensor hard 投入 · D3 並行**  
   - 正本: [phase-d design](../docs/superpowers/specs/2026-08-01-phase-d-axis-pivot-design.md) · [D1/D3 plan](../docs/superpowers/plans/2026-08-01-phase-d1-language-d3-vr.md)  
-  - **D1 thor:** Language hard deep **running** `q_…70c96dab`（984/986/988）· 語彙 OOD 診断済  
+  - **D1 thor:** Language hard deep **done** SR=**0.10**（984/986=0 · 988=0.30）`q_…70c96dab` · `20260731T212845Z_thor_ce07fdf3_…`  
+  - **D1 続:** Molmo Language hard **1.000** / 厚い **1.000**（親判定外 · 完了）· ラベル置換 FT は別承認  
+  - **D1 二段階 Stage1（承認済 · done）:** `q_20260802T210926…fce856bb` · run `20260802T210934Z_thor_72c5af3f_…` · 薄い Lang hard **SR=0.000** · ckpt `005000` · **親判定外**  
+  - **D1 Evo-1 Language hard thin（done）:** SR=**0.000**（984/986/988×1）· [baselines/evo1](../docs/baselines/evo1/) · flash-attn 無し · **親判定外**  
+  - **D1 次:** Stage2 / ラベル置換 FT / Evo-1 ×10 は **別承認**（薄い 0 だけでは延長しない）  
+  - **D2 thor:** Sensor hard deep 結果確認  
   - **D3 mainpc:** VR Quest E2E 準備（Unity/Quest 手作業）  
   - cam FT **禁止**
 - [x] **Phase B: cam 増量** — **完了・敗北（親維持）**  
@@ -136,7 +141,8 @@
   - M1 `parc-filter-demos` success-only / M2 RTT ゲート / M3 collection_queue / M4 replay + Approx Time  
   - 正本: [feature/vr-teleop/roadmap-data-quality.md](../feature/vr-teleop/roadmap-data-quality.md)  
   - 運用ルール: [docs/02_data.md](../docs/02_data.md)（多環境×少デモ・frame 分割禁止・raw 不変）  
-  - **M5 deferred（M0 完了・承認後）:** verify 統計監査 → exclusion log（この順で固定。先行実装しない）
+  - **M5 deferred（M0 完了・承認後）:** verify 統計監査 → exclusion log → idle/no-op trim → versioned `stats_key`（この順で固定。先行実装しない）  
+  - 参照: [docs/00_research/turbovla_evo1.md](../docs/00_research/turbovla_evo1.md) · roadmap M5 更新 2026-08-03
 - [x] **catchup: モデル/データ対応度** — [catchup/05_adaptability.md](../catchup/05_adaptability.md)（2026-07-31）
 - [ ] 必要なら `hosts.example.yaml` / docs に winpc Port 2222 パターンを追記
 - [ ] nuc の SSH（thor→nuc / Windows `100.77.194.30`）を安定化。必要なら winpc と同様の鍵整備
@@ -262,8 +268,11 @@ SmolVLA 主線・親判定には接続しない。現行 robot **LeRobot 0.5.1 �
 
 - [x] 依存調査 + `MolmoAct2HFPolicy` / smoke YAML / 設計メモ
 - [x] G0: `python scripts/molmoact2_infer_smoke.py`（PASS · peak≈11 GiB bf16）
-- [ ] G1: `bash scripts/eval_ckpt.sh configs/experiments/molmoact2_hf_smoke_eval.yaml`
-- [ ] G2: plus 薄いカテゴリ表 → `docs/baselines/molmoact2/`
+- [x] G1: thor で `molmoact2_hf_smoke_eval.yaml` 完走（SR=0.0 · Background task0 · horizon 不足 · 親判定禁止）
+- [x] G2: plus 薄いカテゴリ表 SR=**1.000**（n=14）→ [`docs/baselines/molmoact2/libero_plus.md`](../docs/baselines/molmoact2/libero_plus.md)（親昇格しない）
+- [x] Language hard deep 対照 SR=**1.000**（n=30 · vs SmolVLA 0.10）· `20260801T234708Z_thor_99f67642_…`
+- [x] 厚い同尺 SR=**1.000**（n=35 · vs SmolVLA 0.514）· `20260802T002529Z_thor_dde26442_…` → [`libero_plus.md`](../docs/baselines/molmoact2/libero_plus.md)
+- [x] Ablations E1–E4（なぜ強いか）— E1=0.867 · E2=1.0 · E3=FAIL(state) · E4=1.0 · **H5 見送り** · 正本 [why-stronger-ablations](../docs/superpowers/specs/2026-08-02-molmoact2-why-stronger-ablations.md)
 - [ ] （任意）LeRobot main 別 venv で短 FT
 
 やらない: 親 ckpt 置き換え · parc `uv` に Molmo 依存追加 · 薄いだけで採用 · Think/depth

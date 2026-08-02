@@ -10,14 +10,15 @@
 |------|-----|
 | Upstream | [MINT-SJTU/Evo-1](https://github.com/MINT-SJTU/Evo-1) · `libero-plus-eval/` |
 | Checkpoint | `MINT-SJTU/Evo1_LIBERO` |
-| Clone (thor) | `/mnt/sda/parc_libero_plus/third_party/Evo-1` |
-| Weights (thor) | `/mnt/sda/parc_libero_plus/checkpoints/Evo1_LIBERO`（**1.5G · done**） |
-| 推論 I/F | WebSocket policy server ↔ sim client |
+| Policy host | **winpc**（x86 · conda `Evo1`）— thor は aarch64 のため非推奨 |
+| Clone (winpc) | `/mnt/b/parc_sidecars/Evo-1` |
+| Weights (winpc) | `/mnt/b/parc_sidecars/Evo1_LIBERO`（1.5G） |
+| Thin client | `parc/scripts/evo1_parc_thin_client.py` |
 | 親 SmolVLA | continue10k thick **0.514** · Cam deep **0.20** · Lang hard **0.10** |
 
 ---
 
-## Upstream 公表（著者 `libero-plus-eval/README.md` · 自前再測ではない）
+## Upstream 公表（著者表 · 自前再測ではない）
 
 | Suite | background | camera | language | layout | light | noise | robot | avg |
 |-------|----------:|-------:|---------:|-------:|------:|------:|------:|----:|
@@ -27,66 +28,61 @@
 | 10 | 80.97 | **30.31** | 68.41 | 59.94 | 67.88 | 63.92 | 50.64 | 60.30 |
 | **Avg.** | **85.54** | **44.86** | **63.62** | **62.85** | **83.09** | **70.42** | **49.42** | **65.69** |
 
-PARC 接点:
+---
 
-- Camera ~45% / Robot ~49% → continue10k の Camera/Robot 弱点と整合する外部天井
-- Goal language 38% → Language OOD もスイート依存で弱い
+## PARC 実測（2026-08-03）
 
-**parc-eval 同尺の自前薄スライスが正。** 公表表は仮説立て用。
+### Language hard thin（984 / 986 / 988 · ×1 · max_steps=280）
+
+| Item | Value |
+|------|-------|
+| Policy | Evo-1 server `ws://127.0.0.1:9000` · ckpt `Evo1_LIBERO` |
+| Client | `scripts/evo1_parc_thin_client.py` · LIBERO-plus PYTHONPATH |
+| flash-attn | **未導入**（nvcc パス不一致 · `FlashAttention2 is not installed` でロード成功） |
+| **SR** | **0.000**（0/3） |
+| Log | `/mnt/b/parc_sidecars/evo1_lang_hard_thin.log` |
+| Videos | `…/logs/parc_thin/spatial/parc_thin_language_h15_S0/…` |
+
+| task | Evo-1 ×1 | SmolVLA hard ×10 | Molmo ×10 |
+|------|---------:|-----------------:|----------:|
+| 984 | 0/1 | 0/10 | 10/10 |
+| 986 | 0/1 | 0/10 | 10/10 |
+| 988 | 0/1 | 3/10 | 10/10 |
+
+解釈: 語彙 OOD hard スライスは Evo-1 も **全滅（n=1）**。公表 language ~64% とは別難度。親決めには使わない。flash-attn 無し・horizon=15・max_steps=280 の制約あり。×10 再測は任意。
+
+| Slice | Status | SR | Notes |
+|-------|--------|---:|-------|
+| Language hard thin | **done** | **0.000** | n=3 · 親判定外 |
+| Camera thin (608–609) | **not run** | — | 任意 |
+| Thick (tpc=5) | **deferred** | — | |
 
 ---
 
-## Setup 進捗（thor · 2026-08-03）
-
-| Step | Status | Notes |
-|------|--------|-------|
-| Clone Evo-1 | **done** | `/mnt/sda/parc_libero_plus/third_party/Evo-1` |
-| HF `Evo1_LIBERO` | **done** | `/mnt/sda/parc_libero_plus/checkpoints/Evo1_LIBERO`（1.5G） |
-| `libero_plus` / `Evo1` env | **in progress** | micromamba → `/mnt/sda/parc_libero_plus/mamba`（ルート逼迫回避） |
-| Patch LIBERO-plus + assets | **pending** | env 後 |
-| Thin / Language hard 実測 | **pending** | Stage1 FT（`q_…fce856bb`）完了後に GPU 空きで実行 |
-
-GPU 競合: Stage1 expert-only FT が thor で running のため、Evo-1 推論は **完了待ち**。
-
----
-
-## Reproduce（upstream harness · env 準備後）
+## Reproduce
 
 ```bash
-# Terminal 1 — policy server
-# （Evo1 env · checkpoint = /mnt/sda/parc_libero_plus/checkpoints/Evo1_LIBERO）
-cd /mnt/sda/parc_libero_plus/third_party/Evo-1/Evo_1
+# Terminal 1 — policy server（winpc）
+conda activate Evo1
+cd /mnt/b/parc_sidecars/Evo-1/Evo_1
+# ckpt_dir は /mnt/b/parc_sidecars/Evo1_LIBERO に固定済み
 python scripts/Evo1_server.py
 
-# Terminal 2 — LIBERO-plus client（薄スライスは client 側 task 制限）
-export LIBERO_CONFIG_PATH="$HOME/.libero-plus"
-cd /mnt/sda/parc_libero_plus/third_party/Evo-1/libero-plus-eval
-bash test_libero_plus.sh libero_spatial
+# Terminal 2 — thin client
+bash ~/.libero/switch_plus.sh
+export MUJOCO_GL=egl
+cd /home/kevin/Matsuo/robot/LIBERO-plus/parc
+../../.venv/bin/python scripts/evo1_parc_thin_client.py \
+  --task-ids 984 986 988 --num-episodes 1 --max-steps 280
 ```
 
-### PARC 同尺
+---
 
-| 目的 | 寄せ方 |
+## Setup 進捗
+
+| Step | Status |
 |------|--------|
-| Thin subset | `tasks_per_category=2`（n=14）相当に client task を制限 |
-| Language hard | **984 / 986 / 988** ×10 |
-| 監査 | action 24→7 crop · gripper 二値化 |
-| 記録 | 下表 + `parent_ckpt_eligible=false` |
-
----
-
-## PARC 実測
-
-| Slice | Status | SR | n | Notes |
-|-------|--------|---:|--:|-------|
-| Thin (tpc=2) | **not run** | — | — | env + Stage1 完了後 |
-| Language hard | **not run** | — | — | vs SmolVLA 0.10 / Molmo 1.000 |
-| Thick (tpc=5) | **deferred** | — | — | thin 後 |
-
----
-
-## 解釈（現状）
-
-- 公表 Camera/Robot 弱さは Phase C/D と整合 → 外部ベースラインとして有用。
-- 自前再測は env ブートストラップ待ち（conda 無し）。
-- 親昇格・提出接続はしない。
+| Clone + weights (winpc / thor) | **done** |
+| conda `Evo1` + requirements | **done**（flash-attn は未） |
+| Language hard thin 実測 | **done**（SR=0） |
+| flash-attn / ×10 hard | **optional** |
