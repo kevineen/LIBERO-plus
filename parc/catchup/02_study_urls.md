@@ -42,6 +42,8 @@
 | Behavior Cloning 入門（Stanford CS231n 等の IL 章でも可） | 各自の講義資料 | 模倣学習の基礎 |
 | 強化学習の超入門（任意） | 例: Spinning Up https://spinningup.openai.com/ | 後の GRPO/GSPO を読むとき |
 | WARL（参考のみ・移植しない） | https://keitayoneda.github.io/kleiyn-warl/ | 四足 RL の wrench 補助＋カリキュラム。PARC 主線外。メモは [strategy/03](../strategy/03_next_actions.md) |
+| TurboVLA | https://github.com/H-EmbodVis/TurboVLA | 軽量 V+L→A。学習トラック: [study/README.md](../../study/README.md) |
+| Evo-1 | https://github.com/MINT-SJTU/Evo-1 | 二段階 FT・LIBERO-plus eval。同上 study + [00_research/turbovla_evo1.md](../docs/00_research/turbovla_evo1.md) |
 
 ## このリポジトリ内で読む順番
 

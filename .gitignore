@@ -32,4 +32,10 @@ parc/.env
 parc/.env.local
 parc/.env.*.local
 
-study/notebook/
+# Physical AI 講座ノート（大容量）は無視。smoke チェックリストのみ追跡
+study/notebook/**
+!study/notebook/turbovla_evo1_smoke_checklist.ipynb
+# 個人のクイズ進捗ログ（テンプレは追跡）
+quiz/progress/*
+!quiz/progress/README.md
+!quiz/progress/TEMPLATE.md

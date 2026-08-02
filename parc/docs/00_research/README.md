@@ -5,6 +5,7 @@
 | ファイル | 内容 |
 |----------|------|
 | [dataset_gemini.md](dataset_gemini.md) | ライセンスフリーデータセット・SmolVLA FT / 非同期推論の調査メモ |
+| [turbovla_evo1.md](turbovla_evo1.md) | TurboVLA / Evo-1 から PARC が借りる実務（優先度・やらないこと）。学習トラック: [`study/`](../../../study/) · [`quiz/`](../../../quiz/) |
 
 実装に落とすときは設計正本を `docs/superpowers/specs/` に切り出し、strategy にサイドカー節を足す。
 
