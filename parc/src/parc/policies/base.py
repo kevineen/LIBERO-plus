@@ -94,6 +94,7 @@ def build_policy(cfg: dict[str, Any], seed: int = 0) -> Policy:
         path = (cfg or {}).get("path") or "allenai/MolmoAct2-LIBERO"
         from parc.policies.molmoact2 import MolmoAct2HFPolicy
 
+        override = (cfg or {}).get("task_override")
         return MolmoAct2HFPolicy(
             path,
             device=(cfg or {}).get("device"),
@@ -105,6 +106,7 @@ def build_policy(cfg: dict[str, Any], seed: int = 0) -> Policy:
             num_steps=int((cfg or {}).get("num_steps", 10)),
             enable_cuda_graph=bool((cfg or {}).get("enable_cuda_graph", False)),
             normalize_language=bool((cfg or {}).get("normalize_language", True)),
+            task_override=None if override is None else str(override),
         )
     if ptype in {"openpi", "openvla", "lerobot_cmd"}:
         # 本選配布・独自ラッパ差し込み用

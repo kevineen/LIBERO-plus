@@ -1,0 +1,31 @@
+# E1: 言語必須性 — 無関係指示に置換（H1）
+# 対照: Molmo hard SR=1.0 · SmolVLA hard SR=0.10
+# thor: bash scripts/eval_ckpt.sh configs/experiments/molmoact2_hf_ablate_e1_nonsense_task.yaml
+name: molmoact2_hf_ablate_e1_nonsense_task
+seed: 0
+tags: [eval, molmoact2, sidecar, ablate, e1, nonsense_task, thor]
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 5
+  task_ids: [984, 986, 988]
+  max_steps: 280
+  camera_height: 256
+  camera_width: 256
+  save_video: false
+  save_frames: false
+  use_classification: true
+
+policy:
+  type: molmoact2
+  action_dim: 7
+  device: cuda
+  flip_images: true
+  path: allenai/MolmoAct2-LIBERO
+  dtype: bfloat16
+  norm_tag: libero
+  num_steps: 10
+  enable_cuda_graph: false
+  normalize_language: true
+  # シーンと無関係な指示。成功が残れば言語非必須。
+  task_override: pick up the purple airplane and put it on the couch

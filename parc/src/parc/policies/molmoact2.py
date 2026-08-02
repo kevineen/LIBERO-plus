@@ -58,6 +58,7 @@ class MolmoAct2HFPolicy(Policy):
         num_steps: int = 10,
         enable_cuda_graph: bool = False,
         normalize_language: bool = True,
+        task_override: str | None = None,
     ):
         import torch
         from transformers import AutoModelForImageTextToText, AutoProcessor
@@ -65,6 +66,8 @@ class MolmoAct2HFPolicy(Policy):
         self.action_dim = action_dim
         self.flip_images = flip_images
         self._task = default_task
+        # E1 ablation: env の言語より優先して固定指示を渡す（空文字は無効）。
+        self.task_override = (task_override or "").strip() or None
         self.norm_tag = norm_tag
         self.num_steps = int(num_steps)
         self.enable_cuda_graph = bool(enable_cuda_graph)
@@ -153,10 +156,12 @@ class MolmoAct2HFPolicy(Policy):
         return arr
 
     def act(self, obs: dict[str, Any]) -> np.ndarray:
-        task = str(obs.get("task") or self._task or "")
+        # task_override があれば ablation 用に env 言語を無視する。
+        task = str(self.task_override or obs.get("task") or self._task or "")
         if not task:
             raise ValueError(
-                "言語指示が空です。runner から task.language を渡すか set_task() してください。"
+                "言語指示が空です。runner から task.language を渡すか set_task() / "
+                "task_override を設定してください。"
             )
 
         if not self._action_queue:

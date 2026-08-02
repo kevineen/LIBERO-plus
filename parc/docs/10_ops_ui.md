@@ -114,6 +114,9 @@ uv run parc-queue notify-send <job_id>
 
 `configs/paths.yaml` の `notify.notify_all: true` にすると全ジョブ通知（`--notify` 不要）。
 
+**直接 eval**（`bash scripts/eval_ckpt.sh …`）も既定で完了・失敗を通知します（`parc.cli eval --notify`）。  
+抑制: `PARC_EVAL_NO_NOTIFY=1` または `bash scripts/eval_ckpt.sh … --no-notify`。
+
 ### GPU 死活監視（Fleet hub → Discord）
 
 ハブ PC から `hosts.yaml` の各機へ SSH で `nvidia-smi` を叩き、**OK↔NG の変化時だけ** webhook 通知します（ジョブ完了通知とは別）。

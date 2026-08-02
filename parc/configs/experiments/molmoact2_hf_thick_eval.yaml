@@ -1,0 +1,32 @@
+# MolmoAct2 HF — LIBERO-plus 厚い同尺（SmolVLA continue10k thick と同プロトコル）
+# tasks_per_category=5 · n_trials=1 · max_steps=280
+# 親判定・主線置換には使わない（研究サイドカー）
+#
+# thor: bash scripts/eval_ckpt.sh configs/experiments/molmoact2_hf_thick_eval.yaml
+name: molmoact2_hf_thick_eval
+seed: 0
+tags: [eval, molmoact2, sidecar, thick, thor]
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 1
+  task_ids: null
+  tasks_per_category: 5
+  max_steps: 280
+  camera_height: 256
+  camera_width: 256
+  save_video: true
+  save_frames: false
+  use_classification: true
+
+policy:
+  type: molmoact2
+  action_dim: 7
+  device: cuda
+  flip_images: true
+  path: allenai/MolmoAct2-LIBERO
+  dtype: bfloat16
+  norm_tag: libero
+  num_steps: 10
+  enable_cuda_graph: false
+  normalize_language: true
