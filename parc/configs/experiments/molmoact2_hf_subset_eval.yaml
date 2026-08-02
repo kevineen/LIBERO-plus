@@ -1,0 +1,31 @@
+# MolmoAct2 HF — LIBERO-plus 薄いカテゴリ subset（G2）
+# SmolVLA subset_eval と同尺: tasks_per_category=2 · tpc=1 · max_steps=280
+# thor: bash scripts/eval_ckpt.sh configs/experiments/molmoact2_hf_subset_eval.yaml
+#
+# 主線・親判定には使わない（研究サイドカー）
+name: molmoact2_hf_subset_eval
+seed: 0
+tags: [eval, molmoact2, sidecar, subset, g2]
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 1
+  task_ids: null
+  tasks_per_category: 2
+  max_steps: 280
+  camera_height: 256
+  camera_width: 256
+  save_video: false
+  use_classification: true
+
+policy:
+  type: molmoact2
+  action_dim: 7
+  device: cuda
+  flip_images: true
+  path: allenai/MolmoAct2-LIBERO
+  dtype: bfloat16
+  norm_tag: libero
+  num_steps: 10
+  enable_cuda_graph: false
+  normalize_language: true

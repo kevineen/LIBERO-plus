@@ -1,0 +1,485 @@
+[robosuite WARNING] No private macro file found! (__init__.py:7)
+[robosuite WARNING] It is recommended to use a private macro file (__init__.py:8)
+[robosuite WARNING] To setup, run: python /home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/scripts/setup_macros.py (__init__.py:9)
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+[info] using task orders [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+Task suite: libero_goal
+  0%|          | 0/10 [00:00<?, ?it/s]/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/albumentations/__init__.py:13: UserWarning: A new version of Albumentations is available: 2.0.8 (you have 1.4.18). Upgrade using: pip install -U albumentations. To disable automatic update checks, set the environment variable NO_ALBUMENTATIONS_UPDATE to 1.
+  check_for_updates()
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [01:47<07:09, 107.27s/it][A
+ 40%|████      | 2/5 [03:24<05:04, 101.58s/it][A
+ 60%|██████    | 3/5 [09:47<07:40, 230.03s/it][A
+ 80%|████████  | 4/5 [13:04<03:36, 216.73s/it][A
+100%|██████████| 5/5 [15:12<00:00, 184.81s/it][A100%|██████████| 5/5 [15:12<00:00, 182.46s/it]
+ 10%|█         | 1/10 [15:19<2:17:53, 919.29s/it]
+Task: open the middle drawer of the cabinet
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=1--success=True--task=open_the_middle_drawer_of_the_cabinet.mp4
+Success: True
+# episodes completed so far: 1
+# successes: 1 (100.0%)
+
+Task: open the middle drawer of the cabinet
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=2--success=True--task=open_the_middle_drawer_of_the_cabinet.mp4
+Success: True
+# episodes completed so far: 2
+# successes: 2 (100.0%)
+
+Task: open the middle drawer of the cabinet
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=3--success=False--task=open_the_middle_drawer_of_the_cabinet.mp4
+Success: False
+# episodes completed so far: 3
+# successes: 2 (66.7%)
+
+Task: open the middle drawer of the cabinet
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=4--success=True--task=open_the_middle_drawer_of_the_cabinet.mp4
+Success: True
+# episodes completed so far: 4
+# successes: 3 (75.0%)
+
+Task: open the middle drawer of the cabinet
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=5--success=True--task=open_the_middle_drawer_of_the_cabinet.mp4
+Success: True
+# episodes completed so far: 5
+# successes: 4 (80.0%)
+Current task success rate: 0.8
+Current total success rate: 0.8
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [01:01<04:04, 61.14s/it][A
+ 40%|████      | 2/5 [02:04<03:07, 62.37s/it][A
+ 60%|██████    | 3/5 [03:00<01:58, 59.32s/it][A
+ 80%|████████  | 4/5 [04:00<00:59, 59.76s/it][A
+100%|██████████| 5/5 [04:59<00:00, 59.36s/it][A100%|██████████| 5/5 [04:59<00:00, 59.83s/it]
+ 20%|██        | 2/10 [20:23<1:14:21, 557.67s/it]
+Task: put the bowl on the stove
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=6--success=True--task=put_the_bowl_on_the_stove.mp4
+Success: True
+# episodes completed so far: 6
+# successes: 5 (83.3%)
+
+Task: put the bowl on the stove
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=7--success=True--task=put_the_bowl_on_the_stove.mp4
+Success: True
+# episodes completed so far: 7
+# successes: 6 (85.7%)
+
+Task: put the bowl on the stove
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=8--success=True--task=put_the_bowl_on_the_stove.mp4
+Success: True
+# episodes completed so far: 8
+# successes: 7 (87.5%)
+
+Task: put the bowl on the stove
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=9--success=True--task=put_the_bowl_on_the_stove.mp4
+Success: True
+# episodes completed so far: 9
+# successes: 8 (88.9%)
+
+Task: put the bowl on the stove
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=10--success=True--task=put_the_bowl_on_the_stove.mp4
+Success: True
+# episodes completed so far: 10
+# successes: 9 (90.0%)
+Current task success rate: 1.0
+Current total success rate: 0.9
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [00:53<03:34, 53.62s/it][A
+ 40%|████      | 2/5 [02:01<03:06, 62.27s/it][A
+ 60%|██████    | 3/5 [03:33<02:31, 75.76s/it][A
+ 80%|████████  | 4/5 [09:59<03:18, 198.06s/it][A
+100%|██████████| 5/5 [11:00<00:00, 148.74s/it][A100%|██████████| 5/5 [11:00<00:00, 132.12s/it]
+ 30%|███       | 3/10 [31:26<1:10:38, 605.46s/it]
+Task: put the wine bottle on top of the cabinet
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=11--success=True--task=put_the_wine_bottle_on_top_of_the_cabinet.mp4
+Success: True
+# episodes completed so far: 11
+# successes: 10 (90.9%)
+
+Task: put the wine bottle on top of the cabinet
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=12--success=True--task=put_the_wine_bottle_on_top_of_the_cabinet.mp4
+Success: True
+# episodes completed so far: 12
+# successes: 11 (91.7%)
+
+Task: put the wine bottle on top of the cabinet
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=13--success=True--task=put_the_wine_bottle_on_top_of_the_cabinet.mp4
+Success: True
+# episodes completed so far: 13
+# successes: 12 (92.3%)
+
+Task: put the wine bottle on top of the cabinet
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=14--success=False--task=put_the_wine_bottle_on_top_of_the_cabinet.mp4
+Success: False
+# episodes completed so far: 14
+# successes: 12 (85.7%)
+
+Task: put the wine bottle on top of the cabinet
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=15--success=True--task=put_the_wine_bottle_on_top_of_the_cabinet.mp4
+Success: True
+# episodes completed so far: 15
+# successes: 13 (86.7%)
+Current task success rate: 0.8
+Current total success rate: 0.8666666666666667
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [02:11<08:47, 131.89s/it][A
+ 40%|████      | 2/5 [04:09<06:10, 123.37s/it][A
+ 60%|██████    | 3/5 [05:54<03:49, 114.85s/it][A
+ 80%|████████  | 4/5 [07:37<01:50, 110.33s/it][A
+100%|██████████| 5/5 [14:07<00:00, 211.35s/it][A100%|██████████| 5/5 [14:07<00:00, 169.58s/it]
+ 40%|████      | 4/10 [45:35<1:10:10, 701.82s/it]
+Task: open the top drawer and put the bowl inside
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=16--success=True--task=open_the_top_drawer_and_put_the_bowl_inside.mp4
+Success: True
+# episodes completed so far: 16
+# successes: 14 (87.5%)
+
+Task: open the top drawer and put the bowl inside
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=17--success=True--task=open_the_top_drawer_and_put_the_bowl_inside.mp4
+Success: True
+# episodes completed so far: 17
+# successes: 15 (88.2%)
+
+Task: open the top drawer and put the bowl inside
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=18--success=True--task=open_the_top_drawer_and_put_the_bowl_inside.mp4
+Success: True
+# episodes completed so far: 18
+# successes: 16 (88.9%)
+
+Task: open the top drawer and put the bowl inside
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=19--success=True--task=open_the_top_drawer_and_put_the_bowl_inside.mp4
+Success: True
+# episodes completed so far: 19
+# successes: 17 (89.5%)
+
+Task: open the top drawer and put the bowl inside
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=20--success=False--task=open_the_top_drawer_and_put_the_bowl_inside.mp4
+Success: False
+# episodes completed so far: 20
+# successes: 17 (85.0%)
+Current task success rate: 0.8
+Current total success rate: 0.85
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [06:30<26:00, 390.00s/it][A
+ 40%|████      | 2/5 [07:30<09:49, 196.45s/it][A
+ 60%|██████    | 3/5 [13:54<09:23, 281.94s/it][A
+ 80%|████████  | 4/5 [15:01<03:17, 197.01s/it][A
+100%|██████████| 5/5 [16:07<00:00, 149.82s/it][A100%|██████████| 5/5 [16:07<00:00, 193.52s/it]
+ 50%|█████     | 5/10 [1:01:45<1:06:31, 798.35s/it]
+Task: put the bowl on top of the cabinet
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=21--success=False--task=put_the_bowl_on_top_of_the_cabinet.mp4
+Success: False
+# episodes completed so far: 21
+# successes: 17 (81.0%)
+
+Task: put the bowl on top of the cabinet
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=22--success=True--task=put_the_bowl_on_top_of_the_cabinet.mp4
+Success: True
+# episodes completed so far: 22
+# successes: 18 (81.8%)
+
+Task: put the bowl on top of the cabinet
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=23--success=False--task=put_the_bowl_on_top_of_the_cabinet.mp4
+Success: False
+# episodes completed so far: 23
+# successes: 18 (78.3%)
+
+Task: put the bowl on top of the cabinet
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=24--success=True--task=put_the_bowl_on_top_of_the_cabinet.mp4
+Success: True
+# episodes completed so far: 24
+# successes: 19 (79.2%)
+
+Task: put the bowl on top of the cabinet
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=25--success=True--task=put_the_bowl_on_top_of_the_cabinet.mp4
+Success: True
+# episodes completed so far: 25
+# successes: 20 (80.0%)
+Current task success rate: 0.6
+Current total success rate: 0.8
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [01:32<06:09, 92.47s/it][A
+ 40%|████      | 2/5 [03:01<04:31, 90.41s/it][A
+ 60%|██████    | 3/5 [04:24<02:54, 87.07s/it][A
+ 80%|████████  | 4/5 [05:44<01:24, 84.33s/it][A
+100%|██████████| 5/5 [07:45<00:00, 97.50s/it][A100%|██████████| 5/5 [07:45<00:00, 93.10s/it]
+ 60%|██████    | 6/10 [1:09:32<45:43, 685.92s/it]  
+Task: push the plate to the front of the stove
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=26--success=True--task=push_the_plate_to_the_front_of_the_stove.mp4
+Success: True
+# episodes completed so far: 26
+# successes: 21 (80.8%)
+
+Task: push the plate to the front of the stove
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=27--success=True--task=push_the_plate_to_the_front_of_the_stove.mp4
+Success: True
+# episodes completed so far: 27
+# successes: 22 (81.5%)
+
+Task: push the plate to the front of the stove
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=28--success=True--task=push_the_plate_to_the_front_of_the_stove.mp4
+Success: True
+# episodes completed so far: 28
+# successes: 23 (82.1%)
+
+Task: push the plate to the front of the stove
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=29--success=True--task=push_the_plate_to_the_front_of_the_stove.mp4
+Success: True
+# episodes completed so far: 29
+# successes: 24 (82.8%)
+
+Task: push the plate to the front of the stove
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=30--success=True--task=push_the_plate_to_the_front_of_the_stove.mp4
+Success: True
+# episodes completed so far: 30
+# successes: 25 (83.3%)
+Current task success rate: 1.0
+Current total success rate: 0.8333333333333334
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [00:57<03:49, 57.32s/it][A
+ 40%|████      | 2/5 [02:00<03:01, 60.54s/it][A
+ 60%|██████    | 3/5 [08:24<06:56, 208.23s/it][A
+ 80%|████████  | 4/5 [09:27<02:31, 151.09s/it][A
+100%|██████████| 5/5 [10:33<00:00, 120.35s/it][A100%|██████████| 5/5 [10:33<00:00, 126.69s/it]
+ 70%|███████   | 7/10 [1:20:08<33:28, 669.39s/it]
+Task: put the cream cheese in the bowl
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=31--success=True--task=put_the_cream_cheese_in_the_bowl.mp4
+Success: True
+# episodes completed so far: 31
+# successes: 26 (83.9%)
+
+Task: put the cream cheese in the bowl
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=32--success=True--task=put_the_cream_cheese_in_the_bowl.mp4
+Success: True
+# episodes completed so far: 32
+# successes: 27 (84.4%)
+
+Task: put the cream cheese in the bowl
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=33--success=False--task=put_the_cream_cheese_in_the_bowl.mp4
+Success: False
+# episodes completed so far: 33
+# successes: 27 (81.8%)
+
+Task: put the cream cheese in the bowl
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=34--success=True--task=put_the_cream_cheese_in_the_bowl.mp4
+Success: True
+# episodes completed so far: 34
+# successes: 28 (82.4%)
+
+Task: put the cream cheese in the bowl
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=35--success=True--task=put_the_cream_cheese_in_the_bowl.mp4
+Success: True
+# episodes completed so far: 35
+# successes: 29 (82.9%)
+Current task success rate: 0.8
+Current total success rate: 0.8285714285714286
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [01:02<04:08, 62.07s/it][A
+ 40%|████      | 2/5 [01:59<02:57, 59.13s/it][A
+ 60%|██████    | 3/5 [02:47<01:48, 54.40s/it][A
+ 80%|████████  | 4/5 [03:49<00:57, 57.22s/it][A
+100%|██████████| 5/5 [04:37<00:00, 53.93s/it][A100%|██████████| 5/5 [04:37<00:00, 55.51s/it]
+ 80%|████████  | 8/10 [1:24:47<18:10, 545.22s/it]
+Task: turn on the stove
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=36--success=True--task=turn_on_the_stove.mp4
+Success: True
+# episodes completed so far: 36
+# successes: 30 (83.3%)
+
+Task: turn on the stove
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=37--success=True--task=turn_on_the_stove.mp4
+Success: True
+# episodes completed so far: 37
+# successes: 31 (83.8%)
+
+Task: turn on the stove
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=38--success=True--task=turn_on_the_stove.mp4
+Success: True
+# episodes completed so far: 38
+# successes: 32 (84.2%)
+
+Task: turn on the stove
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=39--success=True--task=turn_on_the_stove.mp4
+Success: True
+# episodes completed so far: 39
+# successes: 33 (84.6%)
+
+Task: turn on the stove
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=40--success=True--task=turn_on_the_stove.mp4
+Success: True
+# episodes completed so far: 40
+# successes: 34 (85.0%)
+Current task success rate: 1.0
+Current total success rate: 0.85
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [00:53<03:33, 53.31s/it][A
+ 40%|████      | 2/5 [01:46<02:40, 53.36s/it][A
+ 60%|██████    | 3/5 [02:38<01:45, 52.74s/it][A
+ 80%|████████  | 4/5 [03:31<00:52, 52.86s/it][A
+100%|██████████| 5/5 [04:24<00:00, 52.72s/it][A100%|██████████| 5/5 [04:24<00:00, 52.85s/it]
+ 90%|█████████ | 9/10 [1:29:13<07:37, 457.96s/it]
+Task: put the bowl on the plate
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=41--success=True--task=put_the_bowl_on_the_plate.mp4
+Success: True
+# episodes completed so far: 41
+# successes: 35 (85.4%)
+
+Task: put the bowl on the plate
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=42--success=True--task=put_the_bowl_on_the_plate.mp4
+Success: True
+# episodes completed so far: 42
+# successes: 36 (85.7%)
+
+Task: put the bowl on the plate
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=43--success=True--task=put_the_bowl_on_the_plate.mp4
+Success: True
+# episodes completed so far: 43
+# successes: 37 (86.0%)
+
+Task: put the bowl on the plate
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=44--success=True--task=put_the_bowl_on_the_plate.mp4
+Success: True
+# episodes completed so far: 44
+# successes: 38 (86.4%)
+
+Task: put the bowl on the plate
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=45--success=True--task=put_the_bowl_on_the_plate.mp4
+Success: True
+# episodes completed so far: 45
+# successes: 39 (86.7%)
+Current task success rate: 1.0
+Current total success rate: 0.8666666666666667
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [02:12<08:49, 132.38s/it][A
+ 40%|████      | 2/5 [03:56<05:46, 115.53s/it][A
+ 60%|██████    | 3/5 [05:37<03:38, 109.06s/it][A
+ 80%|████████  | 4/5 [07:27<01:49, 109.32s/it][A
+100%|██████████| 5/5 [11:39<00:00, 161.01s/it][A100%|██████████| 5/5 [11:39<00:00, 139.97s/it]
+100%|██████████| 10/10 [1:40:55<00:00, 533.19s/it]100%|██████████| 10/10 [1:40:55<00:00, 605.53s/it]
+
+Task: put the wine bottle on the rack
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=46--success=True--task=put_the_wine_bottle_on_the_rack.mp4
+Success: True
+# episodes completed so far: 46
+# successes: 40 (87.0%)
+
+Task: put the wine bottle on the rack
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=47--success=True--task=put_the_wine_bottle_on_the_rack.mp4
+Success: True
+# episodes completed so far: 47
+# successes: 41 (87.2%)
+
+Task: put the wine bottle on the rack
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=48--success=True--task=put_the_wine_bottle_on_the_rack.mp4
+Success: True
+# episodes completed so far: 48
+# successes: 42 (87.5%)
+
+Task: put the wine bottle on the rack
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=49--success=True--task=put_the_wine_bottle_on_the_rack.mp4
+Success: True
+# episodes completed so far: 49
+# successes: 43 (87.8%)
+
+Task: put the wine bottle on the rack
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-13_26_08--episode=50--success=True--task=put_the_wine_bottle_on_the_rack.mp4
+Success: True
+# episodes completed so far: 50
+# successes: 44 (88.0%)
+Current task success rate: 1.0
+Current total success rate: 0.88
+Exception ignored in: <function MjRenderContext.__del__ at 0x70e52057bd00>
+Traceback (most recent call last):
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/utils/binding_utils.py", line 199, in __del__
+    self.gl_ctx.free()
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/renderers/context/egl_context.py", line 150, in free
+    EGL.eglDestroyContext(EGL_DISPLAY, self._context)
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/OpenGL/error.py", line 230, in glCheckError
+    raise self._errorClass(
+OpenGL.raw.EGL._errors.EGLError: EGLError(
+	err = EGL_NOT_INITIALIZED,
+	baseOperation = eglDestroyContext,
+	cArguments = (
+		<OpenGL._opaque.EGLDisplay_pointer object at 0x70e513f406c0>,
+		<OpenGL._opaque.EGLContext_pointer object at 0x70e4412911c0>,
+	),
+	result = 0
+)
+Exception ignored in: <function EGLGLContext.__del__ at 0x70e52057bb50>
+Traceback (most recent call last):
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/renderers/context/egl_context.py", line 155, in __del__
+    self.free()
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/renderers/context/egl_context.py", line 150, in free
+    EGL.eglDestroyContext(EGL_DISPLAY, self._context)
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/OpenGL/error.py", line 230, in glCheckError
+    raise self._errorClass(
+OpenGL.raw.EGL._errors.EGLError: EGLError(
+	err = EGL_NOT_INITIALIZED,
+	baseOperation = eglDestroyContext,
+	cArguments = (
+		<OpenGL._opaque.EGLDisplay_pointer object at 0x70e513f406c0>,
+		<OpenGL._opaque.EGLContext_pointer object at 0x70e4412911c0>,
+	),
+	result = 0
+)

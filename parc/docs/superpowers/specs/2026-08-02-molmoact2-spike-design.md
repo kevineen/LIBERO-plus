@@ -34,12 +34,12 @@
 
 ## Gates
 
-| Gate | Criterion |
-|------|-----------|
-| G0 | HF sample 画像で `predict_action` が `(T,≥7)` を返す（env 不要） |
-| G1 | `molmoact2_hf_smoke_eval.yaml` が 1 タスク完走（SR 問わず） |
-| G2 | 薄い plus subset（SmolVLA と同 task_ids）でカテゴリ表 |
-| G3 | （任意）LeRobot main サイドカーで短 FT → 同尺比較 |
+| Gate | Criterion | Status |
+|------|-----------|--------|
+| G0 | HF sample 画像で `predict_action` が `(T,≥7)` を返す（env 不要） | **PASS** (winpc) |
+| G1 | `molmoact2_hf_smoke_eval.yaml` が 1 タスク完走（SR 問わず） | **PASS** (thor · SR=0 · horizon不足) |
+| G2 | 薄い plus subset（SmolVLA と同 task_ids）でカテゴリ表 | **PASS** (thor · SR=1.000 · n=14) |
+| G3 | （任意）LeRobot main サイドカーで短 FT → 同尺比較 | 未着手 |
 
 ## Metrics to record
 
@@ -77,5 +77,6 @@ bash scripts/eval_ckpt.sh configs/experiments/molmoact2_hf_smoke_eval.yaml
 - [x] `MolmoAct2HFPolicy` + `build_policy` 接続
 - [x] smoke YAML + 本設計メモ
 - [x] G0 実走 PASS（bf16 · peak≈11 GiB · action chunk `(1,10,7)`）
-- [ ] G1 実走（初回 HF DL 済み）
-- [ ] baselines 表 + strategy 02 に 1 段落
+- [x] G1 実走 PASS on **thor**（完走 · SR=0.0 · task0 Background · max_steps=50）
+- [x] G2 薄い plus カテゴリ表（SR=1.000 · n=14 · 親昇格しない）
+- [ ] strategy 02 に 1 段落

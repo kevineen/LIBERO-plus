@@ -70,4 +70,17 @@ python -c "import torch; print('cuda', torch.cuda.is_available(), torch.cuda.get
 CFG="${1:-configs/experiments/smolvla_ckpt_smoke_eval.yaml}"
 if [[ $# -gt 0 ]]; then shift; fi
 
-exec python -m parc.cli eval --config "$CFG" "$@"
+# 既定で Discord/Slack 完了通知。抑制: PARC_EVAL_NO_NOTIFY=1 または --no-notify
+NOTIFY_ARGS=(--notify)
+if [[ "${PARC_EVAL_NO_NOTIFY:-0}" == "1" ]]; then
+  NOTIFY_ARGS=()
+fi
+for _a in "$@"; do
+  if [[ "$_a" == "--notify" || "$_a" == "--no-notify" ]]; then
+    NOTIFY_ARGS=()
+    break
+  fi
+done
+unset _a
+
+exec python -m parc.cli eval --config "$CFG" "${NOTIFY_ARGS[@]}" "$@"

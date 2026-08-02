@@ -31,3 +31,4 @@ Total number of SelfAttentionTransformer parameters:  201433088
 Tune action head projector: True
 Tune action head diffusion model: True
 Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:20<00:20, 20.05s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:43<00:00, 22.21s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:43<00:00, 21.89s/it]
+Terminated

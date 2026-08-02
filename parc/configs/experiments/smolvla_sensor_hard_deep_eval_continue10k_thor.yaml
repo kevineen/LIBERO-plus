@@ -1,0 +1,25 @@
+# thor: continue10k Sensor hard deep（全滅寄りの task · ×10 + video）
+# Phase D2 診断。親決め禁止。Cam 軸ではない。
+# 既存 deep（×5）: 1374:0.60 · 1376:0.20 · 1375/1377/1378=0
+# thor: bash scripts/eval_ckpt.sh configs/experiments/smolvla_sensor_hard_deep_eval_continue10k_thor.yaml
+name: smolvla_sensor_hard_deep_eval_continue10k_thor
+seed: 0
+tags: [eval, smolvla, sensor, deep, hard, continue10k, phase_d2, thor]
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 10
+  task_ids: [1375, 1377, 1378]
+  max_steps: 280
+  camera_height: 256
+  camera_width: 256
+  save_video: true
+  save_frames: false
+  use_classification: true
+
+policy:
+  type: checkpoint
+  action_dim: 7
+  device: cuda
+  flip_images: true
+  path: /mnt/sda/parc_libero_plus/experiments/imported/20260730T071018Z_winpc_cbbf5c8b_smolvla_ft_libero_cam_mix_continue10k_wi/010000/pretrained_model

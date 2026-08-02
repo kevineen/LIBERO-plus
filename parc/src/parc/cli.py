@@ -53,8 +53,20 @@ def eval_main(argv: list[str] | None = None) -> None:
         default=None,
         help="既存 run 評価時に eval/policy を上書きする YAML",
     )
+    notify_group = parser.add_mutually_exclusive_group()
+    notify_group.add_argument(
+        "--notify",
+        action="store_true",
+        help="完了/失敗時に Slack/Discord webhook へ通知（PARC_NOTIFY_WEBHOOK_URL）",
+    )
+    notify_group.add_argument(
+        "--no-notify",
+        action="store_true",
+        help="webhook 通知を送らない",
+    )
     args = parser.parse_args(argv)
     apply_runtime_env()
+    do_notify = bool(args.notify) and not bool(args.no_notify)
 
     if args.run_dir:
         run_dir = Path(args.run_dir)
@@ -71,6 +83,9 @@ def eval_main(argv: list[str] | None = None) -> None:
         cfg = load_yaml(args.config)
         run_dir, _ = create_run(cfg, notes=args.notes)
 
+    config_name = str(cfg.get("name") or "")
+    if not config_name:
+        config_name = Path(args.config).stem if getattr(args, "config", None) else run_dir.name
     update_run_meta(run_dir, status="running")
     try:
         from parc.eval.runner import evaluate
@@ -87,9 +102,41 @@ def eval_main(argv: list[str] | None = None) -> None:
             "n_episodes": metrics.get("n_episodes"),
             "by_category": metrics.get("by_category"),
         }, ensure_ascii=False))
+        if do_notify:
+            try:
+                from parc.notify import notify_eval_finished
+
+                out = notify_eval_finished(
+                    run_dir,
+                    status="finished",
+                    metrics=metrics if isinstance(metrics, dict) else {},
+                    config_name=config_name,
+                )
+                if out.get("skipped"):
+                    console.print(f"[dim]notify skipped: {out.get('reason')}[/dim]")
+                elif not out.get("ok"):
+                    console.print(f"[yellow]notify failed[/yellow]: {out.get('error')}")
+            except Exception as ne:  # noqa: BLE001 — 通知失敗で eval を落とさない
+                console.print(f"[yellow]notify failed[/yellow]: {ne}")
     except Exception as e:
         update_run_meta(run_dir, status="failed", notes=str(e))
         console.print(f"[red]eval failed[/red]: {e}")
+        if do_notify:
+            try:
+                from parc.notify import notify_eval_finished
+
+                out = notify_eval_finished(
+                    run_dir,
+                    status="failed",
+                    error=str(e),
+                    config_name=config_name,
+                )
+                if out.get("skipped"):
+                    console.print(f"[dim]notify skipped: {out.get('reason')}[/dim]")
+                elif not out.get("ok"):
+                    console.print(f"[yellow]notify failed[/yellow]: {out.get('error')}")
+            except Exception as ne:  # noqa: BLE001
+                console.print(f"[yellow]notify failed[/yellow]: {ne}")
         raise
 
 

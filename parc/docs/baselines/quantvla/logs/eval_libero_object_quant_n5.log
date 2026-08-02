@@ -1,0 +1,485 @@
+[robosuite WARNING] No private macro file found! (__init__.py:7)
+[robosuite WARNING] It is recommended to use a private macro file (__init__.py:8)
+[robosuite WARNING] To setup, run: python /home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/scripts/setup_macros.py (__init__.py:9)
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+[info] using task orders [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+Task suite: libero_object
+  0%|          | 0/10 [00:00<?, ?it/s]/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/albumentations/__init__.py:13: UserWarning: A new version of Albumentations is available: 2.0.8 (you have 1.4.18). Upgrade using: pip install -U albumentations. To disable automatic update checks, set the environment variable NO_ALBUMENTATIONS_UPDATE to 1.
+  check_for_updates()
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [01:26<05:46, 86.74s/it][A
+ 40%|████      | 2/5 [02:43<04:02, 80.70s/it][A
+ 60%|██████    | 3/5 [04:02<02:40, 80.20s/it][A
+ 80%|████████  | 4/5 [05:20<01:19, 79.01s/it][A
+100%|██████████| 5/5 [06:55<00:00, 84.80s/it][A100%|██████████| 5/5 [06:55<00:00, 83.01s/it]
+ 10%|█         | 1/10 [07:05<1:03:50, 425.57s/it]
+Task: pick up the alphabet soup and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=1--success=True--task=pick_up_the_alphabet_soup_and_place_it_in_the_bask.mp4
+Success: True
+# episodes completed so far: 1
+# successes: 1 (100.0%)
+
+Task: pick up the alphabet soup and place it in the basket
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=2--success=True--task=pick_up_the_alphabet_soup_and_place_it_in_the_bask.mp4
+Success: True
+# episodes completed so far: 2
+# successes: 2 (100.0%)
+
+Task: pick up the alphabet soup and place it in the basket
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=3--success=True--task=pick_up_the_alphabet_soup_and_place_it_in_the_bask.mp4
+Success: True
+# episodes completed so far: 3
+# successes: 3 (100.0%)
+
+Task: pick up the alphabet soup and place it in the basket
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=4--success=True--task=pick_up_the_alphabet_soup_and_place_it_in_the_bask.mp4
+Success: True
+# episodes completed so far: 4
+# successes: 4 (100.0%)
+
+Task: pick up the alphabet soup and place it in the basket
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=5--success=True--task=pick_up_the_alphabet_soup_and_place_it_in_the_bask.mp4
+Success: True
+# episodes completed so far: 5
+# successes: 5 (100.0%)
+Current task success rate: 1.0
+Current total success rate: 1.0
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [01:10<04:42, 70.66s/it][A
+ 40%|████      | 2/5 [02:25<03:39, 73.15s/it][A
+ 60%|██████    | 3/5 [04:03<02:49, 84.55s/it][A
+ 80%|████████  | 4/5 [06:42<01:53, 113.80s/it][A
+100%|██████████| 5/5 [08:03<00:00, 102.17s/it][A100%|██████████| 5/5 [08:03<00:00, 96.77s/it] 
+ 20%|██        | 2/10 [15:11<1:01:28, 461.10s/it]
+Task: pick up the cream cheese and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=6--success=True--task=pick_up_the_cream_cheese_and_place_it_in_the_baske.mp4
+Success: True
+# episodes completed so far: 6
+# successes: 6 (100.0%)
+
+Task: pick up the cream cheese and place it in the basket
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=7--success=True--task=pick_up_the_cream_cheese_and_place_it_in_the_baske.mp4
+Success: True
+# episodes completed so far: 7
+# successes: 7 (100.0%)
+
+Task: pick up the cream cheese and place it in the basket
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=8--success=True--task=pick_up_the_cream_cheese_and_place_it_in_the_baske.mp4
+Success: True
+# episodes completed so far: 8
+# successes: 8 (100.0%)
+
+Task: pick up the cream cheese and place it in the basket
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=9--success=False--task=pick_up_the_cream_cheese_and_place_it_in_the_baske.mp4
+Success: False
+# episodes completed so far: 9
+# successes: 8 (88.9%)
+
+Task: pick up the cream cheese and place it in the basket
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=10--success=True--task=pick_up_the_cream_cheese_and_place_it_in_the_baske.mp4
+Success: True
+# episodes completed so far: 10
+# successes: 9 (90.0%)
+Current task success rate: 0.8
+Current total success rate: 0.9
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [01:11<04:47, 71.92s/it][A
+ 40%|████      | 2/5 [03:54<06:14, 124.98s/it][A
+ 60%|██████    | 3/5 [04:58<03:14, 97.49s/it] [A
+ 80%|████████  | 4/5 [06:07<01:25, 85.94s/it][A
+100%|██████████| 5/5 [07:09<00:00, 77.64s/it][A100%|██████████| 5/5 [07:09<00:00, 86.00s/it]
+ 30%|███       | 3/10 [22:23<52:15, 447.89s/it]  
+Task: pick up the salad dressing and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=11--success=True--task=pick_up_the_salad_dressing_and_place_it_in_the_bas.mp4
+Success: True
+# episodes completed so far: 11
+# successes: 10 (90.9%)
+
+Task: pick up the salad dressing and place it in the basket
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=12--success=False--task=pick_up_the_salad_dressing_and_place_it_in_the_bas.mp4
+Success: False
+# episodes completed so far: 12
+# successes: 10 (83.3%)
+
+Task: pick up the salad dressing and place it in the basket
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=13--success=True--task=pick_up_the_salad_dressing_and_place_it_in_the_bas.mp4
+Success: True
+# episodes completed so far: 13
+# successes: 11 (84.6%)
+
+Task: pick up the salad dressing and place it in the basket
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=14--success=True--task=pick_up_the_salad_dressing_and_place_it_in_the_bas.mp4
+Success: True
+# episodes completed so far: 14
+# successes: 12 (85.7%)
+
+Task: pick up the salad dressing and place it in the basket
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=15--success=True--task=pick_up_the_salad_dressing_and_place_it_in_the_bas.mp4
+Success: True
+# episodes completed so far: 15
+# successes: 13 (86.7%)
+Current task success rate: 0.8
+Current total success rate: 0.8666666666666667
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [02:38<10:35, 158.81s/it][A
+ 40%|████      | 2/5 [05:21<08:03, 161.07s/it][A
+ 60%|██████    | 3/5 [06:40<04:07, 123.51s/it][A
+ 80%|████████  | 4/5 [07:55<01:44, 104.63s/it][A
+100%|██████████| 5/5 [10:34<00:00, 124.05s/it][A100%|██████████| 5/5 [10:34<00:00, 126.89s/it]
+ 40%|████      | 4/10 [33:04<52:23, 523.91s/it]
+Task: pick up the bbq sauce and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=16--success=False--task=pick_up_the_bbq_sauce_and_place_it_in_the_basket.mp4
+Success: False
+# episodes completed so far: 16
+# successes: 13 (81.2%)
+
+Task: pick up the bbq sauce and place it in the basket
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=17--success=False--task=pick_up_the_bbq_sauce_and_place_it_in_the_basket.mp4
+Success: False
+# episodes completed so far: 17
+# successes: 13 (76.5%)
+
+Task: pick up the bbq sauce and place it in the basket
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=18--success=True--task=pick_up_the_bbq_sauce_and_place_it_in_the_basket.mp4
+Success: True
+# episodes completed so far: 18
+# successes: 14 (77.8%)
+
+Task: pick up the bbq sauce and place it in the basket
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=19--success=True--task=pick_up_the_bbq_sauce_and_place_it_in_the_basket.mp4
+Success: True
+# episodes completed so far: 19
+# successes: 15 (78.9%)
+
+Task: pick up the bbq sauce and place it in the basket
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=20--success=False--task=pick_up_the_bbq_sauce_and_place_it_in_the_basket.mp4
+Success: False
+# episodes completed so far: 20
+# successes: 15 (75.0%)
+Current task success rate: 0.4
+Current total success rate: 0.75
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [01:27<05:48, 87.08s/it][A
+ 40%|████      | 2/5 [03:19<05:05, 101.90s/it][A
+ 60%|██████    | 3/5 [04:35<03:00, 90.04s/it] [A
+ 80%|████████  | 4/5 [05:55<01:26, 86.17s/it][A
+100%|██████████| 5/5 [07:18<00:00, 84.87s/it][A100%|██████████| 5/5 [07:18<00:00, 87.61s/it]
+ 50%|█████     | 5/10 [40:24<41:08, 493.63s/it]
+Task: pick up the ketchup and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=21--success=True--task=pick_up_the_ketchup_and_place_it_in_the_basket.mp4
+Success: True
+# episodes completed so far: 21
+# successes: 16 (76.2%)
+
+Task: pick up the ketchup and place it in the basket
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=22--success=True--task=pick_up_the_ketchup_and_place_it_in_the_basket.mp4
+Success: True
+# episodes completed so far: 22
+# successes: 17 (77.3%)
+
+Task: pick up the ketchup and place it in the basket
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=23--success=True--task=pick_up_the_ketchup_and_place_it_in_the_basket.mp4
+Success: True
+# episodes completed so far: 23
+# successes: 18 (78.3%)
+
+Task: pick up the ketchup and place it in the basket
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=24--success=True--task=pick_up_the_ketchup_and_place_it_in_the_basket.mp4
+Success: True
+# episodes completed so far: 24
+# successes: 19 (79.2%)
+
+Task: pick up the ketchup and place it in the basket
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=25--success=True--task=pick_up_the_ketchup_and_place_it_in_the_basket.mp4
+Success: True
+# episodes completed so far: 25
+# successes: 20 (80.0%)
+Current task success rate: 1.0
+Current total success rate: 0.8
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [01:13<04:52, 73.18s/it][A
+ 40%|████      | 2/5 [02:21<03:31, 70.59s/it][A
+ 60%|██████    | 3/5 [03:38<02:26, 73.35s/it][A
+ 80%|████████  | 4/5 [04:49<01:12, 72.33s/it][A
+100%|██████████| 5/5 [06:07<00:00, 74.41s/it][A100%|██████████| 5/5 [06:07<00:00, 73.49s/it]
+ 60%|██████    | 6/10 [46:33<30:05, 451.37s/it]
+Task: pick up the tomato sauce and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=26--success=True--task=pick_up_the_tomato_sauce_and_place_it_in_the_baske.mp4
+Success: True
+# episodes completed so far: 26
+# successes: 21 (80.8%)
+
+Task: pick up the tomato sauce and place it in the basket
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=27--success=True--task=pick_up_the_tomato_sauce_and_place_it_in_the_baske.mp4
+Success: True
+# episodes completed so far: 27
+# successes: 22 (81.5%)
+
+Task: pick up the tomato sauce and place it in the basket
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=28--success=True--task=pick_up_the_tomato_sauce_and_place_it_in_the_baske.mp4
+Success: True
+# episodes completed so far: 28
+# successes: 23 (82.1%)
+
+Task: pick up the tomato sauce and place it in the basket
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=29--success=True--task=pick_up_the_tomato_sauce_and_place_it_in_the_baske.mp4
+Success: True
+# episodes completed so far: 29
+# successes: 24 (82.8%)
+
+Task: pick up the tomato sauce and place it in the basket
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=30--success=True--task=pick_up_the_tomato_sauce_and_place_it_in_the_baske.mp4
+Success: True
+# episodes completed so far: 30
+# successes: 25 (83.3%)
+Current task success rate: 1.0
+Current total success rate: 0.8333333333333334
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [02:04<08:19, 124.78s/it][A
+ 40%|████      | 2/5 [03:40<05:22, 107.46s/it][A
+ 60%|██████    | 3/5 [06:24<04:26, 133.31s/it][A
+ 80%|████████  | 4/5 [08:28<02:09, 129.80s/it][A
+100%|██████████| 5/5 [09:47<00:00, 111.52s/it][A100%|██████████| 5/5 [09:47<00:00, 117.54s/it]
+ 70%|███████   | 7/10 [56:23<24:49, 496.61s/it]
+Task: pick up the butter and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=31--success=True--task=pick_up_the_butter_and_place_it_in_the_basket.mp4
+Success: True
+# episodes completed so far: 31
+# successes: 26 (83.9%)
+
+Task: pick up the butter and place it in the basket
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=32--success=True--task=pick_up_the_butter_and_place_it_in_the_basket.mp4
+Success: True
+# episodes completed so far: 32
+# successes: 27 (84.4%)
+
+Task: pick up the butter and place it in the basket
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=33--success=False--task=pick_up_the_butter_and_place_it_in_the_basket.mp4
+Success: False
+# episodes completed so far: 33
+# successes: 27 (81.8%)
+
+Task: pick up the butter and place it in the basket
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=34--success=True--task=pick_up_the_butter_and_place_it_in_the_basket.mp4
+Success: True
+# episodes completed so far: 34
+# successes: 28 (82.4%)
+
+Task: pick up the butter and place it in the basket
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=35--success=True--task=pick_up_the_butter_and_place_it_in_the_basket.mp4
+Success: True
+# episodes completed so far: 35
+# successes: 29 (82.9%)
+Current task success rate: 0.8
+Current total success rate: 0.8285714285714286
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [01:18<05:13, 78.40s/it][A
+ 40%|████      | 2/5 [02:33<03:49, 76.37s/it][A
+ 60%|██████    | 3/5 [03:59<02:42, 81.01s/it][A
+ 80%|████████  | 4/5 [05:14<01:18, 78.47s/it][A
+100%|██████████| 5/5 [06:27<00:00, 76.38s/it][A100%|██████████| 5/5 [06:27<00:00, 77.43s/it]
+ 80%|████████  | 8/10 [1:02:52<15:24, 462.37s/it]
+Task: pick up the milk and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=36--success=True--task=pick_up_the_milk_and_place_it_in_the_basket.mp4
+Success: True
+# episodes completed so far: 36
+# successes: 30 (83.3%)
+
+Task: pick up the milk and place it in the basket
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=37--success=True--task=pick_up_the_milk_and_place_it_in_the_basket.mp4
+Success: True
+# episodes completed so far: 37
+# successes: 31 (83.8%)
+
+Task: pick up the milk and place it in the basket
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=38--success=True--task=pick_up_the_milk_and_place_it_in_the_basket.mp4
+Success: True
+# episodes completed so far: 38
+# successes: 32 (84.2%)
+
+Task: pick up the milk and place it in the basket
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=39--success=True--task=pick_up_the_milk_and_place_it_in_the_basket.mp4
+Success: True
+# episodes completed so far: 39
+# successes: 33 (84.6%)
+
+Task: pick up the milk and place it in the basket
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=40--success=True--task=pick_up_the_milk_and_place_it_in_the_basket.mp4
+Success: True
+# episodes completed so far: 40
+# successes: 34 (85.0%)
+Current task success rate: 1.0
+Current total success rate: 0.85
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [01:28<05:55, 88.91s/it][A
+ 40%|████      | 2/5 [02:51<04:15, 85.07s/it][A
+ 60%|██████    | 3/5 [04:14<02:48, 84.01s/it][A
+ 80%|████████  | 4/5 [05:39<01:24, 84.42s/it][A
+100%|██████████| 5/5 [07:12<00:00, 87.69s/it][A100%|██████████| 5/5 [07:12<00:00, 86.52s/it]
+ 90%|█████████ | 9/10 [1:10:06<07:33, 453.68s/it]
+Task: pick up the chocolate pudding and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=41--success=True--task=pick_up_the_chocolate_pudding_and_place_it_in_the_.mp4
+Success: True
+# episodes completed so far: 41
+# successes: 35 (85.4%)
+
+Task: pick up the chocolate pudding and place it in the basket
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=42--success=True--task=pick_up_the_chocolate_pudding_and_place_it_in_the_.mp4
+Success: True
+# episodes completed so far: 42
+# successes: 36 (85.7%)
+
+Task: pick up the chocolate pudding and place it in the basket
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=43--success=True--task=pick_up_the_chocolate_pudding_and_place_it_in_the_.mp4
+Success: True
+# episodes completed so far: 43
+# successes: 37 (86.0%)
+
+Task: pick up the chocolate pudding and place it in the basket
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=44--success=True--task=pick_up_the_chocolate_pudding_and_place_it_in_the_.mp4
+Success: True
+# episodes completed so far: 44
+# successes: 38 (86.4%)
+
+Task: pick up the chocolate pudding and place it in the basket
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=45--success=True--task=pick_up_the_chocolate_pudding_and_place_it_in_the_.mp4
+Success: True
+# episodes completed so far: 45
+# successes: 39 (86.7%)
+Current task success rate: 1.0
+Current total success rate: 0.8666666666666667
+
+  0%|          | 0/5 [00:00<?, ?it/s][A
+ 20%|██        | 1/5 [01:12<04:48, 72.05s/it][A
+ 40%|████      | 2/5 [02:25<03:38, 72.78s/it][A
+ 60%|██████    | 3/5 [03:32<02:20, 70.43s/it][A
+ 80%|████████  | 4/5 [04:41<01:09, 69.66s/it][A
+100%|██████████| 5/5 [05:53<00:00, 70.38s/it][A100%|██████████| 5/5 [05:53<00:00, 70.62s/it]
+100%|██████████| 10/10 [1:16:01<00:00, 423.21s/it]100%|██████████| 10/10 [1:16:01<00:00, 456.18s/it]
+
+Task: pick up the orange juice and place it in the basket
+Starting episode 1...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=46--success=True--task=pick_up_the_orange_juice_and_place_it_in_the_baske.mp4
+Success: True
+# episodes completed so far: 46
+# successes: 40 (87.0%)
+
+Task: pick up the orange juice and place it in the basket
+Starting episode 2...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=47--success=True--task=pick_up_the_orange_juice_and_place_it_in_the_baske.mp4
+Success: True
+# episodes completed so far: 47
+# successes: 41 (87.2%)
+
+Task: pick up the orange juice and place it in the basket
+Starting episode 3...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=48--success=True--task=pick_up_the_orange_juice_and_place_it_in_the_baske.mp4
+Success: True
+# episodes completed so far: 48
+# successes: 42 (87.5%)
+
+Task: pick up the orange juice and place it in the basket
+Starting episode 4...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=49--success=True--task=pick_up_the_orange_juice_and_place_it_in_the_baske.mp4
+Success: True
+# episodes completed so far: 49
+# successes: 43 (87.8%)
+
+Task: pick up the orange juice and place it in the basket
+Starting episode 5...
+Saved rollout MP4 at path ./rollouts/2026_08_02/2026_08_02-12_06_14--episode=50--success=True--task=pick_up_the_orange_juice_and_place_it_in_the_baske.mp4
+Success: True
+# episodes completed so far: 50
+# successes: 44 (88.0%)
+Current task success rate: 1.0
+Current total success rate: 0.88
+Exception ignored in: <function MjRenderContext.__del__ at 0x7d019ab73d00>
+Traceback (most recent call last):
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/utils/binding_utils.py", line 199, in __del__
+    self.gl_ctx.free()
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/renderers/context/egl_context.py", line 150, in free
+    EGL.eglDestroyContext(EGL_DISPLAY, self._context)
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/OpenGL/error.py", line 230, in glCheckError
+    raise self._errorClass(
+OpenGL.raw.EGL._errors.EGLError: EGLError(
+	err = EGL_NOT_INITIALIZED,
+	baseOperation = eglDestroyContext,
+	cArguments = (
+		<OpenGL._opaque.EGLDisplay_pointer object at 0x7d018f8ebec0>,
+		<OpenGL._opaque.EGLContext_pointer object at 0x7d00bf764ec0>,
+	),
+	result = 0
+)
+Exception ignored in: <function EGLGLContext.__del__ at 0x7d019ab73b50>
+Traceback (most recent call last):
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/renderers/context/egl_context.py", line 155, in __del__
+    self.free()
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/robosuite/renderers/context/egl_context.py", line 150, in free
+    EGL.eglDestroyContext(EGL_DISPLAY, self._context)
+  File "/home/kevin/miniconda3/envs/libero_test/lib/python3.10/site-packages/OpenGL/error.py", line 230, in glCheckError
+    raise self._errorClass(
+OpenGL.raw.EGL._errors.EGLError: EGLError(
+	err = EGL_NOT_INITIALIZED,
+	baseOperation = eglDestroyContext,
+	cArguments = (
+		<OpenGL._opaque.EGLDisplay_pointer object at 0x7d018f8ebec0>,
+		<OpenGL._opaque.EGLContext_pointer object at 0x7d00bf764ec0>,
+	),
+	result = 0
+)

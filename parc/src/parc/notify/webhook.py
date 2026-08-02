@@ -365,6 +365,101 @@ def notify_job_finished(
     return out
 
 
+def format_eval_message(
+    run_dir: str | Path,
+    *,
+    status: str,
+    metrics: dict[str, Any] | None = None,
+    error: str | None = None,
+    config_name: str | None = None,
+) -> str:
+    """直接 eval（キュー無し）完了メッセージ。ジョブ通知に寄せる。"""
+    run_path = Path(run_dir)
+    run_id = run_path.name
+    machine = resolve_notify_machine(run_id=run_id)
+    metrics = dict(metrics or {})
+    if not metrics.get("by_category") or metrics.get("success_rate") is None:
+        loaded = _load_run_metrics(run_id)
+        for k in ("success_rate", "n_episodes", "by_category", "mean_steps"):
+            if k not in metrics and k in loaded:
+                metrics[k] = loaded[k]
+
+    st = (status or "finished").strip().lower()
+    if st in {"finished", "done", "ok"}:
+        label = "FINISHED"
+    elif st in {"failed", "error"}:
+        label = "FAILED"
+    else:
+        label = st.upper() or "FINISHED"
+
+    lines = [
+        f"[PARC] {label} · eval (direct)",
+        f"machine={machine}  kind=eval",
+    ]
+    if config_name:
+        lines.append(f"config={config_name}")
+    lines.append(f"run_id={run_id}")
+
+    score_bits: list[str] = []
+    sr = metrics.get("success_rate")
+    n_ep = metrics.get("n_episodes")
+    mean_steps = metrics.get("mean_steps")
+    if sr is not None:
+        try:
+            score_bits.append(f"SR={float(sr):.3f}")
+        except (TypeError, ValueError):
+            score_bits.append(f"SR={sr}")
+    if n_ep is not None:
+        score_bits.append(f"episodes={n_ep}")
+    if mean_steps is not None:
+        try:
+            score_bits.append(f"mean_steps={float(mean_steps):.1f}")
+        except (TypeError, ValueError):
+            pass
+    if score_bits:
+        lines.append("score: " + "  ".join(score_bits))
+
+    by_cat = metrics.get("by_category")
+    if isinstance(by_cat, dict) and by_cat:
+        lines.append("by_category (asc SR):")
+        lines.extend(_category_lines(by_cat))
+
+    if error:
+        lines.append(f"error={str(error)[:240]}")
+
+    lines.append(f"path={run_path}")
+    return "\n".join(lines)
+
+
+def notify_eval_finished(
+    run_dir: str | Path,
+    *,
+    status: str,
+    metrics: dict[str, Any] | None = None,
+    error: str | None = None,
+    config_name: str | None = None,
+    force: bool = False,
+) -> dict[str, Any]:
+    """直接 eval 終端通知。webhook 未設定ならスキップ（force でも URL 必須）。"""
+    if not force and not (notify_config().get("webhook_url") or "").strip():
+        return {"ok": False, "skipped": True, "reason": "webhook_url not set"}
+    text = format_eval_message(
+        run_dir,
+        status=status,
+        metrics=metrics,
+        error=error,
+        config_name=config_name,
+    )
+    run_id = Path(run_dir).name
+    machine = resolve_notify_machine(run_id=run_id)
+    out = send_webhook(text, username=discord_username_for_machine(machine))
+    out["run_id"] = run_id
+    out["status"] = status
+    out["machine"] = machine
+    out["preview"] = text[:400]
+    return out
+
+
 def resolve_job_id(job_id: str) -> str:
     """完全一致または一意プレフィックスで job_id を解決する。"""
     from parc.queue.store import list_jobs
