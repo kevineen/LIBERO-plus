@@ -1,0 +1,50 @@
+# thor: Evo-1 風 二段階 FT Stage1（vision 凍結 · expert のみ）— ユーザー承認 2026-08-03
+# 仮説: Language OOD で semantic を壊さず action head を適応（Phase D1）
+# 親判定: しない · cam mix 禁止 · 薄い Language hard は親更新に使わない
+# 調査メモ: docs/00_research/turbovla_evo1.md
+name: sidecar_smolvla_ft_twostage_stage1_expert_from_continue10k_thor
+seed: 42
+tags: [sidecar, twostage, stage1, smolvla, language, expert_only, from_continue10k, thor]
+
+train:
+  backend: lerobot
+  policy_type: smolvla
+  dataset_repo_id: lerobot/libero_plus
+  policy_repo_id: null
+  load_vlm_weights: true
+  steps: 5000
+  batch_size: 8
+  eval_freq: 0
+  eval_n_episodes: 1
+  env_task: libero_spatial
+  dry_run: false
+  extra_args:
+    - --policy.pretrained_path=/mnt/sda/parc_libero_plus/experiments/imported/20260730T071018Z_winpc_cbbf5c8b_smolvla_ft_libero_cam_mix_continue10k_wi/010000/pretrained_model
+    - --policy.vlm_model_name=HuggingFaceTB/SmolVLM2-500M-Instruct
+    - --policy.expert_width_multiplier=0.5
+    - --policy.n_action_steps=10
+    - --policy.chunk_size=50
+    - --policy.num_expert_layers=-1
+    - --policy.num_vlm_layers=0
+    - --policy.attention_mode=cross_attn
+    - --policy.freeze_vision_encoder=true
+    - --policy.train_expert_only=true
+    - --policy.optimizer_lr=1e-5
+    - --num_workers=8
+    - --save_freq=2500
+    - --log_freq=100
+    - --dataset.video_backend=pyav
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 1
+  # 薄い Language hard スモーク（親決め禁止）。本格 hard×10 は別ジョブ。
+  task_ids: [984, 986, 988]
+  max_steps: 280
+  camera_height: 256
+  camera_width: 256
+  save_video: true
+  use_classification: true
+
+policy:
+  type: lerobot_cmd

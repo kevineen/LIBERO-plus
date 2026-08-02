@@ -1,0 +1,56 @@
+# 研究サイドカー: Evo-1 風 二段階 FT — Stage1（草案 · dry_run）
+# 実走: sidecar_smolvla_ft_twostage_stage1_expert_from_continue10k_thor.yaml
+# （2026-08-03 承認 · q_20260802T210926…fce856bb）
+# 調査メモ: docs/00_research/turbovla_evo1.md
+name: sidecar_smolvla_ft_twostage_stage1_expert_from_continue10k
+seed: 42
+tags: [sidecar, twostage, stage1, smolvla, language, expert_only, from_continue10k]
+
+train:
+  backend: lerobot
+  policy_type: smolvla
+  # cam mix は使わない（Phase D: cam FT 禁止）。公開 libero_plus のみ。
+  dataset_repo_id: lerobot/libero_plus
+  policy_repo_id: null
+  load_vlm_weights: true
+  # Evo-1 Stage1 相当の短尺。本番ステップは承認時に調整可。
+  steps: 5000
+  batch_size: 8
+  eval_freq: 0
+  eval_n_episodes: 1
+  env_task: libero_spatial
+  # 草案既定: 実走は dry_run を false にしてキュー投入（要承認）
+  dry_run: true
+  extra_args:
+    # winpc 親。thor では imported パスに差し替え:
+    # /mnt/sda/parc_libero_plus/experiments/imported/20260730T071018Z_winpc_cbbf5c8b_smolvla_ft_libero_cam_mix_continue10k_wi/010000/pretrained_model
+    - --policy.pretrained_path=/home/kevin/Matsuo/robot/LIBERO-plus/parc/experiments/20260730T071018Z_winpc_cbbf5c8b_smolvla_ft_libero_cam_mix_continue10k_wi/train_output/checkpoints/010000/pretrained_model
+    - --policy.vlm_model_name=HuggingFaceTB/SmolVLM2-500M-Instruct
+    - --policy.expert_width_multiplier=0.5
+    - --policy.n_action_steps=10
+    - --policy.chunk_size=50
+    - --policy.num_expert_layers=-1
+    - --policy.num_vlm_layers=0
+    - --policy.attention_mode=cross_attn
+    # Stage1: vision 凍結 · expert のみ（Evo-1 freeze VLM に相当）
+    - --policy.freeze_vision_encoder=true
+    - --policy.train_expert_only=true
+    - --policy.optimizer_lr=1e-5
+    - --num_workers=8
+    - --save_freq=2500
+    - --log_freq=100
+    - --dataset.video_backend=pyav
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 1
+  # Language hard 対照用 ID（学習後の深掘り評価で使用。本 FT の train 分割には入れない）
+  task_ids: [984, 986, 988]
+  max_steps: 280
+  camera_height: 256
+  camera_width: 256
+  save_video: false
+  use_classification: true
+
+policy:
+  type: lerobot_cmd

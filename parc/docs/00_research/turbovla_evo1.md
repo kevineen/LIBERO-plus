@@ -79,8 +79,9 @@ PARC 接点: Phase D（Language / Sensor / VR）、サイドカー先例（Molmo
 - [x] Evo-1 baselines 枠 + 公開数字 · 再現手順
 - [x] SmolVLA 二段階 FT YAML 草案（dry_run / 承認待ち）
 - [x] VR roadmap M5 に idle/noop + `stats_key` を追記
-- [ ] Evo-1 実測 thin/hard（GPU · **別承認**）
-- [ ] 二段階 FT 実走（**別承認** · cam FT 禁止維持）
+- [x] Evo-1 Language hard thin 実測（winpc · SR=0.000 · 親判定外）
+- [x] 二段階 FT Stage1 実走（thor · 薄い Lang hard SR=0.000 · 親判定外）
+- [ ] Stage2 / Evo-1 ×10 / flash-attn（**別承認**）
 - [ ] M0 Quest E2E 後に noop trim 実装
 
 ---

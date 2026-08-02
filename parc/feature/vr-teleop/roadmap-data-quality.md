@@ -1,6 +1,6 @@
 # VR Teleop — データ品質・スケーリング改善ロードマップ
 
-**Updated:** 2026-07-31  
+**Updated:** 2026-08-03  
 **ゴール:** 収録時間ではなく、**単位コストあたりの「同期・多様・正しくラベル付け・検証可能」な軌跡**を増やす。
 
 関連:
@@ -8,6 +8,7 @@
 - 実装済み品質ゲート: [STATUS.md](STATUS.md) / [design.md](design.md)
 - 実機 E2E 手順: [next-sprint-plan.md](next-sprint-plan.md)（Sprint C）
 - 運用: [docs/12_vr_teleop.md](../../docs/12_vr_teleop.md)
+- 外部参照（no-noop / stats）: [docs/00_research/turbovla_evo1.md](../../docs/00_research/turbovla_evo1.md)
 
 ```text
 単位コスト = (人時 + 機時) / 検証済み良質エピソード数
@@ -149,13 +150,20 @@
 |------|------|------|
 | 高 | verify 統計監査 | エピソード長・行動次元の分布/レンジ・Δt 分布・タスク別本数・`stats.json` 妥当性。壊れても例外を出さない同期バグの検知 |
 | 高 | exclusion log | 除外した episode ID + 理由を残す。`filter_manifest` / `mix_manifest` と契約を揃え、raw を上書きせず再生成可能にする |
+| 高 | idle / no-op trim | TurboVLA `regenerate_libero_no_noops` 相当。待機・無操作フレームを学習 subset から除外（raw は不変 · manifest + reason）。success-only の後段フィルタ |
+| 高 | versioned `stats_key` | TurboVLA `compute_mixed_stats` / `libero_all4_stats.json` 相当。mix・trim 後の正規化統計をキー付きで保存し、FT YAML から参照。誤った親 stats 流用を防ぐ |
 | 高 | train/eval 分割ルール | episode 単位（可能なら operator 単位）。frame ランダム分割はリークのため禁止（docs に固定済み） |
 | 中 | action lag Δ | `o_t` ↔ `a_{t+Δ}` を YAML 設計変数化。制御周期確定後に Δ=0 vs 小遅延の感度を 1 回測る |
 | 中 | Filter / Relabel / Condition | 壊れた軌道は filter。ラベルだけ怪しければ relabel（軌道は資産）。指示文汚染時は success-only だけでは足りない |
 | 低 | rerun / Foxglove | 軌道の目視監査。実機エピソードが溜まってから。M0 前の導入はコスパが悪い |
 
 **実装順（コードは承認後・M0 完了後）:**  
-`M0 Quest E2E` → `verify 統計監査` → `exclusion log（ID + reason）` →（必要なら）action lag Δ / 可視化。
+`M0 Quest E2E` → `verify 統計監査` → `exclusion log（ID + reason）` → `idle/no-op trim` → `versioned stats_key` →（必要なら）action lag Δ / 可視化。
+
+参照実装（移植ネタ・そのまま依存しない）:
+
+- TurboVLA: `scripts/libero/regenerate_libero_no_noops.py`
+- TurboVLA: `scripts/libero/compute_mixed_stats.py` · `experiments/libero/configs/libero_all4_stats.json`
 
 ---
 
@@ -168,7 +176,7 @@
 | **M2** 遅延可視化・ゲート | #2 | RTT メタ + しきい値動作 — **done** |
 | **M3** スケール多様 | #4 | 摂動キュー + coverage — **done**（ラベル/キュー） |
 | **M4** 検証強化 | #5 #6 | replay + Approximate Time 同期器 — **done** |
-| **M5** 統計・再現ゲート | 講義由来・次候補の高優先 | verify 統計 + exclusion log — **deferred（M0 後）** |
+| **M5** 統計・再現ゲート | 講義由来・次候補の高優先 | verify 統計 + exclusion log + **idle/no-op trim** + **versioned stats_key** — **deferred（M0 後）** |
 
 ---
 

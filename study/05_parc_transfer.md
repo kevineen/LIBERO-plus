@@ -26,7 +26,8 @@
 1. **LIBERO-plus 評価ハーネス**（`libero-plus-eval/`・WS・7 カテゴリ）  
    → 外部天井・Camera/Robot 弱点の対照。記録は baselines 枠。親判定外。
 2. **二段階 FT の仮説**（Stage1 expert → Stage2 フル）  
-   → Language / semantic。YAML 草案あり、**実行は別承認**。cam FT 禁止維持。
+   → Language / semantic。YAML: `sidecar_smolvla_ft_twostage_stage{1,2}_*.yaml`。  
+   **Stage1 は 2026-08-03 に thor で実行済**（薄い Lang hard SR=0.000 · 親判定外）。**Stage2 は別承認**。cam FT 禁止維持。
 
 ### P1（TurboVLA / 両方）
 
@@ -53,8 +54,8 @@
 
 | 上流の技法 | PARC での置き場所 | 今すぐやる？ |
 |------------|-------------------|--------------|
-| libero-plus-eval WS | baselines / 将来の対照 eval | 承認後 |
-| 二段階 FT | sidecar YAML → 実行は承認後 | 草案のみ可 |
+| libero-plus-eval WS | baselines · `evo1_parc_thin_client.py` | Lang hard thin **済**（SR=0）· ×10 は承認後 |
+| 二段階 FT | sidecar YAML | Stage1 **済** · Stage2 は承認後 |
 | no-noop / stats_key | VR roadmap M5 | M0 E2E 後 |
 | プロセス分離 | Fleet・ホスト役割 | 運用で既に近い |
 | TurboVLA 全体を親 | — | **しない** |

@@ -394,6 +394,25 @@ PYTHONPATH=src:.. ../../.venv/bin/python -m parc.train.merge_ckpts \
 - 評価テンプレ: `configs/experiments/sidecar_clair_apo_async_eval.yaml`（`async_inference: true`）
 - Gate 記録: [baselines/clair_apo](baselines/clair_apo/README.md)
 
+### C8. TurboVLA / Evo-1 由来のレシピ草案（研究サイドカー）
+
+親 ckpt には接続しない。調査正本: [00_research/turbovla_evo1.md](00_research/turbovla_evo1.md)。
+
+**二段階 FT（Evo-1 風 · Language 軸仮説）**
+
+| Stage | YAML | 要点 |
+|-------|------|------|
+| 1 | `configs/experiments/sidecar_smolvla_ft_twostage_stage1_expert_from_continue10k.yaml` | `freeze_vision_encoder=true` · `train_expert_only=true` · continue10k から · **dry_run 既定** |
+| 2 | `configs/experiments/sidecar_smolvla_ft_twostage_stage2_full_from_stage1.yaml` | unfreeze フル · Stage1 ckpt 差し替え必須 · **dry_run 既定** |
+
+- データは `lerobot/libero_plus` のみ（**cam mix FT 禁止**）
+- 実走・キュー投入は **別承認**（ラベル置換 FT と同列）
+- 評価対照: Language hard 984/986/988
+
+**外部ベースライン:** [baselines/evo1](baselines/evo1/README.md)（upstream LIBERO-plus · 親判定外）
+
+**データ衛生（VR M5）:** idle/no-op trim + versioned `stats_key` — [roadmap-data-quality.md](../feature/vr-teleop/roadmap-data-quality.md)
+
 ### C5. 評価駆動の改善サイクル（推奨ワークフロー）
 
 ```text
@@ -509,3 +528,4 @@ MT50 依存は optional: `parc[metaworld]`（**別 venv 推奨**、[01_setup.md]
 | [04_eval.md](04_eval.md) | parc-eval / eval_ckpt |
 | [05_experiments.md](05_experiments.md) | run 管理・比較 |
 | [06_competition.md](06_competition.md) | 本選配布後の接続 |
+| [00_research/turbovla_evo1.md](00_research/turbovla_evo1.md) | TurboVLA / Evo-1 参照（非オペ） |

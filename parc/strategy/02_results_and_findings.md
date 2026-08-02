@@ -1,6 +1,16 @@
 # 02. 結果と知見
 
-時点: **2026-07-31**
+時点: **2026-08-03**
+
+## サイドカー（2026-08-03 · 親判定外）
+
+| 実験 | Host | SR | n | メモ |
+|------|------|---:|--:|------|
+| SmolVLA Stage1 expert-only FT（continue10k→5k）薄い Lang hard | thor | **0.000** | 3 | `20260802T210934Z_thor_72c5af3f_…` · 984/986/988×1 · ckpt `005000` |
+| Evo-1 Language hard thin（upstream WS） | winpc | **0.000** | 3 | 同 ID×1 · flash-attn 無し · [baselines/evo1](../docs/baselines/evo1/) |
+| Molmo Language hard（参照） | thor | **1.000** | 30 | ×10 · 既存 |
+
+解釈: Stage1 短尺 + 薄い hard だけでは改善見えず。**Stage2 延長は別承認**（薄い 0 だけで決めない）。Evo-1 も同 hard スライスで全滅 → 語彙 OOD はモデル横断の難所（Molmo 例外）。
 
 ## 学習ライン（薄い eval = tpc=2, n=14）
 
@@ -328,8 +338,12 @@ continue10k から mix v3（base180+cam120 ≈ 60/40）へ +5k · 1e-5 は、Cam
 | 987 | black bowl…plate…ramekin | 0.40 | 0.60 |
 | 988 | 丁寧だが物体名は標準 | 0.40 | 0.20 |
 
-**仮説:** 失敗は **言い換え語彙 OOD**（bowl/plate が別表現）。動作そのものより言語。  
-**次:** hard deep 動画（`q_…70c96dab`）→ ラベル置換少本数 FT 草案（cam なし・承認後）。
+**仮説:** 失敗は **言い換え語彙 OOD**（bowl/plate が別表現）。動作そのものより言語。
+
+**hard deep（984/986/988×10 · video）:** SR=**0.10** · `20260731T212845Z_thor_ce07fdf3_…` / `q_…70c96dab`  
+- 984: **0/10** · 986: **0/10** · 988: **3/10=0.30** → 語彙 OOD 仮説を補強。
+
+**次（2026-08-02）:** MolmoAct2 Language hard 対照 + 厚い同尺を thor 順投入（親判定外）。ラベル置換少本数 FT は cam なし・別承認。
 
 ### 空き埋め（親決め禁止）
 
@@ -404,6 +418,18 @@ GR00T N1.5 + [QuantVLA](https://quantvla.github.io/) PTQ。正本: [design](../d
 
 - 古典 LIBERO（n=1/task）: FP16 Avg **0.875** · Quant **0.850**（Spatial/Object 同点 · Goal Quant↑ · Long Quant↓）。論文 GR00T 表（多 trial）の近傍だが薄いプロトコルのため順位主張はしない。
 - LIBERO-plus 薄い（tpc=2 · n=14）: FP16 **0.857** · Quant **0.786**。両条件とも **Camera 0/2**。SmolVLA 主線・親 ckpt には接続しない。
+
+## MolmoAct2 接続スパイク（2026-08-02 · 研究用・親判定外）
+
+正本: [design](../docs/superpowers/specs/2026-08-02-molmoact2-spike-design.md) · 表: [libero_plus.md](../docs/baselines/molmoact2/libero_plus.md)。
+
+- G0 (winpc): PASS · bf16 · peak≈11 GiB。
+- G1 (thor): smoke SR=0.0（`max_steps=50` が短すぎ · 同 task は G2 で step 74 成功）。
+- G2 (thor · tpc=2 · n=14): SR=**1.000** · run `20260801T223700Z_thor_7a12ac0e_…`。
+- Language hard (984/986/988×10): SR=**1.000** · vs SmolVLA **0.10** · `20260801T234708Z_thor_99f67642_…`。
+- Thick (tpc=5 · n=35): SR=**1.000** · vs SmolVLA continue10k **0.514** · `20260802T002529Z_thor_dde26442_…`（Camera/全軸 1.0）。
+- Ablations（hard×5）: E1 nonsense **0.867** · E2 normalize_off **1.000** · E3 base **FAIL**（state 非互換）· E4 steps=1 **1.000** → **言語必須ではない / LIBERO 契約 FT は必須 / steps 非支配**。H5 言語 FT は見送り。表: [libero_plus.md](../docs/baselines/molmoact2/libero_plus.md)。
+- **親 ckpt・提出・主線置換には使わない**（サイドカー）。
 
 ## CLAIR / Flow-APO サイドカー（2026-08-02 · 研究用・親判定外）
 
