@@ -1,6 +1,6 @@
 # TurboVLA / Evo-1 — PARC 向け参照メモ
 
-時点: **2026-08-03**  
+時点: **2026-08-04**  
 出典: [TurboVLA](https://github.com/H-EmbodVis/TurboVLA) · [Evo-1](https://github.com/MINT-SJTU/Evo-1)  
 位置づけ: **調査メモ（非オペ正本）**。親 = SmolVLA continue10k の差し替え候補ではない。
 
@@ -11,6 +11,7 @@
 | Evo-1 plus ベースライン枠 | [docs/baselines/evo1/](../baselines/evo1/) |
 | 二段階 FT YAML 草案 | `configs/experiments/sidecar_smolvla_ft_twostage_stage{1,2}_*.yaml` |
 | VR idle/noop · stats_key | [feature/vr-teleop/roadmap-data-quality.md](../../feature/vr-teleop/roadmap-data-quality.md)（M5） |
+| 失敗注視マップ（SmolVLA） | [docs/04_eval.md](../04_eval.md) · `smolvla_lang_hard_attention*.yaml` |
 
 ---
 
@@ -52,7 +53,8 @@ PARC 接点: Phase D（Language / Sensor / VR）、サイドカー先例（Molmo
 1. **no-noop 除去 + mixed-suite stats**（`regenerate_libero_no_noops.py` · `compute_mixed_stats.py` · `libero_all4_stats.json`）  
    VR デモ idle trim + versioned `stats_key` として M5 に接続（classic RLDS 全置換はしない）。
 2. **policy ≠ sim プロセス分離**（WS / 別 Python）— thor policy / winpc·nuc MuJoCo と整合。
-3. **評価プロトコル細部** — `chunk_size == num_open_loop_steps`、action 次元 crop · gripper 二値化を `parc-eval` 監査項目に。
+3. **評価プロトコル細部** — `chunk_size == num_open_loop_steps`、action 次元 crop · gripper 二値化を `parc-eval` 監査項目に。  
+   失敗レビュー補強: SmolVLA `save_attention`（活性化/Grad-CAM · 失敗時のみ · [04_eval](../04_eval.md)）。Evo-1 側は未配線。
 
 ### P2 — 将来
 

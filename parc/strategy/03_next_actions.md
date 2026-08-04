@@ -49,14 +49,16 @@
   - C2: Language deep **0.20** · Sensor deep **0.24**（`q_…7bbbffb5` · 親決め禁止）  
 - [x] **Phase A' FT on thor** — **敗北 · 親維持**  
   - thick **0.286** · Cam deep **0.06** → **cam 軸短 FT 打ち切り**
-- [ ] **Phase D: 軸転換** — **D1 診断完了 · D2 Sensor hard 投入 · D3 並行**  
+- [ ] **Phase D: 軸転換** — **D1 Stage2 running · D2 診断完了 · D3 並行**  
   - 正本: [phase-d design](../docs/superpowers/specs/2026-08-01-phase-d-axis-pivot-design.md) · [D1/D3 plan](../docs/superpowers/plans/2026-08-01-phase-d1-language-d3-vr.md)  
   - **D1 thor:** Language hard deep **done** SR=**0.10**（984/986=0 · 988=0.30）`q_…70c96dab` · `20260731T212845Z_thor_ce07fdf3_…`  
   - **D1 続:** Molmo Language hard **1.000** / 厚い **1.000**（親判定外 · 完了）· ラベル置換 FT は別承認  
-  - **D1 二段階 Stage1（承認済 · done）:** `q_20260802T210926…fce856bb` · run `20260802T210934Z_thor_72c5af3f_…` · 薄い Lang hard **SR=0.000** · ckpt `005000` · **親判定外**  
+  - **D1 二段階 Stage1（done）:** `q_20260802T210926…fce856bb` · run `20260802T210934Z_thor_72c5af3f_…` · 薄い Lang hard **SR=0.000** · ckpt `005000` · **親判定外**  
   - **D1 Evo-1 Language hard thin（done）:** SR=**0.000**（984/986/988×1）· [baselines/evo1](../docs/baselines/evo1/) · flash-attn 無し · **親判定外**  
-  - **D1 次:** Stage2 / ラベル置換 FT / Evo-1 ×10 は **別承認**（薄い 0 だけでは延長しない）  
-  - **D2 thor:** Sensor hard deep 結果確認  
+  - **D1 Stage2（承認済 · running）:** `q_20260804T033323…edf56815` · `sidecar_smolvla_ft_twostage_stage2_full_from_stage1_thor.yaml` · 10k · from Stage1 `005000` · 薄い Lang hard smoke · **親判定外**  
+  - **D1 残:** ラベル置換 FT / Evo-1 ×10 は未着手  
+  - **D2 thor:** Sensor hard deep **done** SR=**0.20** · `q_…369f498f` · `20260802T225414Z_thor_ec7286b4_…`（1375:0.40 · 1377:0.10 · 1378:0.10 · 親決め禁止）· Sensor 短 FT は別承認  
+  - **失敗診断ツール:** SmolVLA `save_attention`（activation/Grad-CAM · 失敗時のみ）配線済 · smoke `…695f9fc9_…` · [docs/04_eval](../docs/04_eval.md)  
   - **D3 mainpc:** VR Quest E2E 準備（Unity/Quest 手作業）  
   - cam FT **禁止**
 - [x] **Phase B: cam 増量** — **完了・敗北（親維持）**  

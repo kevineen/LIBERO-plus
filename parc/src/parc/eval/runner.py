@@ -13,6 +13,7 @@ from tqdm import tqdm
 from parc.benchmarks import get_benchmark
 from parc.benchmarks.base import BenchmarkBackend
 from parc.env.metrics import EpisodeMetrics, aggregate, finalize_episode
+from parc.eval.attention import overlay_heatmap, save_attention_media, side_by_side
 from parc.eval.media import extract_rgb, save_episode_media
 from parc.policies.base import Policy, build_policy
 
@@ -35,14 +36,23 @@ def run_episode(
     capture_frames: bool = False,
     frame_stride: int = 5,
     initial_obs: dict[str, Any] | None = None,
-) -> tuple[bool, int, list[np.ndarray], list[np.ndarray], list[np.ndarray]]:
+    capture_attention: bool = False,
+    attention_stride: int | None = None,
+) -> tuple[
+    bool,
+    int,
+    list[np.ndarray],
+    list[np.ndarray],
+    list[np.ndarray],
+    list[np.ndarray],
+]:
     """1 エピソードを実行する。
 
     ``initial_obs`` が無ければ ``env.reset()`` のみ（後方互換・テスト用）。
     通常は ``backend.reset_episode`` の結果を渡す。
 
     Returns:
-        success, steps, actions, ee_positions, frames(RGB list)
+        success, steps, actions, ee_positions, frames(RGB list), attention_frames
     """
     set_task = getattr(policy, "set_task", None)
     if callable(set_task) and task_language:
@@ -58,8 +68,11 @@ def run_episode(
     actions: list[np.ndarray] = []
     ee_positions: list[np.ndarray] = [_ee_pos(obs)]
     frames: list[np.ndarray] = []
+    attention_frames: list[np.ndarray] = []
     success = False
     steps = 0
+    attn_stride = int(attention_stride if attention_stride is not None else frame_stride)
+    act_with_saliency = getattr(policy, "act_with_saliency", None) if capture_attention else None
 
     def _maybe_capture(current: dict[str, Any], t: int) -> None:
         if not capture_frames:
@@ -70,13 +83,40 @@ def run_episode(
         if rgb is not None:
             frames.append(np.asarray(rgb).copy())
 
+    def _maybe_attention(current: dict[str, Any], t: int, saliency: dict[str, Any] | None) -> None:
+        if not capture_attention or saliency is None:
+            return
+        if t % max(1, attn_stride) != 0:
+            return
+        rgb = extract_rgb(current)
+        heat = saliency.get("front")
+        if rgb is None or heat is None:
+            return
+        # マップは方策入力（flip）基準 → env RGB に合わせて unflip
+        overlay = overlay_heatmap(
+            rgb,
+            heat,
+            unflip_heatmap=bool(saliency.get("flipped_input", True)),
+        )
+        attention_frames.append(side_by_side(np.asarray(rgb)[..., :3], overlay))
+
     _maybe_capture(obs, 0)
 
     for t in range(max_steps):
         if task_language:
             obs = dict(obs)
             obs["task"] = task_language
-        action = policy.act(obs)
+
+        saliency: dict[str, Any] | None = None
+        if callable(act_with_saliency):
+            # 注視取得ステップ以外は通常 act（コスト抑制）
+            if t % max(1, attn_stride) == 0:
+                action, saliency = act_with_saliency(obs)
+            else:
+                action = policy.act(obs)
+        else:
+            action = policy.act(obs)
+
         step_out = env.step(action.tolist() if hasattr(action, "tolist") else action)
         obs, reward, done, info = step_out
         obs = dict(obs) if isinstance(obs, dict) else {"state": obs}
@@ -84,11 +124,12 @@ def run_episode(
         ee_positions.append(_ee_pos(obs))
         steps = t + 1
         _maybe_capture(obs, t + 1)
+        _maybe_attention(obs, t, saliency)
         if backend.success(obs, float(reward), bool(done), info, env):
             success = True
             break
 
-    return success, steps, actions, ee_positions, frames
+    return success, steps, actions, ee_positions, frames, attention_frames
 
 
 def _resolve_backend_name(eval_cfg: dict[str, Any]) -> str:
@@ -122,14 +163,30 @@ def evaluate(config: dict[str, Any], run_dir: Path | None = None) -> dict[str, A
     # YAML 未指定時は backend の action_dim を使う
     if "action_dim" not in policy_cfg:
         policy_cfg["action_dim"] = backend.action_dim
-    policy = build_policy(policy_cfg, seed=seed)
 
     save_video = bool(eval_cfg.get("save_video", False))
     save_frames = bool(eval_cfg.get("save_frames", False))
+    save_attention = bool(eval_cfg.get("save_attention", False))
+    attention_on_failure_only = bool(eval_cfg.get("attention_on_failure_only", True))
+    attention_method = str(eval_cfg.get("attention_method", "activation")).lower().strip()
     frame_stride = int(eval_cfg.get("frame_stride", 5))
+    attention_stride = int(eval_cfg.get("attention_stride", frame_stride))
     max_save_frames = int(eval_cfg.get("max_save_frames", 60))
     capture = save_video or save_frames
     media_manifest: list[dict[str, Any]] = []
+
+    # eval 側の attention 設定を policy に伝播（checkpoint のみ有効）
+    if save_attention:
+        policy_cfg["enable_saliency"] = True
+        policy_cfg["saliency_method"] = attention_method
+
+    policy = build_policy(policy_cfg, seed=seed)
+
+    if save_attention and not bool(getattr(policy, "supports_saliency", False)):
+        raise ValueError(
+            "eval.save_attention=true ですが、この policy は act_with_saliency 非対応です。"
+            " SmolVLA checkpoint (policy.type=checkpoint) を使ってください。"
+        )
 
     episodes: list[EpisodeMetrics] = []
     pbar = tqdm(selected, desc=f"eval:{backend_name}:{suite}")
@@ -148,7 +205,7 @@ def evaluate(config: dict[str, Any], run_dir: Path | None = None) -> dict[str, A
                     seed=seed,
                     eval_cfg=eval_cfg,
                 )
-                success, steps, actions, ee_positions, frames = run_episode(
+                success, steps, actions, ee_positions, frames, attention_frames = run_episode(
                     env,
                     policy,
                     backend,
@@ -157,21 +214,42 @@ def evaluate(config: dict[str, Any], run_dir: Path | None = None) -> dict[str, A
                     capture_frames=capture,
                     frame_stride=frame_stride,
                     initial_obs=initial_obs,
+                    capture_attention=save_attention,
+                    attention_stride=attention_stride,
                 )
-                if capture and run_dir is not None:
+                stem = f"task{task_id:04d}_trial{trial:02d}"
+                if run_dir is not None and (capture or save_attention):
                     videos_dir = run_dir / "videos"
-                    stem = f"task{task_id:04d}_trial{trial:02d}"
-                    media_manifest.append(
-                        save_episode_media(
-                            videos_dir,
-                            frames=frames,
-                            stem=stem,
-                            save_video=save_video,
-                            save_frames=save_frames,
-                            frame_stride=1,
-                            max_frames=max_save_frames,
+                    entry: dict[str, Any] = {"stem": stem, "success": bool(success)}
+                    if capture:
+                        entry.update(
+                            save_episode_media(
+                                videos_dir,
+                                frames=frames,
+                                stem=stem,
+                                save_video=save_video,
+                                save_frames=save_frames,
+                                frame_stride=1,
+                                max_frames=max_save_frames,
+                            )
                         )
+                    # 失敗時のみ（既定）注視媒体を残す
+                    keep_attn = save_attention and attention_frames and (
+                        not attention_on_failure_only or not success
                     )
+                    if keep_attn:
+                        entry.update(
+                            save_attention_media(
+                                videos_dir,
+                                frames=attention_frames,
+                                stem=stem,
+                                save_video=True,
+                                save_frames=save_frames,
+                                max_frames=max_save_frames,
+                            )
+                        )
+                    if capture or keep_attn:
+                        media_manifest.append(entry)
                 ep = finalize_episode(
                     suite=suite,
                     task_id=task_id,

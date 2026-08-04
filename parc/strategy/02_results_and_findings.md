@@ -1,6 +1,6 @@
 # 02. 結果と知見
 
-時点: **2026-08-03**
+時点: **2026-08-04**
 
 ## サイドカー（2026-08-03 · 親判定外）
 
@@ -11,6 +11,14 @@
 | Molmo Language hard（参照） | thor | **1.000** | 30 | ×10 · 既存 |
 
 解釈: Stage1 短尺 + 薄い hard だけでは改善見えず。**Stage2 延長は別承認**（薄い 0 だけで決めない）。Evo-1 も同 hard スライスで全滅 → 語彙 OOD はモデル横断の難所（Molmo 例外）。
+
+### 失敗注視マップ（SmolVLA · 2026-08-04 · 親判定外）
+
+| 実験 | Host | SR | メモ |
+|------|------|---:|------|
+| Lang hard attention smoke（984×1 · max_steps=40） | winpc | **0.000** | `…695f9fc9_smolvla_lang_hard_attention_smoke` · `task0984_trial00_attn.mp4` 生成確認 |
+
+手順: [docs/04_eval.md](../docs/04_eval.md) · YAML `smolvla_lang_hard_attention*.yaml`。活性化/Grad-CAM は仮説生成用（真の cross-attn ではない）。
 
 ## 学習ライン（薄い eval = tpc=2, n=14）
 
@@ -344,6 +352,17 @@ continue10k から mix v3（base180+cam120 ≈ 60/40）へ +5k · 1e-5 は、Cam
 - 984: **0/10** · 986: **0/10** · 988: **3/10=0.30** → 語彙 OOD 仮説を補強。
 
 **次（2026-08-02）:** MolmoAct2 Language hard 対照 + 厚い同尺を thor 順投入（親判定外）。ラベル置換少本数 FT は cam なし・別承認。
+
+### continue10k Sensor hard（Phase D2 · 2026-08-03）
+
+hard deep（1375/1377/1378×10 · video · 親決め禁止）:
+
+| run | SR | 1375 | 1377 | 1378 | notes |
+|-----|---:|-----:|-----:|-----:|-------|
+| `20260802T225414Z_thor_ec7286b4_…` / `q_…369f498f` | **0.20** | 0.40 | 0.10 | 0.10 | 今回完走 |
+| `20260802T081836Z_thor_881d14d0_…`（先行） | 0.267 | — | — | — | 同 YAML · ばらつき参照 |
+
+既存 Sensor deep（×5 · 非 hard）thor **0.16** / nuc **0.24** より hard 指定 task でも **0.20 前後**。全滅ではないが Sensor deep バー（≥0.16）近傍。短 FT は診断後・**別承認**。
 
 ### 空き埋め（親決め禁止）
 

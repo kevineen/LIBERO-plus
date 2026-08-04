@@ -30,7 +30,7 @@ Phase 0 前提 → 1 経路概念 → 2 TurboVLA → 3 Evo-1 → 4 Upstream smok
 - [ ] Phase 2: no-noop・mixed stats・`chunk_size == num_open_loop_steps`・&lt;1GB 意図を説明できる（q02）
 - [ ] Phase 3: Stage1/2 FT・pad-to-24D・plus 7 軸・WS server/client を説明できる（q03）
 - [ ] Phase 4: smoke を実行した、または notebook に手順ウォークスルーを記録した（q04）
-- [ ] Phase 5: PARC の P0/P1 と「親にしない理由」を研究メモと対応付けて説明できる（q05）
+- [ ] Phase 5: PARC の P0/P1 と「親にしない理由」を研究メモと対応付けて説明できる。失敗時 `save_attention` の位置づけも言える（q05）
 
 フル FT / thick eval は **発展（任意）**。必須完了条件に含めない。
 
@@ -46,6 +46,7 @@ Phase 0 前提 → 1 経路概念 → 2 TurboVLA → 3 Evo-1 → 4 Upstream smok
 | [`parc/catchup/`](../parc/catchup/) | PARC 本線（SmolVLA FT → eval）の最短パス |
 | [`parc/docs/00_research/turbovla_evo1.md`](../parc/docs/00_research/turbovla_evo1.md) | チーム向け調査メモ（借りる優先度） |
 | [`parc/docs/baselines/evo1/`](../parc/docs/baselines/evo1/) | Evo-1 ベースライン記録（Lang hard thin SR=0 · 2026-08-03） |
+| [`parc/docs/04_eval.md`](../parc/docs/04_eval.md)（注視マップ節） | SmolVLA 失敗エピソードの活性化 / Grad-CAM オーバーレイ |
 
 ## チーム実測メモ（2026-08-03）
 

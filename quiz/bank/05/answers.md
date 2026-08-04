@@ -5,3 +5,10 @@
 | E1 | B |
 | E2 | B |
 | E3 | no-noop / idle trim と versioned stats_key（など） |
+| E4 | B |
+
+# hard
+
+| 問 | 正答 |
+|----|------|
+| H1 | B |
