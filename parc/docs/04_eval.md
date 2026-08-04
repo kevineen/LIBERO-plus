@@ -80,3 +80,40 @@ eval:
 
 成果物は `experiments/<run_id>/videos/`。  
 ブラウザプレビューは `bash scripts/start_web.sh` → Run 詳細（[08_remote_and_ui.md](08_remote_and_ui.md)）。
+
+## 注視マップ（SmolVLA saliency）
+
+失敗エピソードで「どこを見ているか」を確認する。真の cross-attention ではなく、vision encoder の **活性化マップ**（既定）または **Grad-CAM**（action L2 標的）。
+
+```yaml
+eval:
+  save_video: true
+  save_attention: true
+  attention_on_failure_only: true   # 既定 true（成功時は *_attn を捨てる）
+  attention_method: activation      # or gradcam
+  attention_stride: 5               # 省略時は frame_stride
+policy:
+  type: checkpoint
+  flip_images: true
+  path: .../pretrained_model
+```
+
+薄スライス例: `configs/experiments/smolvla_lang_hard_attention.yaml`  
+配線スモーク（短尺）: `configs/experiments/smolvla_lang_hard_attention_smoke.yaml`
+
+```bash
+bash scripts/eval_ckpt.sh configs/experiments/smolvla_lang_hard_attention.yaml
+# 短尺確認:
+# PARC_EVAL_NO_NOTIFY=1 bash scripts/eval_ckpt.sh configs/experiments/smolvla_lang_hard_attention_smoke.yaml --no-notify
+```
+
+成果物（失敗時）:
+
+| ファイル | 内容 |
+|----------|------|
+| `videos/task####_trial##_attn.mp4` | 左=env RGB / 右=注視オーバーレイ |
+| `videos/manifest.json` | `attention_video` パス |
+
+**向き:** 保存動画の RGB は unflipped env 画像。方策入力は 180° flip のため、ヒートマップは計算後に unflip して重ねている。
+
+**解釈:** 活性化 / Grad-CAM は因果の証明ではなく仮説生成用。語彙 OOD では「正しい物体を見ていても行動が死ぬ」こともある。

@@ -90,6 +90,8 @@ class LeRobotCheckpointPolicy(Policy):
     """LeRobot `pretrained_model` ディレクトリを読み、act() で推論する。"""
 
     action_dim: int = 7
+    # runner が saliency 対応を判定するためのフラグ
+    supports_saliency: bool = True
 
     def __init__(
         self,
@@ -100,6 +102,8 @@ class LeRobotCheckpointPolicy(Policy):
         flip_images: bool = True,
         default_task: str = "",
         async_inference: bool = False,
+        enable_saliency: bool = False,
+        saliency_method: str = "activation",
     ):
         import torch
         from lerobot.policies.factory import make_pre_post_processors
@@ -109,6 +113,13 @@ class LeRobotCheckpointPolicy(Policy):
         self.flip_images = flip_images
         # SmolVLA 非同期推論スタック（LeRobot 側フラグがあれば有効化）
         self.async_inference = bool(async_inference)
+        self.enable_saliency = bool(enable_saliency)
+        method = str(saliency_method or "activation").lower().strip()
+        if method not in {"activation", "gradcam"}:
+            raise ValueError(
+                f"saliency_method は 'activation' か 'gradcam' です（got {saliency_method!r}）"
+            )
+        self.saliency_method = method
         self._task = default_task
         self.ckpt_dir = _resolve_ckpt_dir(path)
 
@@ -136,6 +147,10 @@ class LeRobotCheckpointPolicy(Policy):
             preprocessor_overrides=preprocessor_overrides,
         )
 
+        # saliency 有効時は vision tower の存在を起動時に検証する
+        if self.enable_saliency:
+            self._get_vision_model()
+
     def set_task(self, task: str) -> None:
         """エピソードの言語指示をセットする。"""
         self._task = task
@@ -143,21 +158,32 @@ class LeRobotCheckpointPolicy(Policy):
     def reset(self) -> None:
         self.policy.reset()
 
-    def act(self, obs: dict[str, Any]) -> np.ndarray:
-        import torch
+    def _get_vision_model(self) -> Any:
+        """SmolVLA 内部の SigLIP vision tower を返す。見つからなければエラー。"""
+        try:
+            vlm = self.policy.model.vlm_with_expert.get_vlm_model()
+            vision = vlm.vision_model
+        except AttributeError as exc:
+            raise RuntimeError(
+                "SmolVLA vision_model を解決できません。"
+                " LeRobot / transformers 版が想定と異なる可能性があります。"
+            ) from exc
+        if vision is None:
+            raise RuntimeError("SmolVLA vision_model が None です")
+        return vision
 
+    def _prepare_obs_batch(self, obs: dict[str, Any]) -> dict[str, Any]:
+        """観測 → preprocessor 済み batch。"""
         task = str(obs.get("task") or self._task or "")
         if not task:
             raise ValueError(
                 "言語指示が空です。runner から task.language を渡すか set_task() してください。"
             )
-
         batch = raw_libero_obs_to_batch(obs, task=task, flip_images=self.flip_images)
-        batch = self.preprocessor(batch)
-        with torch.inference_mode():
-            action = self.policy.select_action(batch)
-        action = self.postprocessor(action)
+        return self.preprocessor(batch)
 
+    def _action_from_tensor(self, action: Any) -> np.ndarray:
+        """postprocessor 後の action を (action_dim,) float32 にする。"""
         if hasattr(action, "detach"):
             action_np = action.detach().to("cpu").numpy()
         else:
@@ -166,3 +192,130 @@ class LeRobotCheckpointPolicy(Policy):
         if action_np.size < self.action_dim:
             raise RuntimeError(f"action dim too small: {action_np.shape}")
         return action_np[: self.action_dim]
+
+    def _front_image_for_vision(self, prepared_batch: dict[str, Any]) -> Any:
+        """prepare_images 後の front 画像テンソル (1,C,H,W) を返す。"""
+        images, _img_masks = self.policy.prepare_images(prepared_batch)
+        if not images:
+            raise RuntimeError("prepare_images が空です（front 画像がありません）")
+        return images[0]
+
+    def _activation_map_from_tokens(self, tokens: Any) -> np.ndarray:
+        """(B,N,C) token → (H,W) 正規化前マップ。"""
+        from parc.eval.attention import tokens_to_spatial_map
+
+        arr = tokens.detach().float().cpu().numpy()
+        return tokens_to_spatial_map(arr)
+
+    def _compute_activation_saliency(self, prepared_batch: dict[str, Any]) -> np.ndarray:
+        """Vision last_hidden_state の channel L2 マップ（勾配不要）。"""
+        import torch
+
+        vision = self._get_vision_model()
+        img = self._front_image_for_vision(prepared_batch)
+        with torch.inference_mode():
+            out = vision(pixel_values=img.to(dtype=vision.dtype))
+            hs = out.last_hidden_state
+        return self._activation_map_from_tokens(hs)
+
+    def _compute_gradcam_saliency(self, prepared_batch: dict[str, Any]) -> np.ndarray:
+        """Action L2 を標的にした Grad-CAM（方策キューは触らない）。"""
+        import torch
+
+        from lerobot.utils.constants import OBS_LANGUAGE_ATTENTION_MASK, OBS_LANGUAGE_TOKENS
+
+        vision = self._get_vision_model()
+        # prepared_batch は compute_saliency 側で _prepare_batch 済み
+        images, img_masks = self.policy.prepare_images(prepared_batch)
+        state = self.policy.prepare_state(prepared_batch)
+        lang_tokens = prepared_batch[OBS_LANGUAGE_TOKENS]
+        lang_masks = prepared_batch[OBS_LANGUAGE_ATTENTION_MASK]
+
+        feat_holder: dict[str, Any] = {}
+
+        def _hook(_module: Any, _inp: Any, out: Any) -> None:
+            hs = out.last_hidden_state if hasattr(out, "last_hidden_state") else out
+            # グラフ上のテンソルを保持し、逆伝播で grad を取る
+            feat_holder["feat"] = hs
+            if hs.requires_grad:
+                hs.retain_grad()
+
+        handle = vision.register_forward_hook(_hook)
+        try:
+            was_training = vision.training
+            # Grad-CAM では forward がグラフに載る必要がある
+            with torch.enable_grad():
+                actions = self.policy.model.sample_actions(
+                    images, img_masks, lang_tokens, lang_masks, state
+                )
+                if "feat" not in feat_holder:
+                    raise RuntimeError("Grad-CAM: vision forward hook が発火しませんでした")
+                target = actions.float().pow(2).mean()
+                if feat_holder["feat"].grad is not None:
+                    feat_holder["feat"].grad = None
+                target.backward()
+            feats = feat_holder["feat"]
+            grads = feats.grad
+            if grads is None:
+                raise RuntimeError(
+                    "Grad-CAM: vision 特徴に勾配がありません。"
+                    " freeze / SDPA 設定を確認してください。"
+                )
+            # (B, N, C): チャネル重み = トークン平均勾配
+            weights = grads.relu().mean(dim=1, keepdim=True)  # (B, 1, C)
+            cam = (weights * feats.detach()).sum(dim=-1).relu()  # (B, N)
+            heat = self._activation_map_from_tokens(cam)
+            if was_training:
+                vision.train()
+            else:
+                vision.eval()
+            return heat
+        finally:
+            handle.remove()
+            # グラフ残留を避ける
+            if hasattr(self.policy, "zero_grad"):
+                self.policy.zero_grad(set_to_none=True)
+
+    def compute_saliency(self, obs: dict[str, Any], *, method: str | None = None) -> dict[str, Any]:
+        """現在観測の front 注視マップを返す（act とは独立・キュー非破壊）。"""
+        method_use = (method or self.saliency_method).lower().strip()
+        prepared = self._prepare_obs_batch(obs)
+        # select_action と同じ前処理経路に揃える
+        prepared = self.policy._prepare_batch(prepared)
+
+        if method_use == "activation":
+            heat = self._compute_activation_saliency(prepared)
+        elif method_use == "gradcam":
+            heat = self._compute_gradcam_saliency(prepared)
+        else:
+            raise ValueError(f"unknown saliency method: {method_use!r}")
+
+        return {
+            "front": heat,
+            "method": method_use,
+            "flipped_input": bool(self.flip_images),
+        }
+
+    def act(self, obs: dict[str, Any]) -> np.ndarray:
+        import torch
+
+        batch = self._prepare_obs_batch(obs)
+        with torch.inference_mode():
+            action = self.policy.select_action(batch)
+        action = self.postprocessor(action)
+        return self._action_from_tensor(action)
+
+    def act_with_saliency(self, obs: dict[str, Any]) -> tuple[np.ndarray, dict[str, Any]]:
+        """アクションと front 注視マップを返す。
+
+        マップは方策入力（flip 済み）基準。表示時は ``unflip_heatmap=True`` で env 向きに合わせる。
+        """
+        import torch
+
+        batch = self._prepare_obs_batch(obs)
+        # saliency はキューを汚さない独立 forward
+        saliency = self.compute_saliency(obs, method=self.saliency_method)
+        with torch.inference_mode():
+            action = self.policy.select_action(batch)
+        action = self.postprocessor(action)
+        return self._action_from_tensor(action), saliency

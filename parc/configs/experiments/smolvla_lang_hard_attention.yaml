@@ -1,0 +1,30 @@
+# Language hard 1 task × 1 trial + 注視マップ（失敗エピソード確認用）
+# 親決め禁止。SR=0 想定で *_attn.mp4 を残す。
+name: smolvla_lang_hard_attention
+seed: 0
+tags: [eval, smolvla, language, hard, attention, thin]
+
+eval:
+  suite: libero_spatial
+  num_trials_per_task: 1
+  task_ids: [984]
+  max_steps: 280
+  camera_height: 256
+  camera_width: 256
+  save_video: true
+  save_frames: false
+  frame_stride: 5
+  attention_stride: 5
+  max_save_frames: 60
+  save_attention: true
+  attention_on_failure_only: true
+  attention_method: activation  # or gradcam
+  use_classification: true
+
+policy:
+  type: checkpoint
+  action_dim: 7
+  device: cuda
+  flip_images: true
+  # ローカルに存在する continue 系 ckpt（環境に合わせて差し替え可）
+  path: experiments/20260730T184742Z_winpc_c7e7c8f2_smolvla_ft_libero_cam_mix_lr5e6_5k_winpc/train_output/checkpoints/005000/pretrained_model

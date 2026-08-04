@@ -10,7 +10,7 @@
 | 環境・assets | [docs/01_setup.md](../docs/01_setup.md) |
 | データセット | [docs/02_data.md](../docs/02_data.md) |
 | 学習を長く回す | [docs/03_train.md](../docs/03_train.md) |
-| 評価の絞り方 | [docs/04_eval.md](../docs/04_eval.md) |
+| 評価の絞り方 | [docs/04_eval.md](../docs/04_eval.md)（動画・**注視マップ**含む） |
 | 実験管理 | [docs/05_experiments.md](../docs/05_experiments.md) |
 | コンペ準備 | [docs/06_competition.md](../docs/06_competition.md) |
 | 独自データ・改善アイデア | [docs/07_custom_data_and_algos.md](../docs/07_custom_data_and_algos.md) |
@@ -52,7 +52,7 @@
 ### キャッチアップ直後の定番（主線と並行してよいもの）
 
 1. **smoke より長い FT** — YAML をコピーして `steps` を増やし、同じ eval プロトコルで比較する  
-2. **カテゴリ別の弱点を見る** — subset / classification 付き評価で Camera / Robot 等を見る  
+2. **カテゴリ別の弱点を見る** — subset / classification 付き評価で Camera / Robot 等を見る。失敗時は `save_video` +（SmolVLA）`save_attention` で注視オーバーレイも残せる（[docs/04](../docs/04_eval.md)）  
 3. **改善仮説を 1 つだけ試す** — データ mix・学習レシピ・観測など（[docs/07](../docs/07_custom_data_and_algos.md)）  
 4. （任意）**VR デモ** — Quest が使えるなら上記 M0。学習は必ず success-only（`parc-filter-demos`）  
 5. （任意）**運用** — キュー / Web / Fleet は必要になったら docs/09–11  

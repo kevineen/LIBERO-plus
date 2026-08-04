@@ -11,6 +11,7 @@
 1. **P0**: plus 評価のやり方、二段階 FT の仮説
 2. **P1**: no-noop / stats_key、プロセス分離、評価の細部監査
 3. TurboVLA / Evo-1 を即親にしない（形式・ベンチ・ゲートが違う）
+4. （任意）失敗レビューの注視マップは仮説生成 — [easier_attention_not_proof.md](easier_attention_not_proof.md)
 
 ## 反例
 

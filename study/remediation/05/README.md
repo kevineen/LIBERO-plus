@@ -7,3 +7,4 @@
 |----------|------|
 | `p0` / `p1` / `borrow` | [easier_borrow_not_replace.md](easier_borrow_not_replace.md) |
 | `not-parent` | 同上 |
+| `attention` / `failure` / `saliency` | [easier_attention_not_proof.md](easier_attention_not_proof.md) |

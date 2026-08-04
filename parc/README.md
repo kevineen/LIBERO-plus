@@ -31,6 +31,8 @@ bash scripts/train.sh configs/experiments/smolvla_ft_smoke.yaml
 
 # 学習済み checkpoint 評価（同じく robot venv）
 bash scripts/eval_ckpt.sh configs/experiments/smolvla_ckpt_smoke_eval.yaml
+# 失敗エピソードの注視マップ（activation / Grad-CAM）: docs/04_eval.md
+# bash scripts/eval_ckpt.sh configs/experiments/smolvla_lang_hard_attention_smoke.yaml
 
 # 実験管理 Web / Jupyter（別 PC から閲覧）
 bash scripts/start_web.sh

@@ -35,6 +35,24 @@
 2. **policy ≠ sim プロセス分離** → thor / winpc / nuc の役割と整合
 3. **評価プロトコル監査** → chunk=open-loop、action 次元 crop、gripper 二値化を parc-eval チェック項目に
 
+### 失敗診断（PARC 本線ツール · 2026-08-04〜）
+
+SR=0 や硬スライスで「見ていない／別物を見ている」を仮説化するとき:
+
+1. 既存どおり `save_video: true` で MP4 を残す
+2. SmolVLA なら `eval.save_attention: true`（既定は **失敗エピソードのみ**）で注視オーバーレイを追加
+3. 出力: `videos/task####_trial##_attn.mp4`（左=env RGB / 右=overlay）· `manifest.json` の `attention_video`
+
+手法は **vision 活性化マップ**（既定）または **Grad-CAM**（`attention_method: gradcam`）。真の cross-attention 重みではない。因果の証明ではなく仮説生成用。
+
+- 手順・フラグ: [parc/docs/04_eval.md](../parc/docs/04_eval.md)（注視マップ節）
+- YAML: `configs/experiments/smolvla_lang_hard_attention.yaml`（本診断）/ `…_smoke.yaml`（短尺）
+
+```bash
+cd parc
+PARC_EVAL_NO_NOTIFY=1 bash scripts/eval_ckpt.sh configs/experiments/smolvla_lang_hard_attention_smoke.yaml --no-notify
+```
+
 ### P2（将来）
 
 - pad-to-24D + masks、TurboVLA 効率サイドカー全体、Jetson / evo1-lerobot
@@ -59,10 +77,12 @@
 | no-noop / stats_key | VR roadmap M5 | M0 E2E 後 |
 | プロセス分離 | Fleet・ホスト役割 | 運用で既に近い |
 | TurboVLA 全体を親 | — | **しない** |
+| 注視マップ（activation/Grad-CAM） | parc-eval · `save_attention` | 失敗レビュー時（親決め禁止） |
 
 ## 完了条件
 
 - [ ] P0/P1 と「借りない」を turbovla_evo1.md と対応付けて説明できる
+- [ ] 失敗時の注視マップ（`save_attention`）の位置づけ（仮説生成・真の attn ではない）を説明できる
 - [ ] [q05](../quiz/q05_parc_transfer.md) を解いた
 - [ ] [study/README.md](README.md) の完了チェックリストを更新した
 - [ ] 点数を [rubric](../quiz/rubric.md) で判定し、必要なら下記へ

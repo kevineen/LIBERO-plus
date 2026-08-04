@@ -75,6 +75,8 @@ def build_policy(cfg: dict[str, Any], seed: int = 0) -> Policy:
             flip_images=bool((cfg or {}).get("flip_images", True)),
             default_task=str((cfg or {}).get("default_task", "")),
             async_inference=bool((cfg or {}).get("async_inference", False)),
+            enable_saliency=bool((cfg or {}).get("enable_saliency", False)),
+            saliency_method=str((cfg or {}).get("saliency_method", "activation")),
         )
     if ptype in {"grpo_gaussian", "gaussian", "gspo_gaussian"}:
         path = (cfg or {}).get("path")
