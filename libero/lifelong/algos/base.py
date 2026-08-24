@@ -154,12 +154,34 @@ class Sequential(nn.Module, metaclass=AlgoMeta):
         idx_at_best_succ = 0
         successes = []
         losses = []
+        start_epoch = 0
 
         task = benchmark.get_task(task_id)
         task_emb = benchmark.get_task_emb(task_id)
 
+        resume_path = resume_state_path(self.experiment_dir)
+        resume_blob = getattr(self, "_pending_resume", None)
+        if resume_blob is None and bool(getattr(self.cfg.train, "resume", False)):
+            configured = getattr(self.cfg.train, "resume_path", "") or ""
+            load_path = configured if configured else resume_path
+            if os.path.isfile(load_path):
+                resume_blob = load_resume_state(load_path, map_location=self.cfg.device)
+        if resume_blob is not None and int(resume_blob.get("task_id", -999)) == int(task_id):
+            apply_resume_state(self, resume_blob)
+            start_epoch = int(resume_blob.get("epoch", -1)) + 1
+            prev_success_rate = resume_blob.get("prev_success_rate", prev_success_rate)
+            idx_at_best_succ = resume_blob.get("idx_at_best_succ", idx_at_best_succ)
+            successes = list(resume_blob.get("successes") or [])
+            losses = list(resume_blob.get("losses") or [])
+            cumulated_counter = float(resume_blob.get("cumulated_counter") or 0.0)
+            print(
+                f"[info] resume task {task_id} from epoch {start_epoch} "
+                f"(last saved epoch {resume_blob.get('epoch')})"
+            )
+            self._pending_resume = None
+
         # start training
-        for epoch in range(0, self.cfg.train.n_epochs + 1):
+        for epoch in range(start_epoch, self.cfg.train.n_epochs + 1):
 
             t0 = time.time()
 
@@ -227,6 +249,19 @@ class Sequential(nn.Module, metaclass=AlgoMeta):
 
             if self.scheduler is not None and epoch > 0:
                 self.scheduler.step()
+
+            save_resume_state(
+                resume_path,
+                algo=self,
+                task_id=task_id,
+                epoch=epoch,
+                result_summary=result_summary,
+                prev_success_rate=prev_success_rate,
+                idx_at_best_succ=idx_at_best_succ,
+                successes=successes,
+                losses=losses,
+                cumulated_counter=cumulated_counter,
+            )
 
         # load the best performance agent on the current task
         self.policy.load_state_dict(torch_load_model(model_checkpoint_name)[0])

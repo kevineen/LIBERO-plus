@@ -1,0 +1,26 @@
+# Paths are relative to the LIBERO-plus repo root (auto-detected from package location).
+workdir: workdir
+seed: 2026
+
+paths:
+  lerobot_dir: workdir/lerobot
+  libero_plus_dir: workdir/LIBERO-plus
+
+models:
+  baseline:
+    path: workdir/smolvla_libero_plus_baseline
+    label: "Base"
+  finetuned:
+    path: workdir/smolvla_libero_plus_spatial_lora_merged
+    label: "Spatial LoRA"
+
+camera_mapping:
+  agentview_image: front
+  robot0_eye_in_hand_image: wrist
+
+observation_height: 256
+observation_width: 256
+control_mode: relative
+policy_device: cuda
+
+suites: {}

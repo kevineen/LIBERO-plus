@@ -5,7 +5,7 @@ num_workers: 4
 grad_clip: 100.
 loss_scale: 1.0
 
-# resume training
+# resume training (train.resume=true train.resume_path=/path/to/resume_latest.pth)
 resume: false
 resume_path: ""
 debug: false
