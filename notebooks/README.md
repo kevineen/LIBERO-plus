@@ -4,7 +4,7 @@
 
 ## 役割
 
-- `upstream/`: 配布元原本。直接編集しない。
+- `upstream/`: 配布元原本。
 - `lib/`: 実験で再利用する Python コード。ローカル実行や薄いノートから読み込みます。
 - `experiments/`: 1 実験 1 ノートの作業場所。先頭セルに仮説、変更点、成功条件、結果、次を書く運用です。
 - `experiments/sweeps/`: パラメータグリッド（parc / lifelong）。`_schema.md` を参照。
