@@ -24,6 +24,7 @@ parc/experiments/**
 !parc/experiments/.gitkeep
 parc/data/datasets/
 parc/data/checkpoints/
+parc/data/viewer_packs/
 parc/.venv/
 # Machine-local absolute paths (use parc/configs/paths.example.yaml)
 parc/configs/paths.yaml
@@ -39,3 +40,10 @@ study/notebook/**
 quiz/progress/*
 !quiz/progress/README.md
 !quiz/progress/TEMPLATE.md
+
+# Notebook experiment management
+notebooks/**/.ipynb_checkpoints/
+notebooks/runs/**
+!notebooks/runs/.gitkeep
+notebooks/a.txt
+workdir/eval/compare_runs/

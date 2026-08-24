@@ -31,6 +31,7 @@ from libero.lifelong.utils import (
     torch_load_model,
     create_experiment_dir,
     get_task_embs,
+    load_resume_state,
 )
 
 
@@ -128,7 +129,21 @@ def main(hydra_cfg):
     print("=======================================================================\n")
 
     # prepare experiment and update the config
-    create_experiment_dir(cfg)
+    resume_blob = None
+    resume_path = str(getattr(cfg.train, "resume_path", "") or "")
+    if bool(getattr(cfg.train, "resume", False)) and resume_path:
+        if not os.path.isfile(resume_path):
+            print(f"[error] resume_path not found: {resume_path}")
+            sys.exit(1)
+        resume_blob = load_resume_state(resume_path, map_location=cfg.device)
+        cfg.experiment_dir = resume_blob.get("experiment_dir") or str(
+            Path(resume_path).parent
+        )
+        os.makedirs(cfg.experiment_dir, exist_ok=True)
+        cfg.experiment_name = "_".join(Path(cfg.experiment_dir).parts[-3:])
+        print(f"[info] resuming experiment at {cfg.experiment_dir}")
+    else:
+        create_experiment_dir(cfg)
     cfg.shape_meta = shape_meta
 
     if cfg.use_wandb:
@@ -141,6 +156,8 @@ def main(hydra_cfg):
         "L_fwd": np.zeros((n_manip_tasks,)),  # loss AUC, how fast the agent learns
         "S_fwd": np.zeros((n_manip_tasks,)),  # success AUC, how fast the agent succeeds
     }
+    if resume_blob is not None and resume_blob.get("result_summary") is not None:
+        result_summary = resume_blob["result_summary"]
 
     if cfg.eval.save_sim_states:
         # for saving the evaluate simulation states, so we can replay them later
@@ -157,6 +174,8 @@ def main(hydra_cfg):
 
     # define lifelong algorithm
     algo = safe_device(get_algo_class(cfg.lifelong.algo)(n_tasks, cfg), cfg.device)
+    if resume_blob is not None:
+        algo._pending_resume = resume_blob
     if cfg.pretrain_model_path != "":  # load a pretrained model if there is any
         try:
             algo.policy.load_state_dict(torch_load_model(cfg.pretrain_model_path)[0])
@@ -211,7 +230,14 @@ def main(hydra_cfg):
 
             torch.save(result_summary, os.path.join(cfg.experiment_dir, f"result.pt"))
     else:
-        for i in range(n_tasks):
+        start_task = 0
+        if resume_blob is not None:
+            start_task = int(resume_blob.get("task_id", 0))
+            last_epoch = int(resume_blob.get("epoch", -1))
+            if last_epoch >= cfg.train.n_epochs:
+                start_task += 1
+            print(f"[info] sequential resume starts at task {start_task}")
+        for i in range(start_task, n_tasks):
             print(f"[info] start training on task {i}")
             algo.train()
 

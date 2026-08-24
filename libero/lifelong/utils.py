@@ -60,9 +60,74 @@ def torch_load_model(model_path, map_location=None):
     cfg = None
     if "cfg" in model_dict:
         cfg = model_dict["cfg"]
+    previous_masks = None
     if "previous_masks" in model_dict:
         previous_masks = model_dict["previous_masks"]
     return model_dict["state_dict"], cfg, previous_masks
+
+
+def resume_state_path(experiment_dir):
+    """Canonical mid-run checkpoint used for pause / resume."""
+    return os.path.join(experiment_dir, "resume_latest.pth")
+
+
+def save_resume_state(
+    path,
+    *,
+    algo,
+    task_id,
+    epoch,
+    result_summary,
+    prev_success_rate,
+    idx_at_best_succ,
+    successes,
+    losses,
+    cumulated_counter,
+):
+    """Save optimizer-aware training state so a run can continue after SIGTERM."""
+    payload = {
+        "task_id": int(task_id),
+        "epoch": int(epoch),
+        "experiment_dir": getattr(algo, "experiment_dir", None),
+        "policy": algo.policy.state_dict(),
+        "optimizer": algo.optimizer.state_dict() if getattr(algo, "optimizer", None) is not None else None,
+        "scheduler": (
+            algo.scheduler.state_dict()
+            if getattr(algo, "scheduler", None) is not None
+            else None
+        ),
+        "result_summary": result_summary,
+        "prev_success_rate": prev_success_rate,
+        "idx_at_best_succ": idx_at_best_succ,
+        "successes": successes,
+        "losses": losses,
+        "cumulated_counter": cumulated_counter,
+        "current_task": getattr(algo, "current_task", task_id),
+        "previous_masks": getattr(algo, "previous_masks", None),
+        "current_masks": getattr(algo, "current_masks", None),
+    }
+    torch.save(payload, path)
+    return path
+
+
+def load_resume_state(path, map_location=None):
+    """Load a blob produced by save_resume_state."""
+    return torch.load(path, map_location=map_location)
+
+
+def apply_resume_state(algo, blob):
+    """Restore policy / optimizer / PackNet masks after start_task()."""
+    algo.policy.load_state_dict(blob["policy"])
+    if blob.get("optimizer") is not None and getattr(algo, "optimizer", None) is not None:
+        algo.optimizer.load_state_dict(blob["optimizer"])
+    if blob.get("scheduler") is not None and getattr(algo, "scheduler", None) is not None:
+        algo.scheduler.load_state_dict(blob["scheduler"])
+    if blob.get("previous_masks") is not None and hasattr(algo, "previous_masks"):
+        algo.previous_masks = blob["previous_masks"]
+    if blob.get("current_masks") is not None and hasattr(algo, "current_masks"):
+        algo.current_masks = blob["current_masks"]
+    if blob.get("current_task") is not None:
+        algo.current_task = blob["current_task"]
 
 
 def get_train_test_loader(

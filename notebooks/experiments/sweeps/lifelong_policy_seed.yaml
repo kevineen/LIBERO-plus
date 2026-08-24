@@ -1,0 +1,19 @@
+# LIBERO lifelong の短いスモーク（policy × seed）
+# 投入・実行:
+#   export PYTHONPATH=notebooks/lib
+#   python -m exp_orchestrator lifelong-run --sweep notebooks/experiments/sweeps/lifelong_policy_seed.yaml
+name: lifelong_policy_seed
+kind: lifelong
+mode: grid
+max_jobs: 4
+defaults:
+  benchmark_name: LIBERO_SPATIAL
+  lifelong: multitask
+  # 通し確認用。本番では n_epochs を戻す
+  train.n_epochs: 1
+  eval.eval: false
+  eval.eval_every: 1
+search:
+  policy: [bc_transformer_policy]
+  seed: [10000, 10001]
+notes: "smoke: skip env success eval (eval.eval=false) so resume checkpoint can be tested quickly."

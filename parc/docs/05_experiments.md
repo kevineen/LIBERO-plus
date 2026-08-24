@@ -82,3 +82,12 @@ uv run parc-fleet runs --limit 30
 各 run の `meta.json` には `git_sha` / `config_hash` / `eval_fingerprint` / `sweep_id` / `machine_id` などが入ります。
 
 複数 PC / Fleet 横断は [11_multi_machine.md](11_multi_machine.md)。
+
+## 授業用 notebooks からのスイープ
+
+講座ノート側（`../notebooks/`）では `python -m exp_orchestrator` が
+`parc-enqueue` / Pause / Resume / スコア収集の薄いラッパになっています。
+
+- 手順: [../notebooks/README.md](../notebooks/README.md)
+- sweep YAML: `../notebooks/experiments/sweeps/`
+- ローカル集計 DB: `../notebooks/runs/results.sqlite`（Git 非追跡。parc の `experiments/` と同様に成果物扱い）
