@@ -67,7 +67,7 @@ cd "$PARC"
 echo "[parc-eval-ckpt] robot=$ROBOT"
 python -c "import torch; print('cuda', torch.cuda.is_available(), torch.cuda.get_device_name(0) if torch.cuda.is_available() else '')"
 
-CFG="${1:-configs/experiments/smolvla_ckpt_smoke_eval.yaml}"
+CFG="${1:-configs/experiments/molmoact2_hf_smoke_eval.yaml}"
 if [[ $# -gt 0 ]]; then shift; fi
 
 # 既定で Discord/Slack 完了通知。抑制: PARC_EVAL_NO_NOTIFY=1 または --no-notify

@@ -6,10 +6,16 @@ PARC Lab Web（`:3030`）から実験・キュー・再開・ドキュメント�
 
 | ページ | 用途 |
 |--------|------|
+| **Evals** `/evals` | upstream `lerobot-eval` のログ（`lerobot/eval_logs/`）をタスク単位で監視 |
+| Eval run 詳細 `/evals/<runId>` | スイート別 SR・進捗バー（実行中は 5 秒ポーリング） |
+| Eval タスク `/evals/<runId>/tasks/<suite>_<id>` | **1 タスク表示** — 成功率・エピソード動画・前/次タスク |
+| **Board** `/board` | 研究カンバン（未着手 / 進行中 / 完了）— `experiments/board.json` |
 | **Runs** `/` | 実験一覧・SR・Progress・**Hide paused**・**Delete failed / Delete paused** |
 | **Jobs / Queue** `/#jobs` | 投入・取消・再投入・キュー削除・stale 回収・進捗 |
 | **Docs** `/docs` | 本マニュアル群の閲覧 |
 | Run 詳細 `/runs/<id>` | metrics・config・動画・**Resume** |
+
+サイドバー（左上 **メニュー**）から Evals → run → suite → task を階層的に辿れます。実行中 run には `run` バッジが付きます。
 
 ## 起動
 
@@ -23,6 +29,36 @@ uv run parc-worker --loop --poll-sec 30
 ```
 
 SSH トンネル例: `ssh -L 3030:127.0.0.1:3030 user@host`
+
+## Evals（lerobot-eval モニター）
+
+`parc-eval` / `eval_ckpt.sh` の Runs とは別に、**upstream LeRobot** の `lerobot-eval --output_dir=…` 出力をブラウザで見ます。
+
+```bash
+# 例: LIBERO-plus ルートの sibling lerobot/
+cd ../lerobot
+lerobot-eval \
+  --policy.path=lerobot/pi05_libero_finetuned \
+  --policy.device=cuda \
+  --env.type=libero_plus \
+  --env.task=libero_spatial,libero_object \
+  --eval.n_episodes=10 \
+  --output_dir=./eval_logs/my_run/
+```
+
+- ログ既定パス: `LIBERO-plus/lerobot/eval_logs/`（`LEROBOT_EVAL_LOGS_DIR` で上書き可）
+- 各タスク完了後に `eval_info.json` が更新される（パッチ前に開始した run は `videos/` スキャンで進捗復元）
+- 動画: `eval_logs/<runId>/videos/<suite>_<taskId>/eval_episode_N.mp4` — Range 対応ストリーミングでシーク可能
+
+`/evals` で run 一覧 → run 詳細 → タスク詳細と辿り、1 タスクずつ動画を確認します。Runs 画面の全動画ギャラリーとは用途が異なります。
+
+## Board（研究カンバン）
+
+`/board` で ToDo を 3 列（未着手 / 進行中 / 完了）管理します。データは `experiments/board.json`（gitignore · ローカルのみ）。
+
+- カード: タイトル・メモ・任意で Eval run へのリンク
+- 列移動: 各カードのボタン（DnD は未実装）
+- API: `GET/POST /api/v1/board` · `PATCH/DELETE /api/v1/board/<cardId>`
 
 ## キュー操作（UI）
 

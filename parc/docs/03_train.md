@@ -14,24 +14,26 @@
 
 ```bash
 cd /home/kevin/Matsuo/robot/LIBERO-plus/parc
-uv run parc-train -c configs/experiments/smolvla_ft.yaml
+uv run parc-train -c configs/experiments/sidecar_flow_apo_smoke.yaml
 ```
 
 `experiments/<run_id>/logs/train_cmd.txt` に実際のコマンドが書かれます。  
 デフォルトは `dry_run: true` です。
+
+> **2026-08 整理:** 旧 `smolvla_ft*.yaml` テンプレはリポジトリから削除済み。  
+> 新規 FT は下記 `lerobot-train` 例をベースに YAML をコピーするか、`sidecar_*` テンプレを使う。
 
 ## 2. 本当に学習する（Jetson Thor）
 
 ```bash
 cd /home/kevin/Matsuo/robot/LIBERO-plus/parc
 
-# 超小規模（200 step）でパイプライン確認
-bash scripts/train.sh configs/experiments/smolvla_ft_smoke.yaml
+# サイドカー smoke（短 step）でパイプライン確認
+bash scripts/train.sh configs/experiments/sidecar_smolvla_ft_clair_sft_smoke.yaml
 
-# もう少し長く回す場合は smolvla_ft.yaml をコピーして
+# もう少し長く回す場合は sidecar テンプレをコピーして
 #   dry_run: false / steps: 10000
-# にしてから:
-# bash scripts/train.sh configs/experiments/smolvla_ft_local.yaml
+# にしてから train.sh
 ```
 
 `scripts/train.sh` は親 `Matsuo/robot` の venv + `thor_cuda_env.sh` + cu12 ライブラリをセットします。
@@ -78,7 +80,8 @@ lerobot-train \
 
 関連テンプレ:
 
-- `configs/experiments/smolvla_ft_custom_data.yaml`
+- `configs/experiments/sidecar_smolvla_ft_clair_sft_smoke.yaml`
+- `configs/experiments/sidecar_flow_apo_smoke.yaml`
 - `scripts/examples/convert_demo_to_lerobot.py`
 
 ### 5b. CLAIR / Flow-APO（研究サイドカー）

@@ -122,6 +122,70 @@ export interface ExperimentStore {
   resolveArtifactFile(runId: string, relativePath: string): Promise<string | null>;
 }
 
+/** lerobot eval_logs 上の 1 実行 */
+export type EvalRunStatus = "running" | "finished" | "unknown";
+
+export type EvalEpisode = {
+  index: number;
+  success: boolean | null;
+  /** API 経由の mp4 URL。動画がまだ無いときは null */
+  videoUrl: string | null;
+  relativePath: string | null;
+};
+
+export type EvalTask = {
+  taskKey: string;
+  taskGroup: string;
+  taskId: number;
+  nEpisodes: number;
+  nSuccess: number;
+  successRate: number | null;
+  episodes: EvalEpisode[];
+};
+
+export type EvalGroupStats = {
+  taskGroup: string;
+  nEpisodes: number;
+  successRate: number | null;
+  nTasks: number;
+};
+
+export type EvalRunSummary = {
+  runId: string;
+  status: EvalRunStatus;
+  updatedAt: string;
+  nEpisodes: number;
+  successRate: number | null;
+  completedTasks: number;
+  totalTasks: number | null;
+  percent: number | null;
+  hasVideos: boolean;
+};
+
+export type EvalRunDetail = EvalRunSummary & {
+  evalS: number | null;
+  groups: EvalGroupStats[];
+  tasks: EvalTask[];
+  runDir: string;
+};
+
+export type BoardColumn = "todo" | "doing" | "done";
+
+export type BoardCard = {
+  id: string;
+  title: string;
+  notes: string;
+  status: BoardColumn;
+  /** 任意で評価 run に紐付ける */
+  evalRunId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type BoardState = {
+  cards: BoardCard[];
+};
+
 /** ジョブランチャー（shell / 将来の queue・k8s など） */
 export interface JobLauncher {
   readonly id: string;

@@ -24,6 +24,7 @@ cd parc && bash scripts/setup_env.sh && uv run parc-smoke --skip-env
 
 詳細は [`parc/README.md`](./parc/README.md) と [`parc/docs/`](./parc/docs/) を参照してください。  
 新規メンバー・初心者は [`parc/catchup/`](./parc/catchup/) から始めてください。  
+Web UI の **Evals** タブで upstream `lerobot-eval` の進捗をタスク単位に監視できます（[`parc/docs/10_ops_ui.md`](./parc/docs/10_ops_ui.md)）。  
 Quest 3 でのデモ収集は [`parc/docs/12_vr_teleop.md`](./parc/docs/12_vr_teleop.md)（設計は [`parc/feature/vr-teleop/`](./parc/feature/vr-teleop/)）。
 
 ## 🔥 Overview

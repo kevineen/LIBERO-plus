@@ -172,7 +172,13 @@ export class FilesystemExperimentStore implements ExperimentStore {
     const queueByRun = loadQueueByRunId();
     const names = fs
       .readdirSync(expDir)
-      .filter((n) => n !== "registry.jsonl" && n !== "queue" && fs.statSync(path.join(expDir, n)).isDirectory());
+      .filter(
+        (n) =>
+          n !== "registry.jsonl" &&
+          n !== "queue" &&
+          n !== "board.json" &&
+          fs.statSync(path.join(expDir, n)).isDirectory()
+      );
 
     // registry に無いディレクトリも拾う
     for (const n of names) {
