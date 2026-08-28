@@ -22,20 +22,24 @@ uv run parc-list
 # Meta-World MT50（研究用・別 venv。docs/01_setup.md §5b）
 # .venv-metaworld/bin/parc-eval -c configs/experiments/mt50_smoke_random.yaml
 
-# SmolVLA 実学習（親 Matsuo/robot venv + CUDA）
-bash scripts/train.sh configs/experiments/smolvla_ft_smoke.yaml
+# SmolVLA / サイドカー学習（親 Matsuo/robot venv + CUDA）
+# 旧 smolvla_ft_*.yaml は整理済み。新規は YAML をコピーするか sidecar テンプレを使用:
+bash scripts/train.sh configs/experiments/sidecar_smolvla_ft_clair_sft_smoke.yaml
 
 # 公開 + cam 再レンダの物理 mix（MultiDataset 無効のため事前マージ）
 # bash scripts/mix_datasets.sh --base-root <libero_plus_snapshot> --dry-run
-# bash scripts/train.sh configs/experiments/smolvla_ft_libero_cam_mix_from_unfreeze_winpc.yaml
+# bash scripts/train.sh configs/experiments/sidecar_smolvla_ft_twostage_stage1_expert_from_continue10k.yaml
 
 # 学習済み checkpoint 評価（同じく robot venv）
-bash scripts/eval_ckpt.sh configs/experiments/smolvla_ckpt_smoke_eval.yaml
+bash scripts/eval_ckpt.sh configs/experiments/molmoact2_hf_smoke_eval.yaml
 # 失敗エピソードの注視マップ（activation / Grad-CAM）: docs/04_eval.md
-# bash scripts/eval_ckpt.sh configs/experiments/smolvla_lang_hard_attention_smoke.yaml
+
+# upstream lerobot-eval（Evals タブでモニター）
+# cd ../lerobot && lerobot-eval … --output_dir=./eval_logs/my_run/
 
 # 実験管理 Web / Jupyter（別 PC から閲覧）
 bash scripts/start_web.sh
+# → Evals / Board / Runs / Jobs / Docs（docs/10_ops_ui.md）
 # bash scripts/start_jupyter_remote.sh
 # 手順: docs/08_remote_and_ui.md
 
@@ -49,8 +53,9 @@ bash scripts/start_web.sh
 
 ベースライン結果:
 - ランダム評価: [`docs/baselines/random_subset_eval.md`](docs/baselines/random_subset_eval.md)
-- SmolVLA 200step: [`docs/baselines/smolvla_ft_smoke.md`](docs/baselines/smolvla_ft_smoke.md)
-- SmolVLA ckpt 評価: [`docs/baselines/smolvla_ckpt_smoke_eval.md`](docs/baselines/smolvla_ckpt_smoke_eval.md)
+- SmolVLA 200step: [`docs/baselines/smolvla_ft_smoke.md`](docs/baselines/smolvla_ft_smoke.md)（旧 YAML · 手順は git 履歴 / 07 参照）
+- MolmoAct2 ckpt 評価: [`docs/baselines/molmoact2/`](docs/baselines/molmoact2/README.md)
+- SmolVLA ckpt 評価: [`docs/baselines/smolvla_ckpt_smoke_eval.md`](docs/baselines/smolvla_ckpt_smoke_eval.md)（旧 YAML · 手順は git 履歴）
 - CLAIR / Flow-APO サイドカー（親判定外）: [`docs/baselines/clair_apo/`](docs/baselines/clair_apo/README.md)
 
 > **重要:** ランダム評価は `./scripts/parc.sh`（親 `LIBERO-plus/.venv`）、学習・ckpt 評価は `train.sh` / `eval_ckpt.sh`。  
@@ -111,7 +116,7 @@ uv run parc-list --sweep-id overnight_ft_smoke
 | LeRobot SmolVLA FT + checkpoint 評価 | 本番 I/O 完全一致の保証 |
 | キュー / スイープ / ディスク prune | ライブ 3D シミュ操作 UI |
 | GRPO/GSPO スモーク（状態ガウス方策） | SmolVLA 本体 log-prob の本格 RL |
-| Web 実験管理・リモート Jupyter |  |
+| Web 実験管理・Evals モニター・研究カンバン・リモート Jupyter |  |
 | Fleet 横断（runs/queue・ホスト指定投入） | 自動ロードバランス（`--host auto`） |
 | GPU 死活監視 + 許可機の自動再起動 | ハブ経由の remote artifact 配信 |
 | データセット物理 mix（`parc-mix-datasets`） | MultiLeRobotDataset（現行 LeRobot 無効） |

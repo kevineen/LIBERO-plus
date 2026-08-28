@@ -68,24 +68,26 @@ export MUJOCO_GL=egl
 
 ---
 
-## Step 3. SmolVLA スモーク学習（200 step）
+## Step 3. サイドカー学習スモーク（短 step）
 
 **ここから親 robot venv + CUDA** を使う `train.sh` です（`parc.sh` ではない）。
 
 ```bash
-bash scripts/train.sh configs/experiments/smolvla_ft_smoke.yaml
+bash scripts/train.sh configs/experiments/sidecar_smolvla_ft_clair_sft_smoke.yaml
 ```
 
 初回はデータセット取得で時間がかかります。  
 終わると `experiments/<run_id>/train_output/checkpoints/...` に重みが残ります。
 
-参考: [docs/baselines/smolvla_ft_smoke.md](../docs/baselines/smolvla_ft_smoke.md)  
+> 旧 `smolvla_ft_smoke.yaml` 等は 2026-08 に整理削除済み。本線 SmolVLA FT は [docs/03_train.md](../docs/03_train.md) の `lerobot-train` 例か [docs/07_custom_data_and_algos.md](../docs/07_custom_data_and_algos.md) で YAML をコピーして作成。
+
+参考: [docs/baselines/smolvla_ft_smoke.md](../docs/baselines/smolvla_ft_smoke.md)（記録用 · 旧手順）  
 詳細: [docs/03_train.md](../docs/03_train.md) / [docs/02_data.md](../docs/02_data.md)
 
 dry-run だけ先に見たい場合:
 
 ```bash
-uv run parc-train -c configs/experiments/smolvla_ft.yaml
+uv run parc-train -c configs/experiments/sidecar_flow_apo_smoke.yaml
 ```
 
 （デフォルトは dry-run のことが多い。実際に回すのは `train.sh` + smoke YAML が安全）
@@ -95,13 +97,13 @@ uv run parc-train -c configs/experiments/smolvla_ft.yaml
 ## Step 4. checkpoint 評価
 
 ```bash
-bash scripts/eval_ckpt.sh configs/experiments/smolvla_ckpt_smoke_eval.yaml
+bash scripts/eval_ckpt.sh configs/experiments/molmoact2_hf_smoke_eval.yaml
 ```
 
 YAML 内の checkpoint パスが、自分の FT run を指しているか確認してください。  
 違う場合はコピーしてパスを直した YAML を使うか、既存 docs の手順に従ってください。
 
-参考: [docs/baselines/smolvla_ckpt_smoke_eval.md](../docs/baselines/smolvla_ckpt_smoke_eval.md)
+参考: [docs/baselines/molmoact2/](../docs/baselines/molmoact2/README.md)
 
 ---
 
@@ -119,7 +121,7 @@ uv run parc-list
 uv run parc-list --help
 ```
 
-Web UI がある環境では [docs/08_remote_and_ui.md](../docs/08_remote_and_ui.md) / [docs/10_ops_ui.md](../docs/10_ops_ui.md) も参照。
+Web UI がある環境では `bash scripts/start_web.sh` → **Runs** / **Evals**（upstream `lerobot-eval`）/ **Board**（[docs/08_remote_and_ui.md](../docs/08_remote_and_ui.md) / [docs/10_ops_ui.md](../docs/10_ops_ui.md)）も参照。
 
 ---
 

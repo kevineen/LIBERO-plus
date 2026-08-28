@@ -24,6 +24,22 @@ export function getConfigsDir(): string {
   return path.join(getParcRoot(), "configs", "experiments");
 }
 
+/**
+ * lerobot-eval の output_dir 親（eval_logs）。
+ * PARC ルートの兄弟 `lerobot/eval_logs` がデフォルト。
+ */
+export function getEvalLogsDir(): string {
+  if (process.env.LEROBOT_EVAL_LOGS_DIR) {
+    return path.resolve(process.env.LEROBOT_EVAL_LOGS_DIR);
+  }
+  return path.resolve(getParcRoot(), "..", "lerobot", "eval_logs");
+}
+
+/** 研究カンバンの保存先（experiments 配下の 1 JSON）。 */
+export function getBoardPath(): string {
+  return path.join(getExperimentsDir(), "board.json");
+}
+
 export function jobsAllowed(): boolean {
   return process.env.PARC_WEB_ALLOW_JOBS === "1";
 }

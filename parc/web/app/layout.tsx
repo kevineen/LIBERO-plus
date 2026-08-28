@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
-import Link from "next/link";
 
+import { AppShell } from "@/components/AppSidebar";
 import "./globals.css";
 
 const sans = IBM_Plex_Sans({
@@ -25,22 +25,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="ja">
       <body className={`${sans.variable} ${mono.variable}`}>
-        <div className="shell">
-          <header className="topbar">
-            <Link href="/" className="brand">
-              PARC Lab
-            </Link>
-            <nav className="nav">
-              <Link href="/">Runs</Link>
-              <Link href="/#jobs">Jobs</Link>
-              <Link href="/docs">Docs</Link>
-              <a href="/api/v1/health" target="_blank" rel="noreferrer">
-                API
-              </a>
-            </nav>
-          </header>
-          <main className="main">{children}</main>
-        </div>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

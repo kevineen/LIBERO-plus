@@ -26,6 +26,7 @@ uv run parc-eval -c configs/experiments/subset_eval.yaml \
 ```text
 experiments/
   registry.jsonl                 # 追記型ログ（最新行が新しい状態）
+  board.json                     # 研究カンバン（Web /board · gitignore）
   20260725T123000Z_thor_a1b2c3d4_smoke_random/
     config.yaml
     config.source.yaml
@@ -44,6 +45,26 @@ experiments/
 1. `configs/experiments/` のどれかをコピー  
 2. `name` / `tags` / `eval` / `policy` / `train` を編集  
 3. コミットしてよいのは **configs だけ**（重み・metrics・`paths.yaml` は gitignore）
+
+> **2026-08 整理:** 旧 `smolvla_*` 系の大量 YAML は履歴に残し、リポジトリからは削除済み。  
+> 残存テンプレは `smoke_random` / `subset_eval` / `molmoact2_hf_*` / `sidecar_*` / `grpo_smoke` 等。  
+> SmolVLA 本線 FT は `lerobot-train` 直接または [07_custom_data_and_algos.md](07_custom_data_and_algos.md) の手順で YAML をコピーして作成する。
+
+## 研究カンバン（board.json）
+
+Web の **Board** `/board` が読み書きする JSON。列は `todo` / `doing` / `done`。
+
+```json
+{
+  "columns": [
+    { "id": "todo", "title": "未着手", "cards": [{ "id": "…", "title": "…", "notes": "…", "evalRunId": "libero_plus_full_benchmark" }] },
+    { "id": "doing", "title": "進行中", "cards": [] },
+    { "id": "done", "title": "完了", "cards": [] }
+  ]
+}
+```
+
+`evalRunId` は任意。設定すると Evals タブへリンクできます。API は [08_remote_and_ui.md](08_remote_and_ui.md)。
 
 ## 比較のしかた
 

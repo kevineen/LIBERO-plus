@@ -44,11 +44,14 @@ ssh -L 3030:127.0.0.1:3030 kevin@192.168.11.5
 
 機能:
 
+- **Evals** — upstream `lerobot-eval` ログの一覧・タスク単位ビュー（`/evals`）
+- **Board** — 研究カンバン（`/board` · `experiments/board.json`）
 - Runs 一覧・フィルタ・タグ
 - Run 詳細（カテゴリ別 SR、config、artifacts、**Resume**）
 - 動画 / フレームプレビュー（保存されている場合）
 - Jobs / Queue パネル（投入・Cancel・Requeue・Recover stale・進捗）
 - Docs（`docs/*.md` マニュアル閲覧）— 入口 `/docs` / `/docs/10_ops_ui`
+- 階層サイドバー — Evals → run → suite → task、Board 列、Docs 目次
 
 環境変数:
 
@@ -56,6 +59,7 @@ ssh -L 3030:127.0.0.1:3030 kevin@192.168.11.5
 |------|------|
 | `PARC_ROOT` | parc ルート（start_web.sh が設定） |
 | `PARC_EXPERIMENTS_DIR` | experiments パス（未設定時は `paths.yaml`） |
+| `LEROBOT_EVAL_LOGS_DIR` | `lerobot-eval` の `--output_dir` 親（未設定時は `../lerobot/eval_logs`） |
 | `PARC_WEB_ALLOW_JOBS` | `1` でジョブ起動許可 |
 | `PARC_WEB_LAUNCHER` | `queue`（既定）または `shell` |
 | `PARC_WEB_PORT` | 既定 3030 |
@@ -87,6 +91,11 @@ bash scripts/start_web.sh
 | GET | `/api/v1/runs/:id/artifacts/...` | ファイル配信 |
 | GET/POST | `/api/v1/jobs` | ジョブ一覧 / 起動 |
 | GET/DELETE | `/api/v1/jobs/:id` | 状態 / キャンセル |
+| GET | `/api/v1/evals` | `lerobot-eval` run 一覧（`eval_logs/` 走査） |
+| GET | `/api/v1/evals/:runId` | `eval_info.json` + 動画フォルダからタスク詳細 |
+| GET | `/api/v1/evals/:runId/videos/...` | mp4 配信（**HTTP Range** 対応・シーク用） |
+| GET/POST | `/api/v1/board` | カンバン一覧 / カード作成 |
+| PATCH/DELETE | `/api/v1/board/:cardId` | カード更新 / 削除 |
 
 ジョブ POST 例:
 

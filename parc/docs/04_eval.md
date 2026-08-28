@@ -19,10 +19,38 @@ export MUJOCO_GL=egl
 ./scripts/parc.sh eval -c configs/experiments/subset_eval.yaml
 
 # SmolVLA 等の LeRobot checkpoint（robot venv + CUDA）
-bash scripts/eval_ckpt.sh configs/experiments/smolvla_ckpt_smoke_eval.yaml
+bash scripts/eval_ckpt.sh configs/experiments/molmoact2_hf_smoke_eval.yaml
 ```
 
-成果物（`experiments/<run_id>/`）:
+### upstream `lerobot-eval`（Web モニター対応）
+
+PARC の `parc-eval` とは別経路。出力先は sibling の `lerobot/eval_logs/`（Web の **Evals** タブが読む）。
+
+```bash
+cd /home/kevin/Matsuo/LIBERO-plus/lerobot
+lerobot-eval \
+  --policy.path=lerobot/pi05_libero_finetuned \
+  --policy.device=cuda \
+  --policy.compile_model=false \
+  --policy.n_action_steps=10 \
+  --env.type=libero_plus \
+  --env.task=libero_spatial,libero_object,libero_goal,libero_10 \
+  --eval.batch_size=1 \
+  --eval.n_episodes=10 \
+  --eval.use_async_envs=false \
+  --env.max_parallel_tasks=1 \
+  --output_dir=./eval_logs/libero_plus_full_benchmark/
+```
+
+| ファイル | 内容 |
+|----------|------|
+| `eval_info.json` | 集約 SR・`per_task` / `per_group` / `overall`。**各タスク完了後に上書き**（`status`: `running` \| `finished`、`completed_tasks` / `total_tasks`） |
+| `videos/<suite>_<taskId>/eval_episode_N.mp4` | エピソード動画 |
+
+ブラウザ: `bash scripts/start_web.sh` → **Evals** `/evals` → run → タスク詳細（[10_ops_ui.md](10_ops_ui.md)）。  
+`LEROBOT_EVAL_LOGS_DIR` でログ親を変更可能（[08_remote_and_ui.md](08_remote_and_ui.md)）。
+
+成果物（`experiments/<run_id>/` · `parc-eval` / `eval_ckpt.sh`）:
 
 | ファイル | 内容 |
 |----------|------|
@@ -81,6 +109,8 @@ eval:
 成果物は `experiments/<run_id>/videos/`。  
 ブラウザプレビューは `bash scripts/start_web.sh` → Run 詳細（[08_remote_and_ui.md](08_remote_and_ui.md)）。
 
+upstream `lerobot-eval` の動画は **Evals** タブ（上記 §upstream）でタスク単位に閲覧します。
+
 ## 注視マップ（SmolVLA saliency）
 
 失敗エピソードで「どこを見ているか」を確認する。真の cross-attention ではなく、vision encoder の **活性化マップ**（既定）または **Grad-CAM**（action L2 標的）。
@@ -98,13 +128,13 @@ policy:
   path: .../pretrained_model
 ```
 
-薄スライス例: `configs/experiments/smolvla_lang_hard_attention.yaml`  
-配線スモーク（短尺）: `configs/experiments/smolvla_lang_hard_attention_smoke.yaml`
+薄スライス例: 既存 run の checkpoint パスを YAML に指定（旧 `smolvla_lang_hard_attention*.yaml` は git 履歴参照）  
+配線スモーク（短尺）: `configs/experiments/molmoact2_hf_smoke_eval.yaml` 等
 
 ```bash
-bash scripts/eval_ckpt.sh configs/experiments/smolvla_lang_hard_attention.yaml
-# 短尺確認:
-# PARC_EVAL_NO_NOTIFY=1 bash scripts/eval_ckpt.sh configs/experiments/smolvla_lang_hard_attention_smoke.yaml --no-notify
+bash scripts/eval_ckpt.sh configs/experiments/molmoact2_hf_smoke_eval.yaml
+# 注視マップ付き評価は eval YAML に save_attention: true を追加
+# PARC_EVAL_NO_NOTIFY=1 bash scripts/eval_ckpt.sh … --no-notify
 ```
 
 成果物（失敗時）:
