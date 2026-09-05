@@ -20,6 +20,7 @@
 | 無人キュー・RL スモーク | [docs/09_autoloop_and_rl.md](../docs/09_autoloop_and_rl.md) |
 | Web UI 操作 | [docs/10_ops_ui.md](../docs/10_ops_ui.md) |
 | 複数 PC / Fleet | [docs/11_multi_machine.md](../docs/11_multi_machine.md) |
+| Episode Viewer（3D / WebXR） | [docs/14_viewer.md](../docs/14_viewer.md) |
 
 ベースライン結果は [`docs/baselines/`](../docs/baselines/)。
 

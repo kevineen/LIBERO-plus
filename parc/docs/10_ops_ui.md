@@ -13,6 +13,7 @@ PARC Lab Web（`:3030`）から実験・キュー・再開・ドキュメント�
 | **Runs** `/` | 実験一覧・SR・Progress・**Hide paused**・**Delete failed / Delete paused** |
 | **Jobs / Queue** `/#jobs` | 投入・取消・再投入・キュー削除・stale 回収・進捗 |
 | **Docs** `/docs` | 本マニュアル群の閲覧 |
+| **Viewer** `/viewer` | 収録デモの 3D 再生（PC / スマホ / Quest WebXR）— [14_viewer.md](14_viewer.md) |
 | Run 詳細 `/runs/<id>` | metrics・config・動画・**Resume** |
 
 サイドバー（左上 **メニュー**）から Evals → run → suite → task を階層的に辿れます。実行中 run には `run` バッジが付きます。
@@ -252,4 +253,5 @@ uv run parc-fleet gpu-check --auto-reboot  # 許可機の自動再起動（上�
 - [09_autoloop_and_rl.md](09_autoloop_and_rl.md) — 無人ループ・GRPO
 - [05_experiments.md](05_experiments.md) — run 規約
 - [08_remote_and_ui.md](08_remote_and_ui.md) — リモート接続
+- [14_viewer.md](14_viewer.md) — Episode Viewer（3D / WebXR）
 - [11_multi_machine.md](11_multi_machine.md) — Fleet / hosts / GDrive

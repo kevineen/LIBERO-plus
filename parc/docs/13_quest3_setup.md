@@ -447,6 +447,7 @@ ls data/datasets/vr_libero_demos/meta/info.json
 | パス | 内容 |
 |------|------|
 | [12_vr_teleop.md](12_vr_teleop.md) | サーバ CLI・学習・品質ゲート |
+| [14_viewer.md](14_viewer.md) | 収録デモの 3D ビューア（Web / スマホ / Quest WebXR） |
 | [unity/VrTeleop/README.md](../unity/VrTeleop/README.md) | Unity 短メモ |
 | [feature/vr-teleop/STATUS.md](../feature/vr-teleop/STATUS.md) | E2E 進捗 |
 | `configs/vr/quest3_libero_spatial_task0.yaml` | Quest 本番サーバ設定 |

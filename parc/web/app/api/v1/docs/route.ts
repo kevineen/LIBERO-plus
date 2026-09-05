@@ -19,6 +19,10 @@ const DOC_ALLOW = new Set([
   "08_remote_and_ui",
   "09_autoloop_and_rl",
   "10_ops_ui",
+  "11_multi_machine",
+  "12_vr_teleop",
+  "13_quest3_setup",
+  "14_viewer",
 ]);
 
 function docsDir(): string {

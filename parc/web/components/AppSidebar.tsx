@@ -9,7 +9,7 @@ import type { EvalRunDetail, EvalRunSummary, EvalTask } from "@/lib/types";
 type DocItem = { id: string; title: string; url: string };
 
 type RouteCtx = {
-  section: "evals" | "board" | "runs" | "jobs" | "docs" | "other";
+  section: "evals" | "board" | "runs" | "jobs" | "docs" | "viewer" | "other";
   runId: string | null;
   suite: string | null;
   taskKey: string | null;
@@ -33,6 +33,9 @@ function parsePath(pathname: string): RouteCtx {
   }
   if (parts[0] === "board") {
     return { section: "board", runId: null, suite: null, taskKey: null, docId: null, boardCol: null };
+  }
+  if (parts[0] === "viewer") {
+    return { section: "viewer", runId: null, suite: null, taskKey: null, docId: null, boardCol: null };
   }
   if (parts[0] === "docs") {
     return {
@@ -303,6 +306,16 @@ export function AppSidebar({ open, onClose }: Props) {
           label="Jobs"
           href="/#jobs"
           active={false}
+          open={false}
+          onToggle={() => undefined}
+          onNavigate={onClose}
+          leaf
+        />
+
+        <TreeSection
+          label="Viewer"
+          href="/viewer"
+          active={ctx.section === "viewer"}
           open={false}
           onToggle={() => undefined}
           onNavigate={onClose}

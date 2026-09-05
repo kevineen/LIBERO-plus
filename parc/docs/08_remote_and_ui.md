@@ -126,20 +126,65 @@ Web の Run 詳細 → Preview で閲覧。
 2. WebSocket / MJPEG エンドポイントを `/api/v1/streams` に追加
 3. UI に `StreamViewer` コンポーネント
 
-## 3. JupyterLab（別 PC）
+## 3. JupyterLab / Notebook（別 PC）
 
 ```bash
 bash scripts/start_jupyter_remote.sh 8888
 ```
 
-別 PC（推奨）:
+`--ip=0.0.0.0` で待ち受ける（`jupyter notebook --host 0.0.0.0` は無効）。  
+WSL 内にブラウザが無い警告（`Couldn't find a suitable web browser!`）は無視してよい。`--no-browser` 付き。
+
+### 3-1. SSH トンネル（推奨）
+
+winpc の WSL SSH は **Port 2222**（`strategy/04_machine_roles.md`）:
 
 ```bash
-ssh -L 8888:127.0.0.1:8888 kevin@192.168.11.5
+ssh -L 8888:127.0.0.1:8888 kevin@192.168.1.14 -p 2222
+# ブラウザ: http://127.0.0.1:8888/?token=<起動ログのトークン>
 ```
 
-トークンは起動ログの URL を使う。  
-`0.0.0.0` 直公開は LAN 内でもトークン管理必須。
+### 3-2. WSL2 を LAN IP で直接開く
+
+WSL2 は NAT（例: `172.19.x.x`）なので、別 PC から `http://192.168.1.14:8888` へ届けるには **Windows 側 portproxy** が必要。
+
+WSL:
+
+```bash
+hostname -I   # 例: 172.19.129.95
+bash scripts/start_jupyter_remote.sh 8888
+```
+
+Windows PowerShell（管理者）:
+
+```powershell
+netsh interface portproxy add v4tov4 listenport=8888 listenaddress=0.0.0.0 connectport=8888 connectaddress=172.19.129.95
+New-NetFirewallRule -DisplayName "Jupyter WSL" -Direction Inbound -LocalPort 8888 -Protocol TCP -Action Allow
+```
+
+WSL 再起動後は IP が変わるので `connectaddress` を更新する。
+
+### 3-3. トークンなし（一時・LAN 限定）
+
+トークンだけ空にするとログイン画面で **invalid credentials** になる。次のどちらかを使う。
+
+```bash
+# A. スクリプト（推奨）
+PARC_JUPYTER_NO_AUTH=1 bash scripts/start_jupyter_remote.sh 8888
+
+# B. 手動（Notebook 7 / Jupyter Server 2）
+uv run jupyter notebook \
+  --no-browser --ip=0.0.0.0 --port=8888 \
+  --IdentityProvider.token='' \
+  --ServerApp.password='' \
+  --ServerApp.allow_unauthenticated_access=True
+```
+
+起動ログに `All authentication is disabled` が出れば成功。  
+別 PC: `http://192.168.1.14:8888/tree`（古い `?token=` URL や cookie は捨てる）。  
+**LAN 内の誰でもコード実行できる**ので、作業後は必ず止める。固定パスワードにするなら `jupyter notebook password` 後に `--IdentityProvider.token=''` のみ。
+
+`0.0.0.0` 直公開は LAN 内でもトークン／パスワード管理を推奨。
 
 ## 4. セキュリティ注意
 
@@ -169,3 +214,4 @@ registerStore(new MyStore());
 - 評価: [04_eval.md](04_eval.md)
 - データ・学習改善: [07_custom_data_and_algos.md](07_custom_data_and_algos.md)
 - UI 操作: [10_ops_ui.md](10_ops_ui.md)
+- Episode Viewer: [14_viewer.md](14_viewer.md)

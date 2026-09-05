@@ -154,4 +154,5 @@ VR YAML で `collection_queue: configs/vr/collection_queue.example.yaml` を指�
 
 ## Phase 2+
 
-実機・ハンドトラッキング・3D ビュー・パススルーは [`feature/vr-teleop/STATUS.md`](../feature/vr-teleop/STATUS.md) の backlog。
+実機・ハンドトラッキング・パススルーは [`feature/vr-teleop/STATUS.md`](../feature/vr-teleop/STATUS.md) の backlog。  
+収録済みデモの 3D 確認（PC / スマホ / Quest WebXR）は [14_viewer.md](14_viewer.md)（`parc-export-viewer` → `/viewer`）。

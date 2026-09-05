@@ -39,9 +39,14 @@ bash scripts/eval_ckpt.sh configs/experiments/molmoact2_hf_smoke_eval.yaml
 
 # 実験管理 Web / Jupyter（別 PC から閲覧）
 bash scripts/start_web.sh
-# → Evals / Board / Runs / Jobs / Docs（docs/10_ops_ui.md）
+# → Evals / Board / Runs / Jobs / Docs / Viewer（docs/10_ops_ui.md · docs/14_viewer.md）
 # bash scripts/start_jupyter_remote.sh
+# PARC_JUPYTER_NO_AUTH=1 bash scripts/start_jupyter_remote.sh   # トークンなし（LAN 一時）
 # 手順: docs/08_remote_and_ui.md
+
+# デモ 3D ビューア（HDF5 / VR LeRobot → GLB pack）
+# ./scripts/parc.sh export-viewer --hdf5 data/datasets/libero_spatial/<task>_demo.hdf5 --demos 0
+# → http://localhost:3030/viewer （docs/14_viewer.md）
 
 # 複数 PC Fleet（hosts.yaml 必須）
 # uv run parc-fleet hosts
@@ -92,6 +97,7 @@ parc/
 | [docs/11_multi_machine.md](docs/11_multi_machine.md) | 複数 PC・Fleet 横断・GDrive |
 | [docs/12_vr_teleop.md](docs/12_vr_teleop.md) | Quest 3 VR テレオプ・デモ収集 |
 | [docs/13_quest3_setup.md](docs/13_quest3_setup.md) | Quest 3 初回セットアップ（本体・Unity・WSL） |
+| [docs/14_viewer.md](docs/14_viewer.md) | Episode Viewer（Web / スマホ / Quest WebXR） |
 | [feature/vr-teleop/](feature/vr-teleop/) | VR 機能の設計・計画・STATUS |
 
 ## 無人実験ループ（一晩回す）
@@ -114,14 +120,15 @@ uv run parc-list --sweep-id overnight_ft_smoke
 | 汎用ベンチ枠（`eval.backend`）+ MT50 評価スモーク | MT50 デモ変換・本学習・VR（研究用・本戦外） |
 | 実験 run の作成・一覧・metrics 保存 | Pi0 / Gr00t 公式学習コード接続 |
 | LeRobot SmolVLA FT + checkpoint 評価 | 本番 I/O 完全一致の保証 |
-| キュー / スイープ / ディスク prune | ライブ 3D シミュ操作 UI |
+| キュー / スイープ / ディスク prune | ライブ（テレオプ中）3D ストリーム |
 | GRPO/GSPO スモーク（状態ガウス方策） | SmolVLA 本体 log-prob の本格 RL |
 | Web 実験管理・Evals モニター・研究カンバン・リモート Jupyter |  |
 | Fleet 横断（runs/queue・ホスト指定投入） | 自動ロードバランス（`--host auto`） |
 | GPU 死活監視 + 許可機の自動再起動 | ハブ経由の remote artifact 配信 |
 | データセット物理 mix（`parc-mix-datasets`） | MultiLeRobotDataset（現行 LeRobot 無効） |
 | Google Drive ckpt sync（rclone） | |
-| VR teleop サーバ + Unity 薄クライアント（Quest 3） | Quest 実機 E2E・ハンド/実機/3D ビュー（Phase 2） |
+| VR teleop サーバ + Unity 薄クライアント（Quest 3） | Quest 実機 E2E・ハンド/実機/パススルー（Phase 2） |
+| Episode Viewer（`parc-export-viewer` · `/viewer` · WebXR） | テクスチャ付き geom・LAN HTTPS 常設 |
 | VR 品質ゲート（success フィルタ・RTT・キュー・replay・Approx Time） | Unity 周期 ping・物理 OOD 摂動エンジン |
 | `parc-filter-demos` / `parc-replay-demos` / `parc-verify-demos --coverage` | |
 | CLAIR near-miss ペア + Flow-APO（研究サイドカー） | 親 ckpt 置き換え・提出接続・実 LIBERO 大量ロールアウト |

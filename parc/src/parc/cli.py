@@ -182,6 +182,13 @@ def clair_pairs_main(argv: list[str] | None = None) -> None:
     _clair_main(argv)
 
 
+def export_viewer_main(argv: list[str] | None = None) -> None:
+    """収録デモを Web/VR ビューア用 scene pack に変換する。"""
+    from parc.viewer_export.build_index import main as _export_main
+
+    _export_main(argv)
+
+
 def merge_ckpts_main(argv: list[str] | None = None) -> None:
     """2 ckpt を線形マージする（研究サイドカー Phase4）。"""
     from parc.train.merge_ckpts import main as _merge_main
@@ -1122,7 +1129,8 @@ if __name__ == "__main__":
         console.print(
             "Usage: python -m parc.cli "
             "[new|eval|train|list|smoke|enqueue|worker|prune|queue|sync|remote|fleet|"
-            "mix-datasets|vr-teleop|verify-demos|normalize-angle-units|clair-pairs|merge-ckpts]"
+            "mix-datasets|vr-teleop|verify-demos|export-viewer|"
+            "normalize-angle-units|clair-pairs|merge-ckpts]"
         )
         sys.exit(1)
     cmd = sys.argv[1]
@@ -1145,6 +1153,7 @@ if __name__ == "__main__":
         "verify-demos": verify_demos_main,
         "filter-demos": filter_demos_main,
         "replay-demos": replay_demos_main,
+        "export-viewer": export_viewer_main,
         "normalize-angle-units": normalize_angle_units_main,
         "clair-pairs": clair_pairs_main,
         "merge-ckpts": merge_ckpts_main,
