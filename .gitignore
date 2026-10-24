@@ -50,3 +50,6 @@ workdir/eval/compare_runs/
 
 # sibling LeRobot clone（別 git · 大容量 · eval_logs はローカル出力）
 lerobot/
+
+# macOS metadata
+.DS_Store
